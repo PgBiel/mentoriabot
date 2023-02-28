@@ -4,34 +4,11 @@ use serenity::GuildId;
 mod minirustbot;
 mod config;
 
-use minirustbot::{common, events};
-use common::{Context, Data, Error};
+use minirustbot::{common, commands};
+use common::Data;
 use config::MiniRustBotConfig as Config;
 
 const CONFIG_FILE: &str = "config.json";
-
-/// Displays your or another user's account creation date
-#[poise::command(slash_command)]
-async fn userup(
-    ctx: Context<'_>,
-    #[description = "Selected user"] user: Option<serenity::User>,
-    ) -> Result<(), Error> {
-    let u = user.as_ref().unwrap_or_else(|| ctx.author());
-    let response = format!("{}'s account was created at {}", u.name, u.created_at());
-
-    ctx.send(|create_reply| create_reply
-            .content(response)
-            .ephemeral(true)
-            .components(|create_components|
-                create_components.create_action_row(|create_row|
-                    create_row.create_button(|create_button|
-                        create_button
-                            .custom_id("cool_button")
-                            .label("OK")
-                            .style(serenity::ButtonStyle::Primary))))).await?;
-    //    ctx.say(response).await?;
-    Ok(())
-}
 
 #[tokio::main]
 async fn main() {
@@ -40,7 +17,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![userup()],
+            commands: commands::get_commands(),
             event_handler: |ctx, event, framework_context, data| {
                 data.get_event_handler().handle(ctx, event, framework_context, data)
             },
