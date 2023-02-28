@@ -31,6 +31,9 @@ impl EventHandler {
                                 .interaction_response_data(|response_data|
                                     response_data.content("Bruh").ephemeral(true))).await?;
                     },
+                    serenity::Interaction::ModalSubmit(modal_submit) => {
+                        println!("Got modal submit: {:?}", modal_submit);
+                    },
                     _ => ()
                 };
             }
