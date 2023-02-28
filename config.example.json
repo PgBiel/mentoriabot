@@ -1,3 +1,4 @@
 {
-    "token": "InsertTokenHere"
+    "token": "InsertTokenHere",
+    "guild_id": "12345"
 }

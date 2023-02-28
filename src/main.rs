@@ -52,7 +52,7 @@ async fn main() {
             Box::pin(async move {
                 poise::builtins::register_in_guild(ctx,
                                                    &framework.options().commands,
-                                                   GuildId(193903425640071168)).await?;
+                                                   GuildId(parsed_config.get_guild_id())).await?;
                 Ok(Data::new())
             })
         });
