@@ -1,19 +1,19 @@
-use super::events;
+use super::interaction;
 
-#[derive(Debug, Clone, Default)]
 pub struct Data {
-    event_handler: events::EventHandler
+    interaction_handler: interaction::InteractionHandler,
 } // User data, which is stored and accessible in all command invocations
 
 impl Data {
     pub fn new() -> Self {
-        Default::default()
+        Data { interaction_handler: interaction::InteractionHandler::new() }
     }
 
-    pub fn get_event_handler(&self) -> &events::EventHandler {
-        &self.event_handler
+    pub fn interaction_handler(&self) -> &interaction::InteractionHandler {
+        &self.interaction_handler
     }
 }
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
+pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, Error>;

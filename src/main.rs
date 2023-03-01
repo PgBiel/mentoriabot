@@ -4,7 +4,7 @@ use serenity::GuildId;
 mod minirustbot;
 mod config;
 
-use minirustbot::{common, commands};
+use minirustbot::{common, commands, events};
 use common::Data;
 use config::MiniRustBotConfig as Config;
 
@@ -18,9 +18,7 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands::get_commands(),
-            event_handler: |ctx, event, framework_context, data| {
-                data.get_event_handler().handle(ctx, event, framework_context, data)
-            },
+            event_handler: events::handle,
             ..Default::default()
         })
         .token(parsed_config.get_token())
