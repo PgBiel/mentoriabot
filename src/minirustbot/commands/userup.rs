@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use super::super::common::{ApplicationContext, Error};
+use super::super::{interaction, common::{ApplicationContext, Error}};
 
 /// Displays your or another user's account creation date
 #[poise::command(slash_command)]
@@ -11,8 +11,8 @@ pub async fn userup(
     let response = format!("{}'s account was created at {}", u.name, u.created_at());
     let id = ctx.interaction.id();
 
-    let rx = ctx.data.interaction_handler()
-        .wait_for_interaction(id.to_string(), serenity::InteractionType::MessageComponent).await;
+//    let rx = ctx.data.interaction_handler()
+//        .wait_for_interaction(id.to_string(), serenity::InteractionType::MessageComponent).await;
 
     ctx.send(|create_reply| create_reply
                 .content(response)
@@ -25,13 +25,10 @@ pub async fn userup(
                                 .label("OK")
                                 .style(serenity::ButtonStyle::Primary))))).await?;
 
-    if let Some(mut rx) = rx {
-        if let Ok(interaction) = rx.changed().await.map(|_| rx.borrow()) {
-            if let Some(serenity::Interaction::MessageComponent(component)) = &*interaction {
-                let response = format!("Wow, nice {}", component.data.custom_id);
-                println!("RESPONSE: {}", response);
-            }
-        }
+    let response = interaction::wait_for_message_interaction(ctx, id.to_string()).await?;
+    if let Some(response) = response {
+        let content = format!("Wow, nice job! You clicked {:?} {}", response.data.component_type, response.data.custom_id);
+        response.create_followup_message(ctx.serenity_context, move |f| f.content(content).ephemeral(true)).await?;
     }
     //    ctx.say(response).await?;
     Ok(())
