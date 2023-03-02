@@ -1,4 +1,4 @@
-use super::common::{Data, ErrorBox};
+use crate::common::{Data, ErrorBox};
 
 mod ping;
 mod userup;

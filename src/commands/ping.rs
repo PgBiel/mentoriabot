@@ -1,4 +1,4 @@
-use super::super::common::{Context, ErrorBox};
+use crate::common::{Context, ErrorBox};
 
 /// Displays your or another user's account creation date
 #[poise::command(slash_command)]

@@ -1,7 +1,7 @@
 use poise::serenity_prelude as serenity;
 use poise::Modal;
-use super::super::util::generate_custom_id;
-use super::super::common::{ApplicationContext, ErrorBox};
+use crate::util::generate_custom_id;
+use crate::common::{ApplicationContext, ErrorBox};
 
 #[derive(Default, Modal)]
 #[name = "Modal title"]

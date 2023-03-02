@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use crate::minirustbot::common::ApplicationContext;
-use crate::minirustbot::error::{Error, Result};
+use crate::common::ApplicationContext;
+use crate::error::{Error, Result};
 
 pub mod testform;
 

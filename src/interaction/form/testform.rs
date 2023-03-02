@@ -1,11 +1,11 @@
 use std::str::FromStr;
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
-use crate::minirustbot::error::{Result, FormError};
+use crate::error::{Result, FormError};
 use super::{InteractionForm, InteractionFormComponent};
 use strum_macros::{self, EnumString};
-use crate::minirustbot::interaction::wait_for_message_interaction;
-use crate::minirustbot::util::generate_custom_id;
+use crate::interaction::wait_for_message_interaction;
+use crate::util::generate_custom_id;
 use crate::common::ApplicationContext;
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]

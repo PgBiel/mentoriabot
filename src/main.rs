@@ -1,10 +1,14 @@
 use poise::serenity_prelude as serenity;
 use serenity::GuildId;
 
-mod minirustbot;
 mod config;
+mod events;
+mod util;
+mod common;
+mod commands;
+mod interaction;
+mod error;
 
-use minirustbot::{common, commands, events};
 use common::Data;
 use config::MiniRustBotConfig as Config;
 

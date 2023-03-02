@@ -1,5 +1,5 @@
-use super::super::common::{ApplicationContext, ErrorBox};
-use crate::minirustbot::interaction::form::testform::create_test_form;
+use crate::common::{ApplicationContext, ErrorBox};
+use crate::interaction::form::testform::create_test_form;
 
 /// Runs test form
 #[poise::command(slash_command)]
