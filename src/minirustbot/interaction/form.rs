@@ -2,6 +2,8 @@ use async_trait::async_trait;
 use crate::minirustbot::common::ApplicationContext;
 use crate::minirustbot::error::{Error, Result};
 
+pub mod testform;
+
 /// Trait for interaction senders/receivers which serve as components
 /// of a form.
 #[async_trait]
