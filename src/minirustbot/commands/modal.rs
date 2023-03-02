@@ -1,7 +1,7 @@
 use poise::serenity_prelude as serenity;
 use poise::Modal;
 use super::super::util::generate_custom_id;
-use super::super::common::{ApplicationContext, Error};
+use super::super::common::{ApplicationContext, ErrorBox};
 
 #[derive(Default, Modal)]
 #[name = "Modal title"]
@@ -27,7 +27,7 @@ struct TestModal {
 pub async fn modal(
         ctx: ApplicationContext<'_>,
         #[description = "Modal title"] title: Option<String>,
-        ) -> Result<(), Error> {
+        ) -> Result<(), ErrorBox> {
     let data = TestModal::execute(ctx).await?;
     if let Some(modal_data) = data {
         let response = format!("Hey, {}! Thanks for '{}'.", modal_data.name, title.unwrap_or("nothing".into()));
