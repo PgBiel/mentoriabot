@@ -11,7 +11,7 @@ pub async fn wait_for_message_interaction(ctx: ApplicationContext<'_>, custom_id
     let custom_id = custom_id.to_string();
     let response = serenity::CollectComponentInteraction::new(&ctx.serenity_context.shard)
             .filter(move |interaction| interaction.data.custom_id.to_string() == custom_id)
-            .timeout(Duration::from_secs(4))
+            .timeout(Duration::from_secs(15*60))
             .await;
 
     let response = match response {
