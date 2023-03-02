@@ -3,6 +3,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use poise::serenity_prelude as serenity;
 
+pub mod form;
+
 /// Wait for a given interaction's response.
 pub async fn wait_for_message_interaction(ctx: ApplicationContext<'_>, custom_id: impl ToString)
         -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
