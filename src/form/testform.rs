@@ -3,7 +3,6 @@ use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
-use poise::Modal as PoiseModal;
 use std::str::FromStr;
 use std::sync::Arc;
 use strum_macros::{self, EnumString};
@@ -83,7 +82,7 @@ impl MessageFormComponent for TestFormFirstSelection {
 
 #[derive(Debug, Default, Clone, poise::Modal)]
 #[name = "Random modal"]
-struct TestFormModal {
+pub struct TestFormModal {
     #[name = "Name"]
     #[placeholder = "Joseph"]
     #[min_length = 3]
@@ -105,23 +104,16 @@ struct TestFormModalComponent;
 
 #[async_trait]
 impl ModalFormComponent for TestFormModalComponent {
+    type Modal = TestFormModal;
     type Form = TestForm;
 
-    async fn run(
+    async fn on_response(
         &self,
-        context: ApplicationContext<'_>,
-        mut form_data: TestForm,
-    ) -> Result<TestForm> {
-        if let Some(modal) = TestFormModal::execute(context).await? {
-            println!(
-                "They are [age={}]",
-                (&modal).age.as_ref().unwrap_or(&"(idk)".to_string())
-            );
-            form_data.modal_answers = Some(modal);
-            Ok(form_data)
-        } else {
-            Err(FormError::NoResponse.into())
-        }
+        modal: Self::Modal,
+        mut form_data: Self::Form,
+    ) -> Result<Self::Form> {
+        form_data.modal_answers = Some(modal);
+        Ok(form_data)
     }
 }
 
@@ -132,9 +124,15 @@ pub struct TestForm {
 }
 
 impl InteractionForm for TestForm {
+    type Modal = TestFormModal;
+
+    fn modal() -> Option<Box<dyn ModalFormComponent<Modal = Self::Modal, Form = Self> + Send + Sync>>
+    {
+        Some(Box::new(TestFormModalComponent::default()))
+    }
+
     fn components() -> Vec<FormComponent<Self>> {
         vec![
-            FormComponent::Modal(Box::new(TestFormModalComponent::default())),
             FormComponent::Message(Box::new(TestFormFirstSelection::default())),
             FormComponent::Message(Box::new(TestFormFirstSelection::default())),
         ]
