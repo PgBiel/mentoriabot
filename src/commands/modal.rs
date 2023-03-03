@@ -1,6 +1,4 @@
-use poise::serenity_prelude as serenity;
 use poise::Modal;
-use crate::util::generate_custom_id;
 use crate::common::{ApplicationContext, ErrorBox};
 
 #[derive(Default, Modal)]

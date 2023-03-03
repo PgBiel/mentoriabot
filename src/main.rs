@@ -8,6 +8,7 @@ mod common;
 mod commands;
 mod interaction;
 mod error;
+mod form;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;

@@ -1,4 +1,3 @@
-use poise::serenity_prelude as serenity;
 use std::fmt::{Display, Formatter};
 
 /// Represents an error within an InteractionForm object.

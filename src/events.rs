@@ -3,9 +3,9 @@ use poise::Event;
 use crate::common;
 
 pub fn handle<'a>(_ctx: &'a serenity::Context,
-                  event: &'a Event<'a>,
+                  _event: &'a Event<'a>,
                   _framework_context: poise::FrameworkContext<'a, common::Data, common::ErrorBox>,
-                  data: &'a common::Data)
+                  _data: &'a common::Data)
                   -> poise::BoxFuture<'a, Result<(), common::ErrorBox>> {
     Box::pin(async move {
         Ok(())
