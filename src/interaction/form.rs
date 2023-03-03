@@ -1,22 +1,11 @@
-use async_trait::async_trait;
 use crate::common::ApplicationContext;
-use crate::error::{Error, Result};
+use crate::error::Result;
 
 pub mod testform;
+pub mod component;
 
-/// Trait for interaction senders/receivers which serve as components
-/// of a form.
-#[async_trait]
-pub trait InteractionFormComponent {
-    type FormResultData;
-
-    /// Sends the interaction and awaits for its response, then updates
-    /// the existing FormResultData object based on the response.
-    async fn run(&self, context: ApplicationContext<'_>, form_data: Self::FormResultData)
-        -> Result<Self::FormResultData>;
-}
-
-// ---
+pub use component::{InteractionFormComponent, MessageFormComponent, ModalFormComponent};
+pub use component::{MessageFormComponentBuilder, ModalFormComponentBuilder};
 
 pub type FormComponentsVec<FormResultData> =
     Vec<Box<dyn InteractionFormComponent<FormResultData=FormResultData> + Send + Sync>>;

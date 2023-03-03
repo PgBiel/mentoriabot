@@ -1,8 +1,7 @@
 use std::str::FromStr;
 use async_trait::async_trait;
-use poise::serenity_prelude as serenity;
 use crate::error::{Result, FormError};
-use super::{InteractionForm, InteractionFormComponent};
+use super::{InteractionForm, InteractionFormComponent, MessageFormComponent};
 use strum_macros::{self, EnumString};
 use crate::interaction::wait_for_message_interaction;
 use crate::util::generate_custom_id;
@@ -14,29 +13,6 @@ pub enum FirstSelectionData {
     Fire,
     Water
 }
-
-// impl ToString for FirstSelectionData {
-//     fn to_string(&self) -> String {
-//         String::from(match self {
-//             Self::Ice => "Ice",
-//             Self::Fire => "Fire",
-//             Self::Water => "Water"
-//         })
-//     }
-// }
-//
-// impl FromStr for FirstSelectionData {
-//     type Err = FormError::InvalidUserResponse;
-//
-//     fn from_str(s: &str) -> Result<Self, Self::Err> {
-//         match s {
-//             "Ice" => Ok(Self::Ice),
-//             "Fire" => Ok(Self::Fire),
-//             "Water" => Ok(Self::Water),
-//             _ => Err(Self::Err)
-//         }
-//     }
-// }
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TestFormData {
@@ -54,23 +30,6 @@ impl InteractionFormComponent for TestFormFirstSelection {
                  -> Result<TestFormData> {
         // TODO: Extract generic FormComponent for Button, SelectMenu, Modal
         let custom_id = generate_custom_id();
-//        let options = vec![
-//
-//                SelectMenuOption {
-//                label: "Whoops".to_string(),
-//                    value: FirstSelectionData::Fire.to_string(),
-//                    description: Some("Whoopsie".to_string()),
-//                    emoji: None,
-//                    default: false,
-//                },
-//                SelectMenuOption {
-//                label: "Abad".to_string(),
-//                    value: FirstSelectionData::Ice.to_string(),
-//                    description: Some("Whoopsgie".to_string()),
-//                    emoji: None,
-//                    default: true,
-//                }
-//        ];
 
         context.send(|f| f
             .content("Choose one:")
@@ -117,5 +76,7 @@ impl InteractionFormComponent for TestFormFirstSelection {
 pub type TestForm = InteractionForm<TestFormData>;
 
 pub fn create_test_form() -> TestForm {
+    let select_menu_comp = Box::new(MessageFormComponent::<TestFormData>::builder())
+
     TestForm::new(vec![Box::new(TestFormFirstSelection::default()), Box::new(TestFormFirstSelection::default())])
 }
