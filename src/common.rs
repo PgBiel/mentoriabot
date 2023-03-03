@@ -1,6 +1,4 @@
-pub struct Data {
-
-} // User data, which is stored and accessible in all command invocations
+pub struct Data {} // User data, which is stored and accessible in all command invocations
 
 impl Data {
     pub fn new() -> Self {

@@ -1,9 +1,9 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MiniRustBotConfig {
     token: String,
-    guild_id: u64
+    guild_id: u64,
 }
 
 impl MiniRustBotConfig {

@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use poise::serenity_prelude as serenity;
+use std::fmt::{Display, Formatter};
 
 mod form;
 
@@ -17,7 +17,7 @@ pub enum Error {
     Serenity(serenity::Error),
 
     /// Some other error
-    Other(&'static str)
+    Other(&'static str),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -57,7 +57,7 @@ impl std::error::Error for Error {
             Self::Form(inner) => Some(inner),
             Self::EnumParse(inner) => Some(inner),
             Self::Serenity(inner) => Some(inner),
-            _ => None
+            _ => None,
         }
     }
 }

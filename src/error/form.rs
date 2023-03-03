@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub enum FormError {
     NoResponse,
-    InvalidUserResponse
+    InvalidUserResponse,
 }
 
 impl Display for FormError {
