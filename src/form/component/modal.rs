@@ -1,13 +1,12 @@
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
-use crate::form::InteractionForm;
 use async_trait::async_trait;
 use poise::Modal as PoiseModal;
 
 #[async_trait]
 pub trait ModalFormComponent: Sync {
     type Modal: poise::Modal + Send + Sync;
-    type Form: InteractionForm + Send + Sync;
+    type Form: Send + Sync;
 
     async fn on_response(&self, modal: Self::Modal, form_data: Self::Form) -> Result<Self::Form>;
 

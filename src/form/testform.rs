@@ -1,4 +1,4 @@
-use super::{FormComponent, InteractionForm, MessageFormComponent, ModalFormComponent};
+use super::{FormComponent, MessageFormComponent, ModalFormComponent, InteractionModalForm};
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
 use async_trait::async_trait;
@@ -65,6 +65,7 @@ impl MessageFormComponent for TestFormFirstSelection {
         mut form_data: TestForm,
     ) -> Result<TestForm> {
         let values = &interaction.data.values;
+
         if !values.is_empty() {
             form_data.first_selection = Some(FirstSelectionData::from_str(values[0].as_ref())?);
             interaction
@@ -123,12 +124,12 @@ pub struct TestForm {
     modal_answers: Option<TestFormModal>,
 }
 
-impl InteractionForm for TestForm {
+impl InteractionModalForm for TestForm {
     type Modal = TestFormModal;
 
-    fn modal() -> Option<Box<dyn ModalFormComponent<Modal = Self::Modal, Form = Self> + Send + Sync>>
+    fn modal() -> super::ModalFormComponentBox<TestFormModal, Self>
     {
-        Some(Box::new(TestFormModalComponent::default()))
+        Box::new(TestFormModalComponent::default())
     }
 
     fn components() -> Vec<FormComponent<Self>> {

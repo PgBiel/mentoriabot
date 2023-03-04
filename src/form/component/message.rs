@@ -1,6 +1,5 @@
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
-use crate::form::InteractionForm;
 use crate::interaction;
 use crate::util::generate_custom_id;
 use async_trait::async_trait;
@@ -11,7 +10,7 @@ use std::sync::Arc;
 /// that is, one that can be displayed on a message.
 #[async_trait]
 pub trait MessageFormComponent: Sync {
-    type Form: InteractionForm + Send + Sync;
+    type Form: Send + Sync;
 
     async fn send_component(
         &self,
