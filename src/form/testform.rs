@@ -6,6 +6,7 @@ use poise::serenity_prelude as serenity;
 use std::str::FromStr;
 use std::sync::Arc;
 use strum_macros::{self, EnumString};
+use minirustbot_macros::InteractionModalForm;
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
 pub enum FirstSelectionData {
@@ -118,24 +119,14 @@ impl ModalFormComponent for TestFormModalComponent {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(InteractionModalForm, Debug, Default, Clone)]
+#[on_finish = "println!(\"Finished yay!\"); Ok(self)"]
 pub struct TestForm {
-    first_selection: Option<FirstSelectionData>,
+    #[modal(TestFormModalComponent)]
     modal_answers: Option<TestFormModal>,
-}
 
-impl InteractionModalForm for TestForm {
-    type Modal = TestFormModal;
+    #[message_component]
+    first_sel_comp: Option<TestFormFirstSelection>,
 
-    fn modal() -> super::ModalFormComponentBox<TestFormModal, Self>
-    {
-        Box::new(TestFormModalComponent::default())
-    }
-
-    fn components() -> Vec<FormComponent<Self>> {
-        vec![
-            FormComponent::Message(Box::new(TestFormFirstSelection::default())),
-            FormComponent::Message(Box::new(TestFormFirstSelection::default())),
-        ]
-    }
+    first_selection: Option<FirstSelectionData>,
 }
