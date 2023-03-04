@@ -1,4 +1,4 @@
-use super::{FormComponent, MessageFormComponent, ModalFormComponent, InteractionModalForm};
+use super::{MessageFormComponent, ModalFormComponent};
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
 use async_trait::async_trait;
@@ -6,7 +6,7 @@ use poise::serenity_prelude as serenity;
 use std::str::FromStr;
 use std::sync::Arc;
 use strum_macros::{self, EnumString};
-use minirustbot_macros::InteractionModalForm;
+use crate::macros::{InteractionModalForm, ModalFormComponent};
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
 pub enum FirstSelectionData {
@@ -82,7 +82,8 @@ impl MessageFormComponent for TestFormFirstSelection {
     }
 }
 
-#[derive(Debug, Default, Clone, poise::Modal)]
+#[derive(ModalFormComponent, Debug, Default, Clone, poise::Modal)]
+#[form = "TestForm"]
 #[name = "Random modal"]
 pub struct TestFormModal {
     #[name = "Name"]
@@ -99,21 +100,6 @@ pub struct TestFormModal {
     #[max_length = 500]
     #[paragraph]
     more: Option<String>,
-}
-
-#[async_trait]
-impl ModalFormComponent for TestFormModal {
-    type Modal = TestFormModal;
-    type Form = TestForm;
-
-    async fn on_response(
-        &self,
-        modal: Self::Modal,
-        mut form_data: Self::Form,
-    ) -> Result<Self::Form> {
-        form_data.modal_answers = Some(modal);
-        Ok(form_data)
-    }
 }
 
 #[derive(InteractionModalForm, Debug, Default, Clone)]
