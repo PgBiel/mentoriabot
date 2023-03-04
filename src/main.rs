@@ -13,6 +13,10 @@ mod util;
 use common::Data;
 use config::MiniRustBotConfig as Config;
 
+pub mod macros {
+    pub use minirustbot_macros::*;
+}
+
 const CONFIG_FILE: &str = "config.json";
 
 #[tokio::main]
