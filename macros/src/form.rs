@@ -1,5 +1,5 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-use crate::util;
+use crate::util::{self, wrap_option};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -31,9 +31,9 @@ pub fn form(input: syn::DeriveInput, is_modal: bool) -> Result<TokenStream, darl
             ..
         }) => fields.named,
         _ => {
-            return Err(syn::Error::new(
-                input.ident.span(),
-                "Only structs with named fields can be used for choice parameters",
+            return Err(syn::Error::new(  // use Darling errors to indicate visually where the error occurred
+                input.ident.span(),  // <-- Error will display at the struct's name ('ident'/identity)
+                "Only structs with named fields can be used for deriving a Form.",
             )
             .into())
         }
@@ -48,45 +48,51 @@ pub fn form(input: syn::DeriveInput, is_modal: bool) -> Result<TokenStream, darl
     let struct_attrs = <StructAttributes as darling::FromMeta>::from_list(&struct_attrs)?;
 
     let mut components = Vec::new();
-    let mut modal_form_body_vec = Vec::new();
+    let mut modal_form_body: Option<TokenStream2> = None;
 
     for field in fields {
+        let field_name: &syn::Ident = &field.ident.clone().expect("Unnamed field");
         // Extract data from syn::Field
         let field_attrs: FieldAttributes = util::get_field_attrs(&field)?;
 
+        let field_inner_type_opt = util::extract_type_parameter("Option", &field.ty);
+
         // Option<T> => T
         // T => T
-        let field_inner_type: &syn::Type = util::extract_type_parameter("Option", &field.ty).unwrap_or(&field.ty);
+        let field_inner_type: &syn::Type = field_inner_type_opt.unwrap_or(&field.ty);
 
         if field_attrs.message_component.is_some() {  // is a message component
             components.push(generate_message_component(field_inner_type)?);
         } else if let Some(modal_component_path) = field_attrs.modal {
             if !is_modal {
-                panic!("Cannot specify a #[modal] for the InteractionForm trait; please derive InteractionModalForm instead.");
+                return Err(syn::Error::new(
+                    syn::spanned::Spanned::span(&field.ident),
+                    "Cannot specify a #[modal] for the InteractionForm trait; please derive InteractionModalForm instead.",
+                )
+                .into());
             }
 
-            modal_form_body_vec.push(generate_modal_form_body(
-                field_inner_type,
+            modal_form_body = Some(generate_modal_form_body(
+                field_name,
+                /*modal_type:*/field_inner_type,
                 match modal_component_path {
                     darling::util::Override::Explicit(path) => util::pathlist_to_string(path),
-                    darling::util::Override::Inherit => quote!(#field_inner_type).to_string()
+                    darling::util::Override::Inherit => quote!(#field_inner_type).to_string()  // assume the field type is the Component
                 }
             )?);
         }
     }
 
-    if is_modal && modal_form_body_vec.is_empty() {
-        panic!("Please specify #[modal(ModalComponentType)] for a modal field in the form, or derive InteractionForm instead.");
+    if is_modal && modal_form_body.is_none() {
+        return Err(syn::Error::new(
+            input.ident.span(),
+            "Please specify #[modal] or #[modal(ModalComponentType)] for a modal field in the form, or derive InteractionForm instead.",
+        )
+        .into());
     }
 
-    // Empty vec => no on_finish (keep default impl)
-    // One element => override
-    let mut on_finish_vec = Vec::new();
-
-    // '#[on_finish="function()"]' was given
-    if let Some(on_finish) = parse_on_finish(&struct_attrs) {
-        on_finish_vec.push(on_finish);
-    }
+    // for '#[on_finish="function()"]'
+    let on_finish = parse_on_finish(&struct_attrs);
 
     let struct_ident = input.ident;  // struct's name as an object
     
@@ -98,7 +104,7 @@ pub fn form(input: syn::DeriveInput, is_modal: bool) -> Result<TokenStream, darl
     Ok(quote! { const _: () = {
         #[::async_trait::async_trait]
         impl #impl_generics crate::form::#form_trait for #struct_ident #ty_generics #where_clause {
-            #( #modal_form_body_vec )*
+            #modal_form_body
 
             fn components() -> ::std::vec::Vec<crate::form::FormComponent<Self>> {
                 ::std::vec![
@@ -106,7 +112,7 @@ pub fn form(input: syn::DeriveInput, is_modal: bool) -> Result<TokenStream, darl
                 ]
             }
 
-            #( #on_finish_vec )*
+            #on_finish
         }
     }; }
     .into())
@@ -119,16 +125,18 @@ fn generate_message_component(field_inner_type: &syn::Type) -> Result<TokenStrea
 }
 
 fn generate_modal_form_body(
+    modal_field_name: &syn::Ident,
     modal_type: &syn::Type,
     modal_component_path: String
 ) -> Result<TokenStream2, darling::Error> {
     let modal_component_path: TokenStream2 = modal_component_path.parse().expect("Could not parse Modal Component type");
-
     Ok(quote! {
         type Modal = #modal_type;
+        type ModalComponent = #modal_component_path;
 
-        fn modal() -> crate::form::ModalFormComponentBox<#modal_type, Self> {
-            ::std::boxed::Box::new(#modal_component_path::default())
+        fn set_modal(mut self, modal: Self::Modal) -> Self {
+            self.#modal_field_name = modal.into();
+            self
         }
     })
 }

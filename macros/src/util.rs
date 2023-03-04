@@ -4,7 +4,7 @@ pub fn get_field_attrs<T: darling::FromMeta>(field: &syn::Field) -> Result<T, da
         .iter()
         .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
         .collect::<Result<Vec<_>, _>>()?;
-    
+
     <T as darling::FromMeta>::from_list(&field_attrs)
 }
 
