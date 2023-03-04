@@ -101,11 +101,8 @@ pub struct TestFormModal {
     more: Option<String>,
 }
 
-#[derive(Debug, Default, Clone, Copy)]
-struct TestFormModalComponent;
-
 #[async_trait]
-impl ModalFormComponent for TestFormModalComponent {
+impl ModalFormComponent for TestFormModal {
     type Modal = TestFormModal;
     type Form = TestForm;
 
@@ -122,7 +119,7 @@ impl ModalFormComponent for TestFormModalComponent {
 #[derive(InteractionModalForm, Debug, Default, Clone)]
 #[on_finish = "println!(\"Finished yay!\"); Ok(self)"]
 pub struct TestForm {
-    #[modal(TestFormModalComponent)]
+    #[modal]
     modal_answers: Option<TestFormModal>,
 
     #[message_component]
