@@ -1,5 +1,4 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-extern crate quote;
 use crate::util;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
@@ -18,7 +17,8 @@ struct StructAttributes {
 #[derive(Debug, Default, darling::FromMeta)]
 #[darling(allow_unknown_fields, default)]
 struct FieldAttributes {
-    modal: Option<darling::util::PathList>,
+    /// Indicates this field either is a ModalFormComponent, or specify the ModalFormComponent struct manually
+    modal: Option<darling::util::Override<darling::util::PathList>>,
 
     /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself to it)
     message_component: Option<()>
@@ -65,7 +65,13 @@ pub fn form(input: syn::DeriveInput, is_modal: bool) -> Result<TokenStream, darl
                 panic!("Cannot specify a #[modal] for the InteractionForm trait; please derive InteractionModalForm instead.");
             }
 
-            modal_form_body_vec.push(generate_modal_form_body(field_inner_type, modal_component_path)?)
+            modal_form_body_vec.push(generate_modal_form_body(
+                field_inner_type,
+                match modal_component_path {
+                    darling::util::Override::Explicit(path) => util::pathlist_to_string(path),
+                    darling::util::Override::Inherit => quote!(#field_inner_type).to_string()
+                }
+            )?);
         }
     }
 
@@ -114,9 +120,8 @@ fn generate_message_component(field_inner_type: &syn::Type) -> Result<TokenStrea
 
 fn generate_modal_form_body(
     modal_type: &syn::Type,
-    modal_component_path: darling::util::PathList
+    modal_component_path: String
 ) -> Result<TokenStream2, darling::Error> {
-    let modal_component_path = util::pathlist_to_string(modal_component_path);
     let modal_component_path: TokenStream2 = modal_component_path.parse().expect("Could not parse Modal Component type");
 
     Ok(quote! {
