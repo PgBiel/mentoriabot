@@ -7,8 +7,6 @@ pub mod testform;
 
 pub use component::{FormComponent, MessageFormComponent, ModalFormComponent};
 
-pub type ModalFormComponentBox<Modal, Form> = Box<dyn ModalFormComponent<Modal = Modal, Form = Form> + Send + Sync>;
-
 /// Represents a form of sequential Discord interactions (without a Modal).
 #[async_trait]
 pub trait InteractionForm: Default + Sync {
@@ -38,12 +36,16 @@ pub trait InteractionForm: Default + Sync {
 /// Represents a form of a Discord modal followed by sequential Discord interactions.
 #[async_trait]
 pub trait InteractionModalForm: Default + Sync {
-    /// This form's Modal type.
-    /// It is always the first component to be run.
-    type Modal: poise::Modal + Send + Sync;
+    /// This form's Modal.
+    type Modal: poise::Modal;
 
-    /// Generates this form's Modal Component (use 'None' for no modal).
-    fn modal() -> ModalFormComponentBox<Self::Modal, Self>;
+    /// This form's ModalFormComponent.
+    /// It is always the first component to be run.
+    type ModalComponent: ModalFormComponent<Modal = Self::Modal, Form = Self> + Default + Send + Sync;
+    // TODO: Delete ModalComponent, as it is trivially generated, and inline its impl.
+
+    /// Stores the user's Modal response in this Form, if possible.
+    fn set_modal(self, modal: Self::Modal) -> Self;
 
     /// Generates this form's components, in order of execution.
     fn components() -> Vec<FormComponent<Self>>;
@@ -51,7 +53,7 @@ pub trait InteractionModalForm: Default + Sync {
     async fn execute(context: ApplicationContext<'_>) -> Result<Self> {
         let mut data: Self = Default::default();
 
-        data = Self::modal().run(context, data).await?;
+        data = Self::ModalComponent::default().run(context, data).await?;
 
         for component in Self::components() {
             data = component.run(context, data).await?;
