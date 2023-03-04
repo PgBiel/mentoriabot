@@ -1,7 +1,9 @@
 [package]
-name = "mini-rust-bot-test"
+name = "minirustbot"
 version = "0.1.0"
+authors = ["PgBiel"]
 edition = "2021"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

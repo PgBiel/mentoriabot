@@ -709,7 +709,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mini-rust-bot-test"
+name = "minirustbot"
 version = "0.1.0"
 dependencies = [
  "async-trait",
