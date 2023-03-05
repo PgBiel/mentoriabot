@@ -1,12 +1,12 @@
 use super::MessageFormComponent;
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
+use crate::macros::InteractionForm;
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
 use std::str::FromStr;
 use std::sync::Arc;
 use strum_macros::{self, EnumString};
-use crate::macros::InteractionForm;
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
 pub enum TestFormFirstSelection {
@@ -22,7 +22,7 @@ impl MessageFormComponent for TestFormFirstSelection {
     async fn send_component(
         context: ApplicationContext<'_>,
         custom_id: &str,
-        _: &mut ()
+        _: &mut (),
     ) -> Result<()> {
         context
             .send(|f| {
@@ -58,7 +58,7 @@ impl MessageFormComponent for TestFormFirstSelection {
     async fn on_response(
         _context: ApplicationContext<'_>,
         interaction: Arc<serenity::MessageComponentInteraction>,
-        _: &mut ()
+        _: &mut (),
     ) -> Result<Box<Self>> {
         let values = &interaction.data.values;
 

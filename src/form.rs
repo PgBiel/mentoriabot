@@ -10,7 +10,6 @@ pub use component::{MessageFormComponent, ModalFormComponent};
 /// Represents a form of sequential Discord interactions (without a Modal).
 #[async_trait]
 pub trait InteractionForm: Sync {
-
     /// Runs this form's components.
     async fn run_components(context: ApplicationContext<'_>) -> Result<Box<Self>>;
 

@@ -15,19 +15,16 @@ pub trait MessageFormComponent<Data: Send + Sync = ()>: Send + Sync {
     async fn send_component(
         context: ApplicationContext<'_>,
         custom_id: &str,
-        data: &mut Data
+        data: &mut Data,
     ) -> Result<()>;
 
     async fn on_response(
         context: ApplicationContext<'_>,
         interaction: Arc<serenity::MessageComponentInteraction>,
-        data: &mut Data
+        data: &mut Data,
     ) -> Result<Box<Self>>;
 
-    async fn run(
-        context: ApplicationContext<'_>,
-        data: &mut Data
-    ) -> Result<Box<Self>> {
+    async fn run(context: ApplicationContext<'_>, data: &mut Data) -> Result<Box<Self>> {
         let custom_id = generate_custom_id();
 
         Self::send_component(context, &custom_id, data).await?;

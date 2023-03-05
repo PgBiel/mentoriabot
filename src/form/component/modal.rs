@@ -9,16 +9,11 @@ pub trait ModalFormComponent<Data: Send + Sync = ()>: Send + Sync {
 
     async fn on_response(modal: Self::Modal, data: &mut Data) -> Result<Box<Self>>;
 
-    async fn run(
-        context: ApplicationContext<'_>,
-        data: &mut Data
-    ) -> Result<Box<Self>> {
+    async fn run(context: ApplicationContext<'_>, data: &mut Data) -> Result<Box<Self>> {
         let response: Option<Self::Modal> = Self::Modal::execute(context).await?;
 
         match response {
-            Some(modal) => {
-                Self::on_response(modal, data).await
-            },
+            Some(modal) => Self::on_response(modal, data).await,
             None => Err(FormError::NoResponse.into()),
         }
     }
