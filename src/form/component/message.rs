@@ -9,31 +9,28 @@ use std::sync::Arc;
 /// A Form component for either a Button or a Select Menu;
 /// that is, one that can be displayed on a message.
 #[async_trait]
-pub trait MessageFormComponent: Sync {
+pub trait MessageFormComponent<Data: Send + Sync = ()>: Send + Sync {
     type Form: Send + Sync;
 
     async fn send_component(
-        &self,
         context: ApplicationContext<'_>,
         custom_id: &str,
-        form_data: Self::Form,
-    ) -> Result<Self::Form>;
+        data: &mut Data
+    ) -> Result<()>;
 
     async fn on_response(
-        &self,
         context: ApplicationContext<'_>,
         interaction: Arc<serenity::MessageComponentInteraction>,
-        form_data: Self::Form,
-    ) -> Result<Self::Form>;
+        data: &mut Data
+    ) -> Result<Box<Self>>;
 
     async fn run(
-        &self,
         context: ApplicationContext<'_>,
-        form_data: Self::Form,
-    ) -> Result<Self::Form> {
+        data: &mut Data
+    ) -> Result<Box<Self>> {
         let custom_id = generate_custom_id();
 
-        let form_data = self.send_component(context, &custom_id, form_data).await?;
+        Self::send_component(context, &custom_id, data).await?;
 
         let response = interaction::wait_for_message_interaction(context, custom_id).await?;
 
@@ -46,7 +43,7 @@ pub trait MessageFormComponent: Sync {
                     })
                     .await?;
 
-                self.on_response(context, interaction, form_data).await
+                Self::on_response(context, interaction, data).await
             }
             None => Err(FormError::NoResponse.into()),
         }
