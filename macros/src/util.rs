@@ -8,10 +8,6 @@ pub fn get_field_attrs<T: darling::FromMeta>(field: &syn::Field) -> Result<T, da
     <T as darling::FromMeta>::from_list(&field_attrs)
 }
 
-pub fn pathlist_to_string(pathlist: darling::util::PathList) -> String {
-    pathlist.to_strings().join("::")
-}
-
 // From poise
 
 // transforms a type of form `OuterType<T>` into `T`
