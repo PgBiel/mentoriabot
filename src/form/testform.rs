@@ -1,4 +1,4 @@
-use super::{MessageFormComponent, ModalFormComponent};
+use super::MessageFormComponent;
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
 use async_trait::async_trait;
@@ -6,28 +6,24 @@ use poise::serenity_prelude as serenity;
 use std::str::FromStr;
 use std::sync::Arc;
 use strum_macros::{self, EnumString};
-use crate::macros::{InteractionModalForm, ModalFormComponent};
+use crate::macros::InteractionForm;
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
-pub enum FirstSelectionData {
+pub enum TestFormFirstSelection {
     Ice,
     Fire,
     Water,
 }
-
-#[derive(Debug, Default, Copy, Clone)]
-struct TestFormFirstSelection;
 
 #[async_trait]
 impl MessageFormComponent for TestFormFirstSelection {
     type Form = TestForm;
 
     async fn send_component(
-        &self,
         context: ApplicationContext<'_>,
         custom_id: &str,
-        form_data: TestForm,
-    ) -> Result<TestForm> {
+        _: &mut ()
+    ) -> Result<()> {
         context
             .send(|f| {
                 f.content("Choose one:")
@@ -39,13 +35,13 @@ impl MessageFormComponent for TestFormFirstSelection {
                                     .options(|f| {
                                         f.create_option(|f| {
                                             f.label("Whoops")
-                                                .value(FirstSelectionData::Fire)
+                                                .value(Self::Fire)
                                                 .description("Whoopsie")
                                         })
                                         .create_option(
                                             |f| {
                                                 f.label("Second")
-                                                    .value(FirstSelectionData::Ice)
+                                                    .value(Self::Ice)
                                                     .description("Epic")
                                             },
                                         )
@@ -56,34 +52,27 @@ impl MessageFormComponent for TestFormFirstSelection {
                     .ephemeral(true)
             })
             .await?;
-        Ok(form_data)
+        Ok(())
     }
 
     async fn on_response(
-        &self,
-        context: ApplicationContext<'_>,
+        _context: ApplicationContext<'_>,
         interaction: Arc<serenity::MessageComponentInteraction>,
-        mut form_data: TestForm,
-    ) -> Result<TestForm> {
+        _: &mut ()
+    ) -> Result<Box<Self>> {
         let values = &interaction.data.values;
 
         if !values.is_empty() {
-            form_data.first_selection = Some(FirstSelectionData::from_str(values[0].as_ref())?);
-            interaction
-                .edit_original_interaction_response(context.serenity_context, |f| {
-                    f.content(format!("Thanks for {}", form_data.first_selection.unwrap()))
-                })
-                .await?;
+            let first_selection = Self::from_str(values[0].as_ref())?;
 
-            Ok(form_data)
+            Ok(Box::new(first_selection))
         } else {
             Err(FormError::InvalidUserResponse.into())
         }
     }
 }
 
-#[derive(ModalFormComponent, Debug, Default, Clone, poise::Modal)]
-#[form = "TestForm"]
+#[derive(Debug, Default, Clone, poise::Modal)]
 #[name = "Random modal"]
 pub struct TestFormModal {
     #[name = "Name"]
@@ -102,14 +91,12 @@ pub struct TestFormModal {
     more: Option<String>,
 }
 
-#[derive(InteractionModalForm, Debug, Default, Clone)]
-#[on_finish = "println!(\"Finished yay!\"); Ok(self)"]
+#[derive(InteractionForm, Debug, Clone)]
+#[data = "()"]
 pub struct TestForm {
     #[modal]
-    modal_answers: Option<TestFormModal>,
+    modal_answers: TestFormModal,
 
-    #[message_component]
-    first_sel_comp: Option<TestFormFirstSelection>,
-
-    first_selection: Option<FirstSelectionData>,
+    #[component]
+    first_sel_comp: TestFormFirstSelection,
 }
