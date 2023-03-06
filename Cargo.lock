@@ -728,6 +728,7 @@ name = "minirustbot_macros"
 version = "0.1.0"
 dependencies = [
  "darling",
+ "poise",
  "proc-macro2",
  "quote",
  "syn",
