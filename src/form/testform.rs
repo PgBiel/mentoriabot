@@ -1,7 +1,9 @@
 use super::MessageFormComponent;
 use crate::common::ApplicationContext;
-use crate::error::{FormError, Result};
-use crate::macros::InteractionForm;
+use crate::error::{FormError, Result, Error};
+use crate::interaction;
+use crate::macros::{InteractionForm, ButtonComponent};
+use crate::util::generate_custom_id;
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
 use std::str::FromStr;
@@ -17,13 +19,11 @@ pub enum TestFormFirstSelection {
 
 #[async_trait]
 impl MessageFormComponent for TestFormFirstSelection {
-    type Form = TestForm;
-
-    async fn send_component(
+    async fn send_component_and_wait(
         context: ApplicationContext<'_>,
-        custom_id: &str,
         _: &mut (),
-    ) -> Result<()> {
+    ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>> {
+        let custom_id = generate_custom_id();
         context
             .send(|f| {
                 f.content("Choose one:")
@@ -52,7 +52,8 @@ impl MessageFormComponent for TestFormFirstSelection {
                     .ephemeral(true)
             })
             .await?;
-        Ok(())
+
+        interaction::wait_for_message_interaction(context, &custom_id).await.map_err(Error::Serenity)
     }
 
     async fn on_response(
@@ -91,6 +92,13 @@ pub struct TestFormModal {
     more: Option<String>,
 }
 
+#[derive(ButtonComponent, Clone, Debug)]
+#[message_content = "bruh"]
+#[label = "Click me!"]
+#[danger]
+#[message_ephemeral]
+pub struct Button (#[interaction] serenity::MessageComponentInteraction);
+
 #[derive(InteractionForm, Debug, Clone)]
 #[data = "()"]
 pub struct TestForm {
@@ -99,4 +107,7 @@ pub struct TestForm {
 
     #[component]
     first_sel_comp: TestFormFirstSelection,
+
+    #[component]
+    button: Button,
 }
