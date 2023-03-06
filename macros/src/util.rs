@@ -1,8 +1,13 @@
 pub fn empty_tuple_type() -> syn::Type {
-    syn::Type::Tuple(syn::TypeTuple { paren_token: Default::default(), elems: Default::default() })
+    syn::Type::Tuple(syn::TypeTuple {
+        paren_token: Default::default(),
+        elems: Default::default(),
+    })
 }
 
-pub fn get_darling_attrs<T: darling::FromMeta>(attrs: &Vec<syn::Attribute>) -> Result<T, darling::Error> {
+pub fn get_darling_attrs<T: darling::FromMeta>(
+    attrs: &Vec<syn::Attribute>,
+) -> Result<T, darling::Error> {
     let mapped_attrs = attrs
         .iter()
         .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))

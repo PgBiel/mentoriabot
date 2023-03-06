@@ -14,7 +14,7 @@ struct StructAttributes {
 
     /// name of the function to run when the form is finished.
     /// It must take a single ApplicationContext object.
-    on_finish: Option<syn::Path>
+    on_finish: Option<syn::Path>,
 }
 
 /// Representation of the struct field attributes
@@ -25,7 +25,7 @@ struct FieldAttributes {
     modal: Option<()>,
 
     /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself to it)
-    component: Option<()>
+    component: Option<()>,
 }
 
 pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -35,11 +35,12 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             ..
         }) => fields.named,
         _ => {
-            return Err(syn::Error::new(  // use Darling errors to indicate visually where the error occurred
-                input.ident.span(),  // <-- Error will display at the struct's name ('ident'/identity)
+            return Err(syn::Error::new(
+                // use Darling errors to indicate visually where the error occurred
+                input.ident.span(), // <-- Error will display at the struct's name ('ident'/identity)
                 "Only structs with named fields can be used for deriving a Form.",
             )
-            .into())
+            .into());
         }
     };
 
@@ -51,7 +52,9 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     let struct_attrs = <StructAttributes as darling::FromMeta>::from_list(&struct_attrs)?;
 
-    let data_type = struct_attrs.data.clone()
+    let data_type = struct_attrs
+        .data
+        .clone()
         .unwrap_or(util::empty_tuple_type());
     //  ^^^^^^^^^^ default to ()
 
@@ -66,10 +69,17 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
         let field_type: &syn::Type = &field.ty;
 
-        let field_inner_type = util::extract_type_parameter("Option", field_type).unwrap_or(field_type);
+        let field_inner_type =
+            util::extract_type_parameter("Option", field_type).unwrap_or(field_type);
 
-        if field_attrs.component.is_some() {  // is a message component
-            components.push(generate_message_component(field_name, field_type, field_inner_type, &data_type));
+        if field_attrs.component.is_some() {
+            // is a message component
+            components.push(generate_message_component(
+                field_name,
+                field_type,
+                field_inner_type,
+                &data_type,
+            ));
             create_fields.push(quote! { #field_name });
         } else if field_attrs.modal.is_some() {
             if modal_creation.is_some() {
@@ -82,9 +92,9 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
             modal_creation = Some(generate_modal_creation(
                 field_name,
-                /*modal_type:*/field_type,
-                /*modal_inner_type:*/field_inner_type,
-                &data_type
+                /*modal_type:*/ field_type,
+                /*modal_inner_type:*/ field_inner_type,
+                &data_type,
             ));
             create_fields.push(quote! { #field_name });
         } else {
@@ -95,7 +105,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     // for '#[on_finish = function_name]'
     let on_finish = parse_on_finish(&struct_attrs);
 
-    let struct_ident = input.ident;  // struct's name as an object
+    let struct_ident = input.ident; // struct's name as an object
 
     // get the struct's generics
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();

@@ -1,8 +1,8 @@
 //! Implements the #[derive(ButtonSubComponent)] derive macro
+use poise::serenity_prelude::{self as serenity, ButtonStyle};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use poise::serenity_prelude::{self as serenity, ButtonStyle};
 
 use crate::util;
 
@@ -29,7 +29,7 @@ struct ButtonAttributes {
     /// Makes the button lead to the given link
     /// NOTE: Such a button cannot be awaited for.
     link: Option<String>,
-    
+
     /// Function takes &Data, and returns the link the button leads to (Into<String>).
     link_function: Option<syn::Path>,
 
@@ -75,7 +75,7 @@ struct ButtonAttributes {
 #[derive(Debug, Copy, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct InteractionAttr {
-    interaction: Option<()>
+    interaction: Option<()>,
 }
 
 pub(crate) struct FinishedButtonData {
@@ -91,13 +91,13 @@ pub(crate) struct FinishedButtonData {
     url: Option<TokenStream2>,
 
     /// Resolves to `Into<String>`
-    label: TokenStream2
+    label: TokenStream2,
 }
 
 pub(crate) struct CreateReplyData {
     /// Resolves to `Into<String>`
     content: Option<TokenStream2>,
-    
+
     /// Resolves to `Into<AttachmentType>`
     attachment: Option<TokenStream2>,
 
@@ -130,12 +130,16 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     // ---
 
-    let data_type = struct_attrs.data.clone().unwrap_or(util::empty_tuple_type());
+    let data_type = struct_attrs
+        .data
+        .clone()
+        .unwrap_or(util::empty_tuple_type());
 
     let button_data: FinishedButtonData = struct_attrs.clone().into();
 
     let button_builder_code = create_button(button_data, Some(quote! { __custom_id.clone() }));
-    let create_with_interaction = single_button_create_with_interaction_code(&input)?.unwrap_or_else(|| quote! { Default::default() });
+    let create_with_interaction = single_button_create_with_interaction_code(&input)?
+        .unwrap_or_else(|| quote! { Default::default() });
 
     let create_reply_data: CreateReplyData = struct_attrs.into();
     let create_reply_data = CreateReplyData {
@@ -148,7 +152,6 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-
 
     Ok(quote! {
         impl #impl_generics crate::form::ButtonComponent<#data_type> for #struct_ident #ty_generics #where_clause {
@@ -191,7 +194,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
                 crate::interaction::wait_for_message_interaction(context, &__custom_id).await.map_err(crate::error::Error::Serenity)
             }
-        
+
             async fn on_response(
                 context: crate::common::ApplicationContext<'_>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
@@ -204,7 +207,10 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     }.into())
 }
 
-fn validate_attrs(struct_attrs: &ButtonAttributes, input: &syn::DeriveInput) -> Result<(), darling::Error> {
+fn validate_attrs(
+    struct_attrs: &ButtonAttributes,
+    input: &syn::DeriveInput,
+) -> Result<(), darling::Error> {
     // ambiguity / validity checks:
 
     // BUTTON ATTRS
@@ -212,8 +218,9 @@ fn validate_attrs(struct_attrs: &ButtonAttributes, input: &syn::DeriveInput) -> 
     if struct_attrs.label.is_some() && struct_attrs.label_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
-            "Cannot specify #[label] and #[label_function] at the same time."
-        ).into());
+            "Cannot specify #[label] and #[label_function] at the same time.",
+        )
+        .into());
     }
 
     if struct_attrs.label.is_none() && struct_attrs.label_function.is_none() {
@@ -226,22 +233,25 @@ fn validate_attrs(struct_attrs: &ButtonAttributes, input: &syn::DeriveInput) -> 
     if struct_attrs.emoji.is_some() && struct_attrs.emoji_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
-            "Cannot specify #[emoji] and #[emoji_function] at the same time."
-        ).into());
+            "Cannot specify #[emoji] and #[emoji_function] at the same time.",
+        )
+        .into());
     }
 
     if struct_attrs.link.is_some() && struct_attrs.link_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
-            "Cannot specify #[link] and #[link_function] at the same time."
-        ).into());
+            "Cannot specify #[link] and #[link_function] at the same time.",
+        )
+        .into());
     }
 
     if struct_attrs.disabled.is_some() && struct_attrs.disabled_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
-            "Cannot specify #[disabled] and #[disabled_function] at the same time."
-        ).into());
+            "Cannot specify #[disabled] and #[disabled_function] at the same time.",
+        )
+        .into());
     }
 
     // REPLY ATTRS
@@ -249,11 +259,13 @@ fn validate_attrs(struct_attrs: &ButtonAttributes, input: &syn::DeriveInput) -> 
     if struct_attrs.message_content.is_some() && struct_attrs.message_content_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
-            "Cannot specify #[message_content] and #[message_content_function] at the same time."
-        ).into());
+            "Cannot specify #[message_content] and #[message_content_function] at the same time.",
+        )
+        .into());
     }
 
-    if struct_attrs.message_ephemeral.is_some() && struct_attrs.message_ephemeral_function.is_some() {
+    if struct_attrs.message_ephemeral.is_some() && struct_attrs.message_ephemeral_function.is_some()
+    {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[message_ephemeral] and #[message_ephemeral_function] at the same time."
@@ -263,7 +275,9 @@ fn validate_attrs(struct_attrs: &ButtonAttributes, input: &syn::DeriveInput) -> 
     Ok(())
 }
 
-fn single_button_create_with_interaction_code(input: &syn::DeriveInput) -> Result<Option<TokenStream2>, darling::Error> {
+fn single_button_create_with_interaction_code(
+    input: &syn::DeriveInput,
+) -> Result<Option<TokenStream2>, darling::Error> {
     let mut result: Option<TokenStream2> = None;
     match &input.data {
         syn::Data::Struct(data_struct) => {
@@ -277,13 +291,19 @@ fn single_button_create_with_interaction_code(input: &syn::DeriveInput) -> Resul
                         let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
                         if attrs.interaction.is_some() {
                             let field_name = field.ident.as_ref().expect("Expected named field");
-                            
-                            let other_fields = if len == 1 { None } else { Some(quote! { ..Default::default() }) };
-                            result = Some(quote! { Self { #field_name: interaction.into(), #other_fields } });
+
+                            let other_fields = if len == 1 {
+                                None
+                            } else {
+                                Some(quote! { ..Default::default() })
+                            };
+                            result = Some(
+                                quote! { Self { #field_name: interaction.into(), #other_fields } },
+                            );
                             break;
                         }
                     }
-                },
+                }
                 syn::DataStruct {
                     fields: syn::Fields::Unnamed(fields),
                     ..
@@ -306,13 +326,13 @@ fn single_button_create_with_interaction_code(input: &syn::DeriveInput) -> Resul
                             break;
                         }
                     }
-                },
+                }
                 syn::DataStruct {
                     fields: syn::Fields::Unit,
                     ..
-                } => {},  // can't hold data there
+                } => {} // can't hold data there
             }
-        },
+        }
         syn::Data::Enum(syn::DataEnum { variants, .. }) => {
             for variant in variants {
                 let variant_name = &variant.ident;
@@ -321,7 +341,8 @@ fn single_button_create_with_interaction_code(input: &syn::DeriveInput) -> Resul
                         for field in &fields.named {
                             let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
                             if attrs.interaction.is_some() {
-                                let field_name = field.ident.as_ref().expect("Expected named field");
+                                let field_name =
+                                    field.ident.as_ref().expect("Expected named field");
 
                                 result = Some(quote! {
                                     Self::#variant_name { #field_name: interaction.into() }
@@ -329,7 +350,7 @@ fn single_button_create_with_interaction_code(input: &syn::DeriveInput) -> Resul
                                 break;
                             }
                         }
-                    },
+                    }
                     syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
                         for field in &fields.unnamed {
                             let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
@@ -337,22 +358,28 @@ fn single_button_create_with_interaction_code(input: &syn::DeriveInput) -> Resul
                                 result = Some(quote! { Self(interaction.into()) })
                             }
                         }
-                    },
-                    syn::Fields::Unit => break,  // can't hold data
+                    }
+                    syn::Fields::Unit => break, // can't hold data
                     _ => break,
                 }
             }
-        },
-        syn::Data::Union(data_union) => return Err(syn::Error::new(
-            data_union.union_token.span,
-            "#[derive(ButtonComponent)] not supported in unions."
-        ).into())
+        }
+        syn::Data::Union(data_union) => {
+            return Err(syn::Error::new(
+                data_union.union_token.span,
+                "#[derive(ButtonComponent)] not supported in unions.",
+            )
+            .into())
+        }
     };
 
     Ok(result)
 }
 
-pub(crate) fn create_button(button_data: FinishedButtonData, custom_id: Option<TokenStream2>) -> TokenStream2 {
+pub(crate) fn create_button(
+    button_data: FinishedButtonData,
+    custom_id: Option<TokenStream2>,
+) -> TokenStream2 {
     let mut builder_steps: Vec<TokenStream2> = Vec::new();
 
     let FinishedButtonData {
@@ -391,18 +418,18 @@ pub(crate) fn compose_create_reply(data: CreateReplyData) -> TokenStream2 {
         embed,
         components,
         is_reply,
-        is_ephemeral
+        is_ephemeral,
     } = data;
 
     let content = content.map(|c| quote! { .content(#c) });
-    let attachment = attachment.map(|c| quote! { .attachment(#c) } ); 
-    let allowed_mentions = allowed_mentions.map(|c| quote! { .allowed_mentions(#c) } ); 
-    let embed = embed.map(|c| quote! { .embed(#c) } ); 
-    let components = components.map(|c| quote! { .components(#c) } ); 
-    let is_reply = is_reply.map(|c| quote! { .reply(#c) } ); 
-    let is_ephemeral = is_ephemeral.map(|c| quote! { .ephemeral(#c) } ); 
+    let attachment = attachment.map(|c| quote! { .attachment(#c) });
+    let allowed_mentions = allowed_mentions.map(|c| quote! { .allowed_mentions(#c) });
+    let embed = embed.map(|c| quote! { .embed(#c) });
+    let components = components.map(|c| quote! { .components(#c) });
+    let is_reply = is_reply.map(|c| quote! { .reply(#c) });
+    let is_ephemeral = is_ephemeral.map(|c| quote! { .ephemeral(#c) });
 
-    quote!{
+    quote! {
         #content
         #attachment
         #allowed_mentions
@@ -465,7 +492,8 @@ impl From<ButtonAttributes> for FinishedButtonData {
             emoji,
             disabled,
             url,
-            label }
+            label,
+        }
     }
 }
 
@@ -487,20 +515,31 @@ impl From<ButtonAttributes> for CreateReplyData {
             None
         };
 
-        let attachment = value.message_attachment_function
+        let attachment = value
+            .message_attachment_function
             .map(|attachment_function| quote! { { #attachment_function(&data).into() } });
 
-        let allowed_mentions = value.message_allowed_mentions_function
-            .map(|allowed_mentions_function| quote! { { #allowed_mentions_function(&data).into() } });
+        let allowed_mentions = value.message_allowed_mentions_function.map(
+            |allowed_mentions_function| quote! { { #allowed_mentions_function(&data).into() } },
+        );
 
-        let embed = value.message_embed_function
+        let embed = value
+            .message_embed_function
             .map(|embed_function| quote! { { #embed_function(&data).into() } });
 
-        let components = None;  // specified separately
+        let components = None; // specified separately
 
         let is_reply = value.message_is_reply.map(|_| quote! { true });
 
-        Self { content, attachment, allowed_mentions, embed, components, is_reply, is_ephemeral }
+        Self {
+            content,
+            attachment,
+            allowed_mentions,
+            embed,
+            components,
+            is_reply,
+            is_ephemeral,
+        }
     }
 }
 
@@ -518,7 +557,7 @@ impl From<ButtonAttributes> for CreateReplyData {
 //         };
 //         assert!(button(input).is_err());
 //     }
-    
+
 //     #[test]
 //     fn deriving_using_just_label_attribute_succeeds() {
 //         let input: DeriveInput = parse_quote! {

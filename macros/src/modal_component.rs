@@ -7,7 +7,7 @@ use quote::quote;
 #[darling(allow_unknown_fields)]
 struct StructAttributes {
     // Path to the Form object holding this Modal.
-    form: syn::Path
+    form: syn::Path,
 }
 
 pub fn modal_component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -29,5 +29,6 @@ pub fn modal_component(input: syn::DeriveInput) -> Result<TokenStream, darling::
             type Modal = Self;
             type Form = #form;
         }
-    }.into())
+    }
+    .into())
 }
