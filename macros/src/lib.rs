@@ -1,6 +1,7 @@
 mod util;
 mod form;
 mod modal_component;
+mod button;
 
 use proc_macro::TokenStream;
 
@@ -60,6 +61,41 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 
     match modal_component::modal_component(struct_) {
+        Ok(x) => x,
+        Err(e) => e.write_errors().into(),
+    }
+}
+
+#[proc_macro_derive(
+    ButtonComponent,
+    attributes(
+        data,
+        label,
+        label_function,
+        primary,
+        secondary,
+        success,
+        danger,
+        link,
+        link_function,
+        emoji,
+        emoji_function,
+        disabled,
+        disabled_function,
+        message_content,
+        message_content_function,
+        message_attachment_function,
+        message_allowed_mentions_function,
+        message_embed_function,
+        message_is_reply,
+        message_ephemeral,
+        message_ephemeral_function,
+        interaction)
+)]
+pub fn button(input: TokenStream) -> TokenStream {
+    let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
+
+    match button::button(struct_) {
         Ok(x) => x,
         Err(e) => e.write_errors().into(),
     }
