@@ -52,8 +52,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let struct_attrs = <StructAttributes as darling::FromMeta>::from_list(&struct_attrs)?;
 
     let data_type = struct_attrs.data.clone()
-        .unwrap_or_else(|| syn::Type::Tuple(syn::TypeTuple { paren_token: Default::default(), elems: Default::default() }));
-    //  ^^^^^^^^^^^^^^^ default to ()
+        .unwrap_or(util::empty_tuple_type());
+    //  ^^^^^^^^^^ default to ()
 
     let mut components = Vec::new();
     let mut create_fields = Vec::new();
@@ -62,7 +62,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     for field in fields {
         let field_name: &syn::Ident = &field.ident.as_ref().expect("Unnamed field");
         // Extract data from syn::Field
-        let field_attrs: FieldAttributes = util::get_field_attrs(&field)?;
+        let field_attrs: FieldAttributes = util::get_darling_attrs(&field.attrs)?;
 
         let field_type: &syn::Type = &field.ty;
 
@@ -107,7 +107,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn run_components(context: crate::common::ApplicationContext<'_>) -> crate::error::Result<::std::boxed::Box<Self>> {
                 let mut __component_data: #data_type = ::std::default::Default::default();
                 #modal_creation
-                #( #components ),*
+                #( #components )*
                 Ok(Box::new(Self {
                     #( #create_fields ),*
                 }))
@@ -115,8 +115,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
             #on_finish
         }
-    }; }
-    .into())
+    }; }.into())
 }
 
 fn generate_message_component(

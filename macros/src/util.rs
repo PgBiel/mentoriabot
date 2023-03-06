@@ -1,11 +1,14 @@
-pub fn get_field_attrs<T: darling::FromMeta>(field: &syn::Field) -> Result<T, darling::Error> {
-    let field_attrs = field
-        .attrs
+pub fn empty_tuple_type() -> syn::Type {
+    syn::Type::Tuple(syn::TypeTuple { paren_token: Default::default(), elems: Default::default() })
+}
+
+pub fn get_darling_attrs<T: darling::FromMeta>(attrs: &Vec<syn::Attribute>) -> Result<T, darling::Error> {
+    let mapped_attrs = attrs
         .iter()
         .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
         .collect::<Result<Vec<_>, _>>()?;
 
-    <T as darling::FromMeta>::from_list(&field_attrs)
+    <T as darling::FromMeta>::from_list(&mapped_attrs)
 }
 
 // From poise
