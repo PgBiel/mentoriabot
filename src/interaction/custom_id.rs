@@ -1,6 +1,6 @@
 //! Implements the CustomId newtype wrapper.
 
-use std::{str::FromStr, convert::Infallible, fmt::Display};
+use std::{convert::Infallible, fmt::Display, str::FromStr};
 
 /// Represents an interaction's custom ID.
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]

@@ -1,8 +1,8 @@
 use super::MessageFormComponent;
 use crate::common::ApplicationContext;
-use crate::error::{FormError, Result, Error};
+use crate::error::{Error, FormError, Result};
 use crate::interaction;
-use crate::macros::{InteractionForm, ButtonComponent};
+use crate::macros::{ButtonComponent, InteractionForm};
 use crate::util::generate_custom_id;
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
@@ -53,7 +53,9 @@ impl MessageFormComponent for TestFormFirstSelection {
             })
             .await?;
 
-        interaction::wait_for_message_interaction(context, &custom_id).await.map_err(Error::Serenity)
+        interaction::wait_for_message_interaction(context, &custom_id)
+            .await
+            .map_err(Error::Serenity)
     }
 
     async fn on_response(
@@ -97,7 +99,7 @@ pub struct TestFormModal {
 #[label = "Click me!"]
 #[danger]
 #[message_ephemeral]
-pub struct Button (#[interaction] serenity::MessageComponentInteraction);
+pub struct Button(#[interaction] serenity::MessageComponentInteraction);
 
 #[derive(InteractionForm, Debug, Clone)]
 #[data = "()"]

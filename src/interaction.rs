@@ -19,7 +19,10 @@ pub async fn wait_for_message_interactions(
     ctx: ApplicationContext<'_>,
     custom_ids: Vec<impl ToString>,
 ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
-    let custom_ids = custom_ids.iter().map(ToString::to_string).collect::<Vec<String>>();
+    let custom_ids = custom_ids
+        .iter()
+        .map(ToString::to_string)
+        .collect::<Vec<String>>();
 
     let response = serenity::CollectComponentInteraction::new(&ctx.serenity_context.shard)
         .filter(move |interaction| custom_ids.contains(&interaction.data.custom_id.to_string()))
