@@ -5,7 +5,7 @@ use async_trait::async_trait;
 pub mod component;
 pub mod testform;
 
-pub use component::{MessageFormComponent, ModalFormComponent};
+pub use component::{MessageFormComponent, ModalFormComponent, SelectComponent, ButtonComponent, ButtonsComponent};
 
 /// Represents a form of sequential Discord interactions (without a Modal).
 #[async_trait]

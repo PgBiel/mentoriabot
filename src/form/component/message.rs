@@ -1,7 +1,5 @@
 use crate::common::ApplicationContext;
 use crate::error::{FormError, Result};
-use crate::interaction;
-use crate::util::generate_custom_id;
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
 use std::sync::Arc;
@@ -10,13 +8,10 @@ use std::sync::Arc;
 /// that is, one that can be displayed on a message.
 #[async_trait]
 pub trait MessageFormComponent<Data: Send + Sync = ()>: Send + Sync {
-    type Form: Send + Sync;
-
-    async fn send_component(
+    async fn send_component_and_wait(
         context: ApplicationContext<'_>,
-        custom_id: &str,
         data: &mut Data,
-    ) -> Result<()>;
+    ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>>;
 
     async fn on_response(
         context: ApplicationContext<'_>,
@@ -25,11 +20,7 @@ pub trait MessageFormComponent<Data: Send + Sync = ()>: Send + Sync {
     ) -> Result<Box<Self>>;
 
     async fn run(context: ApplicationContext<'_>, data: &mut Data) -> Result<Box<Self>> {
-        let custom_id = generate_custom_id();
-
-        Self::send_component(context, &custom_id, data).await?;
-
-        let response = interaction::wait_for_message_interaction(context, custom_id).await?;
+        let response = Self::send_component_and_wait(context, data).await?;
 
         match response {
             Some(interaction) => {
