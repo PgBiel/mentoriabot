@@ -2,9 +2,18 @@
 
 use std::{convert::Infallible, fmt::Display, str::FromStr};
 
+use crate::util::generate_custom_id;
+
 /// Represents an interaction's custom ID.
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CustomId(pub String);
+
+impl CustomId {
+    /// Generates a CustomId based on the current Unix time.
+    pub fn generate() -> Self {
+        Self(generate_custom_id())
+    }
+}
 
 impl FromStr for CustomId {
     type Err = Infallible;
