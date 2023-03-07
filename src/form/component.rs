@@ -6,4 +6,4 @@ mod subcomponent;
 pub use generatereply::GenerateReply;
 pub use message::MessageFormComponent;
 pub use modal::ModalFormComponent;
-pub use subcomponent::{ButtonComponent, ButtonsComponent, SelectComponent};
+pub use subcomponent::{Button, ButtonComponent, ButtonsComponent, SelectComponent};

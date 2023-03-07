@@ -6,7 +6,8 @@ pub mod component;
 pub mod testform;
 
 pub use component::{
-    ButtonComponent, ButtonsComponent, MessageFormComponent, ModalFormComponent, SelectComponent,
+    Button, ButtonComponent, ButtonsComponent, MessageFormComponent, ModalFormComponent,
+    SelectComponent,
 };
 
 /// Represents a form of sequential Discord interactions (without a Modal).

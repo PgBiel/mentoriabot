@@ -12,7 +12,7 @@ use crate::{
 /// A Form component for either a Button or a Select Menu;
 /// that is, one that can be displayed on a message.
 #[async_trait]
-pub trait MessageFormComponent<Data: Send + Sync = ()>: GenerateReply + Send + Sync {
+pub trait MessageFormComponent<Data: Send + Sync = ()>: GenerateReply<Data> + Send + Sync {
     async fn send_component_and_wait(
         context: ApplicationContext<'_>,
         data: &mut Data,
