@@ -7,15 +7,16 @@ use proc_macro::TokenStream;
 
 /// Derives an InteractionForm implementation for your struct.
 ///
-/// Provides (optional) global helper attributes `#[data = DataType]` (a data class that should be given to your components
-/// if you wish for them to share data between them) and `#[on_finish = function_name]` (a function that should run after the
-/// form is created).
+/// Provides (optional) global helper attributes `#[data = DataType]` (a data class that should be
+/// given to your components if you wish for them to share data between them) and `#[on_finish =
+/// function_name]` (a function that should run after the form is created).
 ///
-/// For the fields, you have the helper attributes `#[modal]` (to indicate a field implements `ModalFormComponent`),
-/// and `#[component]` (implements `MessageFormComponent`). Note that fields themselves must be the components,
-/// without any indirection (other than, possibly, `Option<Component>`, but note that this does not mean
-/// anything special; it will always be a `Some<Component>` in the end). The components are expected to
-/// contain the data they collected from the user.
+/// For the fields, you have the helper attributes `#[modal]` (to indicate a field implements
+/// `ModalFormComponent`), and `#[component]` (implements `MessageFormComponent`). Note that fields
+/// themselves must be the components, without any indirection (other than, possibly,
+/// `Option<Component>`, but note that this does not mean anything special; it will always be a
+/// `Some<Component>` in the end). The components are expected to contain the data they collected
+/// from the user.
 ///
 /// Use `YourStruct::execute(application_context)` to run. It returns a `Result`
 /// with the generated `YourStruct` object.
@@ -31,13 +32,13 @@ use proc_macro::TokenStream;
 /// #[on_finish = my_function]
 /// pub struct MyForm {
 ///     #[modal]
-///     modal_answers: MyModal,  // first we run the modal
+///     modal_answers: MyModal, // first we run the modal
 ///
 ///     #[component]
-///     selection_menu: MySelectionMenuComponent,  // then this
+///     selection_menu: MySelectionMenuComponent, // then this
 ///
 ///     #[component]
-///     buttons: MyButtonsComponent,  // then this
+///     buttons: MyButtonsComponent, // then this
 /// }
 /// ```
 #[proc_macro_derive(InteractionForm, attributes(data, on_finish, modal, component))]

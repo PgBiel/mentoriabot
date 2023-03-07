@@ -1,10 +1,10 @@
 mod custom_id;
+use std::{sync::Arc, time::Duration};
+
 pub use custom_id::CustomId;
+use poise::serenity_prelude as serenity;
 
 use crate::common::ApplicationContext;
-use poise::serenity_prelude as serenity;
-use std::sync::Arc;
-use std::time::Duration;
 
 /// Wait for a given interaction's response.
 pub async fn wait_for_message_interaction(

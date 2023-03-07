@@ -58,7 +58,8 @@ struct ButtonAttributes {
     /// A function that takes `&Data` and returns `Into<AttachmentType>`.
     message_attachment_function: Option<syn::Path>,
 
-    /// A function that takes a `&mut CreateAllowedMentions` and a `&Data` and returns `&mut CreateAllowedMentions`.
+    /// A function that takes a `&mut CreateAllowedMentions` and a `&Data` and returns `&mut
+    /// CreateAllowedMentions`.
     message_allowed_mentions_function: Option<syn::Path>,
 
     /// A function that takes a `&mut CreateEmbed` and a `&Data` and returns `&mut CreateEmbed`.
@@ -68,7 +69,8 @@ struct ButtonAttributes {
 
     message_ephemeral: Option<()>,
 
-    /// A function that takes a `&Data` and returns a `bool` (`true` if the message should be sent as ephemeral).
+    /// A function that takes a `&Data` and returns a `bool` (`true` if the message should be sent
+    /// as ephemeral).
     message_ephemeral_function: Option<syn::Path>,
 }
 

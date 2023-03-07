@@ -1,7 +1,10 @@
-use crate::common::ApplicationContext;
-use crate::error::{FormError, Result};
 use async_trait::async_trait;
 use poise::Modal as PoiseModal;
+
+use crate::{
+    common::ApplicationContext,
+    error::{FormError, Result},
+};
 
 #[async_trait]
 pub trait ModalFormComponent<Data: Send + Sync = ()>: Send + Sync {

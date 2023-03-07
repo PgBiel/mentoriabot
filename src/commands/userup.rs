@@ -1,8 +1,9 @@
+use poise::serenity_prelude as serenity;
+
 use crate::{
     common::{ApplicationContext, ErrorBox},
     interaction,
 };
-use poise::serenity_prelude as serenity;
 
 /// Displays your or another user's account creation date
 #[poise::command(slash_command)]
@@ -15,7 +16,8 @@ pub async fn userup(
     let id = ctx.interaction.id();
 
     //    let rx = ctx.data.interaction_handler()
-    //        .wait_for_interaction(id.to_string(), serenity::InteractionType::MessageComponent).await;
+    //        .wait_for_interaction(id.to_string(),
+    // serenity::InteractionType::MessageComponent).await;
 
     ctx.send(|create_reply| {
         create_reply

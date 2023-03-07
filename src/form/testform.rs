@@ -1,14 +1,17 @@
-use super::MessageFormComponent;
-use crate::common::ApplicationContext;
-use crate::error::{Error, FormError, Result};
-use crate::interaction;
-use crate::macros::{ButtonComponent, InteractionForm};
-use crate::util::generate_custom_id;
+use std::{str::FromStr, sync::Arc};
+
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
-use std::str::FromStr;
-use std::sync::Arc;
 use strum_macros::{self, EnumString};
+
+use super::MessageFormComponent;
+use crate::{
+    common::ApplicationContext,
+    error::{Error, FormError, Result},
+    interaction,
+    macros::{ButtonComponent, InteractionForm},
+    util::generate_custom_id,
+};
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
 pub enum TestFormFirstSelection {

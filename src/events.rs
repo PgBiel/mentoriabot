@@ -1,6 +1,6 @@
+use poise::{serenity_prelude as serenity, Event};
+
 use crate::common;
-use poise::serenity_prelude as serenity;
-use poise::Event;
 
 pub fn handle<'a>(
     _ctx: &'a serenity::Context,

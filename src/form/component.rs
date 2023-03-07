@@ -1,7 +1,7 @@
+mod generatereply;
 mod message;
 mod modal;
 mod subcomponent;
-mod generatereply;
 
 pub use generatereply::GenerateReply;
 pub use message::MessageFormComponent;

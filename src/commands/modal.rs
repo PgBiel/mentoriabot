@@ -1,5 +1,6 @@
-use crate::common::{ApplicationContext, ErrorBox};
 use poise::Modal;
+
+use crate::common::{ApplicationContext, ErrorBox};
 
 #[derive(Default, Modal)]
 #[name = "Modal title"]

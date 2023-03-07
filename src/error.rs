@@ -1,5 +1,6 @@
-use poise::serenity_prelude as serenity;
 use std::fmt::{Display, Formatter};
+
+use poise::serenity_prelude as serenity;
 
 mod form;
 

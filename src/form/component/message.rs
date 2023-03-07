@@ -1,9 +1,13 @@
-use crate::common::ApplicationContext;
-use crate::error::{FormError, Result};
-use super::GenerateReply;
+use std::sync::Arc;
+
 use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
-use std::sync::Arc;
+
+use super::GenerateReply;
+use crate::{
+    common::ApplicationContext,
+    error::{FormError, Result},
+};
 
 /// A Form component for either a Button or a Select Menu;
 /// that is, one that can be displayed on a message.

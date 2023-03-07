@@ -1,6 +1,7 @@
-use crate::common::{ApplicationContext, ErrorBox};
-use crate::form::testform::TestForm;
-use crate::form::InteractionForm;
+use crate::{
+    common::{ApplicationContext, ErrorBox},
+    form::{testform::TestForm, InteractionForm},
+};
 
 /// Runs test form
 #[poise::command(slash_command)]

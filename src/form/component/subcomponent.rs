@@ -1,10 +1,8 @@
+use async_trait::async_trait;
 use poise::serenity_prelude as serenity;
 
+use super::{GenerateReply, MessageFormComponent};
 use crate::interaction::CustomId;
-
-use super::{MessageFormComponent, GenerateReply};
-
-use async_trait::async_trait;
 
 /// Represents a single SelectMenu.
 pub trait SelectComponent<Data> {
@@ -45,17 +43,19 @@ pub trait ButtonsComponent<Data> {
 impl<B, D> MessageFormComponent<D> for B
 where
     D: Send + Sync,
-    B: ButtonComponent<D> + GenerateReply
+    B: ButtonComponent<D> + GenerateReply,
 {
     async fn send_component_and_wait(
         context: ApplicationContext<'_>,
         data: &mut Data,
     ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>> {
-        context.send(|f| Self::create_reply(&mut f)
-            .components(|f| f
-                .create_action_row(|f| f
-                    .create_button(|f| Self::create(f))))).await?;
-                // TODO...
+        context
+            .send(|f| {
+                Self::create_reply(&mut f)
+                    .components(|f| f.create_action_row(|f| f.create_button(|f| Self::create(f))))
+            })
+            .await?;
+        // TODO...
     }
 
     async fn on_response(

@@ -1,8 +1,9 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-use crate::util;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
+
+use crate::util;
 
 /// Representation of the struct attributes
 #[derive(Debug, Default, darling::FromMeta)]
@@ -21,10 +22,12 @@ struct StructAttributes {
 #[derive(Debug, Default, darling::FromMeta)]
 #[darling(allow_unknown_fields, default)]
 struct FieldAttributes {
-    /// Indicates this field either is a ModalFormComponent, or specify the ModalFormComponent struct manually
+    /// Indicates this field either is a ModalFormComponent, or specify the ModalFormComponent
+    /// struct manually
     modal: Option<()>,
 
-    /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself to it)
+    /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself
+    /// to it)
     component: Option<()>,
 }
 
@@ -37,7 +40,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         _ => {
             return Err(syn::Error::new(
                 // use Darling errors to indicate visually where the error occurred
-                input.ident.span(), // <-- Error will display at the struct's name ('ident'/identity)
+                input.ident.span(), /* <-- Error will display at the struct's name
+                                     * ('ident'/identity) */
                 "Only structs with named fields can be used for deriving a Form.",
             )
             .into());
@@ -92,8 +96,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
             modal_creation = Some(generate_modal_creation(
                 field_name,
-                /*modal_type:*/ field_type,
-                /*modal_inner_type:*/ field_inner_type,
+                /* modal_type: */ field_type,
+                /* modal_inner_type: */ field_inner_type,
                 &data_type,
             ));
             create_fields.push(quote! { #field_name });
