@@ -3,7 +3,9 @@ use poise::serenity_prelude as serenity;
 use crate::interaction::CustomId;
 
 pub mod button;
+pub mod selectmenu;
 pub use button::Button;
+pub use selectmenu::SelectMenu;
 
 /// Represents a single SelectMenu.
 pub trait SelectComponent<Data = ()> {
