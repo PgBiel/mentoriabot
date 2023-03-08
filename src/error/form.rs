@@ -5,6 +5,7 @@ use std::fmt::{Display, Formatter};
 pub enum FormError {
     NoResponse,
     InvalidUserResponse,
+    CannotAwaitComponent,
 }
 
 impl Display for FormError {
@@ -12,6 +13,9 @@ impl Display for FormError {
         match self {
             Self::NoResponse => write!(f, "No interaction response received"),
             Self::InvalidUserResponse => write!(f, "Invalid user interaction response given"),
+            Self::CannotAwaitComponent => {
+                write!(f, "This form component is not awaitable (e.g. link button)")
+            }
         }
     }
 }

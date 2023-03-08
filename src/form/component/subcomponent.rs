@@ -25,7 +25,8 @@ pub trait ButtonComponent<Data = ()> {
         &self,
         builder: &'a mut serenity::CreateButton,
         data: &Data,
-    ) -> (&'a mut serenity::CreateButton, CustomId);
+    ) -> (&'a mut serenity::CreateButton, Option<CustomId>);
+    // use Option<CustomId> as link buttons do not have a Custom ID (and thus cannot be awaited)
 
     /// Function to run when an interaction response is received.
     fn set_interaction(&mut self, interaction: serenity::MessageComponentInteraction);

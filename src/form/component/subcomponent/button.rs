@@ -44,20 +44,32 @@ impl<D> ButtonComponent<D> for Button<D> {
         &self,
         builder: &'a mut serenity::CreateButton,
         data: &D,
-    ) -> (&'a mut serenity::CreateButton, interaction::CustomId) {
-        let custom_id = CustomId::generate();
-        builder = builder.custom_id(custom_id.to_string()).label(
+    ) -> (
+        &'a mut serenity::CreateButton,
+        Option<interaction::CustomId>,
+    ) {
+        builder = builder.label(
             self.label_function
                 .map_or(self.label, |f| Some(f(data)))
                 .unwrap_or(String::from("")),
         );
 
+        let mut custom_id = None;
+
         if let Some(link_function) = self.link_function {
             builder = builder.url(link_function(data));
         } else if let Some(link) = self.link {
             builder = builder.url(link);
-        } else if let Some(style) = self.style {
-            builder = builder.style(style);
+        } else {
+            // if not a link button => can have custom ID and custom style
+            let custom_id_value = CustomId::generate();
+            custom_id = Some(custom_id_value);
+
+            builder = builder.custom_id(custom_id_value);
+
+            if let Some(style) = self.style {
+                builder = builder.style(style);
+            }
         }
 
         if let Some(disabled_function) = self.disabled_function {
