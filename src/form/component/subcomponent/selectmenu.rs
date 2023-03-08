@@ -5,6 +5,7 @@ use poise::serenity_prelude as serenity;
 use super::SelectComponent;
 use crate::interaction::{self, CustomId};
 
+/// Holds data regarding a particular Select Menu option.
 pub struct SelectMenuOption<Data = ()> {
     /// The option's literal label (please specify this, or a `label_function`)
     pub label: Option<String>,
@@ -24,7 +25,7 @@ pub struct SelectMenuOption<Data = ()> {
     pub emoji_function: Option<Box<dyn FnOnce(&Data) -> serenity::ReactionType>>,
 
     /// If this is the default selection option.
-    pub default: bool,
+    pub is_default: bool,
 }
 
 /// Holds all data necessary to display a Discord select menu.
@@ -34,6 +35,12 @@ pub struct SelectMenu<Data = ()> {
 
     /// Associates a symbolic value with a display message and other info for the user.
     pub values_map: Option<HashMap<String, SelectMenuOption<Data>>>,
+
+    /// Minimum amount of options the user must select.
+    pub min_values: Option<u16>,
+
+    /// Maximum amount of options the user can select.
+    pub max_values: Option<u16>,
 
     /// If this menu is disabled and cannot be clicked
     pub disabled: bool,
@@ -52,12 +59,12 @@ impl<D> SelectComponent<D> for SelectMenu<D> {
         let custom_id = CustomId::generate();
         builder = builder.custom_id(custom_id.to_string());
 
-        if let Some(link_function) = self.link_function {
-            builder = builder.url(link_function(data));
-        } else if let Some(link) = self.link {
-            builder = builder.url(link);
-        } else if let Some(style) = self.style {
-            builder = builder.style(style);
+        if let Some(min_values) = self.min_values {
+            builder = builder.min_values(min_values);
+        }
+
+        if let Some(max_values) = self.max_values {
+            builder = builder.max_values(max_values);
         }
 
         if let Some(disabled_function) = self.disabled_function {
@@ -66,14 +73,35 @@ impl<D> SelectComponent<D> for SelectMenu<D> {
             builder = builder.disabled(self.disabled);
         }
 
-        builder = builder.options(|f| {
-            for (value, option) in self.values_map {
-                f = f.create_option(|f| {
-                    f = f.default_selection(option.default);
-                    // TODO...
-                });
-            }
-        });
+        if let Some(values_map) = self.values_map {
+            builder = builder.options(|f| {
+                for (value, option) in values_map {
+                    f = f.create_option(|f| {
+                        f = f
+                            .value(value)
+                            .default_selection(option.is_default);
+
+                        if let Some(emoji_function) = option.emoji_function {
+                            f = f.emoji(emoji_function(data));
+                        } else if let Some(emoji) = option.emoji {
+                            f = f.emoji(emoji);
+                        }
+
+                        if let Some(description) = option.description {
+                            f = f.description(description);
+                        }
+
+                        if let Some(label_function) = option.label_function {
+                            f = f.label(label_function(data));
+                        } else {
+                            f = f.label(option.label.unwrap_or(String::from("")));
+                        }
+
+                        f
+                    });
+                }
+            });
+        }
 
         (builder, custom_id)
     }
