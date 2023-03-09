@@ -2,6 +2,7 @@ mod button;
 mod form;
 mod modal_component;
 mod reply;
+mod select;
 mod util;
 
 use proc_macro::TokenStream;
