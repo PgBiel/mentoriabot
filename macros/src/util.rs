@@ -38,9 +38,25 @@ pub fn extract_type_parameter<'a>(outer_type: &str, t: &'a syn::Type) -> Option<
 }
 
 /// Converts None => `None` and Some(x) => `Some(#x)`
-pub fn wrap_option<T: quote::ToTokens>(literal: Option<T>) -> syn::Expr {
+pub fn wrap_option<T: quote::ToTokens>(literal: &Option<T>) -> syn::Expr {
     match literal {
         Some(literal) => syn::parse_quote! { Some(#literal) },
+        None => syn::parse_quote! { None },
+    }
+}
+
+/// Converts None => `None` and Some(x) => `Some(#x.into())`
+pub fn wrap_option_into<T: quote::ToTokens>(literal: &Option<T>) -> syn::Expr {
+    match literal {
+        Some(literal) => syn::parse_quote! { Some(#literal.into()) },
+        None => syn::parse_quote! { None },
+    }
+}
+
+/// Converts None => `None` and Some(x) => `Some(Box::new(#x))`
+pub fn wrap_option_box<T: quote::ToTokens>(literal: &Option<T>) -> syn::Expr {
+    match literal {
+        Some(literal) => syn::parse_quote! { Some(::std::boxed::Box::new(#literal)) },
         None => syn::parse_quote! { None },
     }
 }

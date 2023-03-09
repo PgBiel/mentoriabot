@@ -1,5 +1,4 @@
-//! Implements the #[derive(ButtonSubComponent)] derive macro
-use poise::serenity_prelude::{self as serenity, ButtonStyle};
+//! Implements the #[derive(ButtonComponent)] derive macro
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -20,6 +19,10 @@ struct ButtonAttributes {
     /// Path to a function (accepting &Data, as specified by `#[data = "Data"]`)
     /// that returns the button's label as a Into<String> (specify this or `label`).
     label_function: Option<syn::Path>,
+
+    /// The button's fixed custom ID; if unspecified,
+    /// it is auto-generated.
+    custom_id: Option<String>,
 
     primary: Option<()>,
     secondary: Option<()>,
@@ -46,77 +49,12 @@ struct ButtonAttributes {
     /// Function that determines if this button is disabled
     /// (takes &Data, returns bool)
     disabled_function: Option<syn::Path>,
-
-    // --- reply sending ---
-    /// The content of the sent message with the button.
-    message_content: Option<String>,
-
-    /// A function that returns the content of the message to be sent,
-    /// as Into<String>, taking only &Data.
-    message_content_function: Option<syn::Path>,
-
-    /// A function that takes `&Data` and returns `Into<AttachmentType>`.
-    message_attachment_function: Option<syn::Path>,
-
-    /// A function that takes a `&mut CreateAllowedMentions` and a `&Data` and returns `&mut
-    /// CreateAllowedMentions`.
-    message_allowed_mentions_function: Option<syn::Path>,
-
-    /// A function that takes a `&mut CreateEmbed` and a `&Data` and returns `&mut CreateEmbed`.
-    message_embed_function: Option<syn::Path>,
-
-    message_is_reply: Option<()>,
-
-    message_ephemeral: Option<()>,
-
-    /// A function that takes a `&Data` and returns a `bool` (`true` if the message should be sent
-    /// as ephemeral).
-    message_ephemeral_function: Option<syn::Path>,
 }
 
 #[derive(Debug, Copy, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct InteractionAttr {
     interaction: Option<()>,
-}
-
-pub(crate) struct FinishedButtonData {
-    /// Any expression that resolves to type `ButtonStyle`
-    style: Option<TokenStream2>,
-    /// Either a `char` or a `Into<ReactionType>`
-    emoji: Option<TokenStream2>,
-
-    /// Resolves to `bool`
-    disabled: TokenStream2,
-
-    /// Resolves to `Into<String>`
-    url: Option<TokenStream2>,
-
-    /// Resolves to `Into<String>`
-    label: TokenStream2,
-}
-
-pub(crate) struct CreateReplyData {
-    /// Resolves to `Into<String>`
-    content: Option<TokenStream2>,
-
-    /// Resolves to `Into<AttachmentType>`
-    attachment: Option<TokenStream2>,
-
-    /// Resolves to `FnOnce(&mut CreateAllowedMentions) -> &mut CreateAllowedMentions`
-    allowed_mentions: Option<TokenStream2>,
-
-    /// Resolves to `FnOnce(&mut CreateEmbed) -> &mut CreateEmbed`
-    embed: Option<TokenStream2>,
-
-    /// Resolves to `FnOnce(&mut CreateComponents) -> &mut CreateComponents`
-    components: Option<TokenStream2>,
-
-    /// Resolves to `bool`
-    is_reply: Option<TokenStream2>,
-
-    /// Resolves to `bool`
-    is_ephemeral: Option<TokenStream2>,
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -131,70 +69,54 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     validate_attrs(&struct_attrs, &input)?;
 
     // ---
-
     let data_type = struct_attrs
         .data
         .clone()
         .unwrap_or(util::empty_tuple_type());
 
-    let button_data: FinishedButtonData = struct_attrs.clone().into();
-
-    let button_builder_code = create_button(button_data, Some(quote! { __custom_id.clone() }));
+    let button_spec = create_button_spec(&struct_attrs, &data_type);
     let create_with_interaction = single_button_create_with_interaction_code(&input)?
         .unwrap_or_else(|| quote! { Default::default() });
-
-    let create_reply_data: CreateReplyData = struct_attrs.into();
-    let create_reply_data = CreateReplyData {
-        components: Some(quote! {
-            |f| f.create_action_row(|f| f.create_button(__create_button))
-        }),
-        ..create_reply_data
-    };
-    let create_reply_code = compose_create_reply(create_reply_data);
 
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
         impl #impl_generics crate::form::ButtonComponent<#data_type> for #struct_ident #ty_generics #where_clause {
-            fn create<'button_macro>(builder: &'button_macro mut ::poise::serenity_prelude::CreateButton, data: &#data_type) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, crate::interaction::CustomId) {
-                let __custom_id = crate::util::generate_custom_id();
-                let __builder = builder
-                    #button_builder_code;
-                (__builder, crate::interaction::CustomId(__custom_id))
+            fn on_build<'button_macro>(
+                builder: &'button_macro mut ::poise::serenity_prelude::CreateButton,
+                context: crate::form::ApplicationContext<'_>,
+                data: &#data_type
+            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<crate::interaction::CustomId>) {
+                #button_spec.on_build(builder, context, data)
             }
 
-            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> Self {
-                #create_with_interaction
+            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::std::boxed::Box<Self> {
+                ::std::boxed::Box::new(#create_with_interaction)
             }
         }
 
         #[::async_trait::async_trait]
         impl #impl_generics crate::form::MessageFormComponent<#data_type> for #struct_ident #ty_generics #where_clause {
-            async fn send_component_and_wait(
+            async fn send_component(
                 context: crate::common::ApplicationContext<'_>,
                 data: &mut #data_type,
-            ) -> crate::error::Result<::std::option::Option<::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>>> {
-                let mut __custom_id = crate::interaction::CustomId(crate::util::generate_custom_id());
+            ) -> crate::error::Result<::std::vec::Vec<crate::interaction::CustomId>> {
 
-                // needed for the higher-ranked lifetime bound on the closure
-                fn __constrain_closure<F>(f: F) -> F
-                where
-                    F: for<'a> FnOnce(&'a mut ::poise::serenity_prelude::CreateButton) -> &'a mut ::poise::serenity_prelude::CreateButton,
-                {
-                    f
-                }
+                let mut __custom_ids = vec![];
+                context.send(|f|
+                    <Self as crate::form::GenerateReply<#data_type>>::create_reply(f, context, data)
+                        .components(|f| f
+                            .create_action_row(|f| f
+                                .create_button(|f| {
+                                    let (builder, custom_id) = <Self as crate::form::ButtonComponent<#data_type>>::on_build(f, context, &data);
+                                    if let Some(custom_id) = custom_id {
+                                        __custom_ids.push(custom_id);
+                                    }
+                                    builder
+                                })))).await?;
 
-                let __create_button = __constrain_closure(|f| {
-                    let res = <Self as crate::form::ButtonComponent<#data_type>>::create(f, &data);
-                    __custom_id = res.1;
-                    res.0
-                });
-
-                context.send(|f| f
-                    #create_reply_code).await?;
-
-                crate::interaction::wait_for_message_interaction(context, &__custom_id).await.map_err(crate::error::Error::Serenity)
+                Ok(__custom_ids)
             }
 
             async fn on_response(
@@ -202,8 +124,8 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
             ) -> crate::error::Result<::std::boxed::Box<Self>> {
-                ::std::result::Result::Ok(::std::boxed::Box::new(
-                    <Self as crate::form::ButtonComponent<#data_type>>::create_with_interaction((*interaction).clone())))
+                ::std::result::Result::Ok(
+                    <Self as crate::form::ButtonComponent<#data_type>>::create_with_interaction((*interaction).clone()))
             }
         }
     }.into())
@@ -213,10 +135,6 @@ fn validate_attrs(
     struct_attrs: &ButtonAttributes,
     input: &syn::DeriveInput,
 ) -> Result<(), darling::Error> {
-    // ambiguity / validity checks:
-
-    // BUTTON ATTRS
-
     if struct_attrs.label.is_some() && struct_attrs.label_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
@@ -254,24 +172,6 @@ fn validate_attrs(
             "Cannot specify #[disabled] and #[disabled_function] at the same time.",
         )
         .into());
-    }
-
-    // REPLY ATTRS
-
-    if struct_attrs.message_content.is_some() && struct_attrs.message_content_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[message_content] and #[message_content_function] at the same time.",
-        )
-        .into());
-    }
-
-    if struct_attrs.message_ephemeral.is_some() && struct_attrs.message_ephemeral_function.is_some()
-    {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[message_ephemeral] and #[message_ephemeral_function] at the same time."
-        ).into());
     }
 
     Ok(())
@@ -378,203 +278,45 @@ fn single_button_create_with_interaction_code(
     Ok(result)
 }
 
-pub(crate) fn create_button(
-    button_data: FinishedButtonData,
-    custom_id: Option<TokenStream2>,
-) -> TokenStream2 {
-    let mut builder_steps: Vec<TokenStream2> = Vec::new();
+fn create_button_spec(button_attrs: &ButtonAttributes, data: &syn::Type) -> TokenStream2 {
+    let label = util::wrap_option_into(&button_attrs.label);
+    let label_function = util::wrap_option_box(&button_attrs.label_function);
+    let custom_id = util::wrap_option_into(&button_attrs.custom_id);
+    let link = util::wrap_option_into(&button_attrs.link);
+    let link_function = util::wrap_option_box(&button_attrs.link_function);
+    let emoji = util::wrap_option_into(&button_attrs.emoji);
+    let emoji_function = util::wrap_option_box(&button_attrs.emoji_function);
+    let disabled = button_attrs.disabled.is_some();
+    let disabled_function = util::wrap_option_box(&button_attrs.disabled_function);
 
-    let FinishedButtonData {
-        style,
-        emoji,
-        disabled,
-        url,
-        label,
-    } = button_data;
+    let style = if button_attrs.primary.is_some() {
+        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
+    } else if button_attrs.secondary.is_some() {
+        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Secondary })
+    } else if button_attrs.danger.is_some() {
+        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Danger })
+    } else if button_attrs.success.is_some() {
+        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Success })
+    } else if button_attrs.link.is_some() {
+        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Link })
+    } else {
+        None
+    };
 
-    builder_steps.push(quote! { .label(#label) });
-    builder_steps.push(quote! { .disabled(#disabled) });
-    if let Some(url) = url {
-        builder_steps.push(quote! { .url(#url) });
-    }
-    if let Some(style) = style {
-        builder_steps.push(quote! { .style(#style) });
-    }
-    if let Some(custom_id) = custom_id {
-        builder_steps.push(quote! { .custom_id(#custom_id) });
-    }
-    if let Some(emoji) = emoji {
-        builder_steps.push(quote! { .emoji(#emoji) });
-    }
+    let style = util::wrap_option_into(&style);
 
     quote! {
-        #( #builder_steps )*
-    }
-}
-
-pub(crate) fn compose_create_reply(data: CreateReplyData) -> TokenStream2 {
-    let CreateReplyData {
-        content,
-        attachment,
-        allowed_mentions,
-        embed,
-        components,
-        is_reply,
-        is_ephemeral,
-    } = data;
-
-    let content = content.map(|c| quote! { .content(#c) });
-    let attachment = attachment.map(|c| quote! { .attachment(#c) });
-    let allowed_mentions = allowed_mentions.map(|c| quote! { .allowed_mentions(#c) });
-    let embed = embed.map(|c| quote! { .embed(#c) });
-    let components = components.map(|c| quote! { .components(#c) });
-    let is_reply = is_reply.map(|c| quote! { .reply(#c) });
-    let is_ephemeral = is_ephemeral.map(|c| quote! { .ephemeral(#c) });
-
-    quote! {
-        #content
-        #attachment
-        #allowed_mentions
-        #embed
-        #components
-        #is_reply
-        #is_ephemeral
-    }
-}
-
-impl From<ButtonAttributes> for FinishedButtonData {
-    fn from(value: ButtonAttributes) -> Self {
-        let style = if value.primary.is_some() {
-            Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
-        } else if value.secondary.is_some() {
-            Some(quote! { ::poise::serenity_prelude::ButtonStyle::Secondary })
-        } else if value.danger.is_some() {
-            Some(quote! { ::poise::serenity_prelude::ButtonStyle::Danger })
-        } else if value.success.is_some() {
-            Some(quote! { ::poise::serenity_prelude::ButtonStyle::Success })
-        } else if value.link.is_some() {
-            Some(quote! { ::poise::serenity_prelude::ButtonStyle::Link })
-        } else {
-            None
-        };
-
-        let emoji = if let Some(emoji) = value.emoji {
-            Some(quote! { #emoji })
-        } else if let Some(emoji_function) = value.emoji_function {
-            Some(quote! { { #emoji_function(&data).into() } })
-        } else {
-            None
-        };
-
-        let disabled = if let Some(disabled_function) = value.disabled_function {
-            quote! { { #disabled_function(&data).into() } }
-        } else {
-            let disabled = value.disabled.is_some();
-            quote! { #disabled }
-        };
-
-        let url = if let Some(link) = value.link {
-            Some(quote! { #link })
-        } else if let Some(link_function) = value.link_function {
-            Some(quote! { { #link_function(&data).into() } })
-        } else {
-            None
-        };
-
-        let label = if let Some(label) = value.label {
-            quote! { #label }
-        } else if let Some(label_function) = value.label_function {
-            quote! { { #label_function(&data).into() } }
-        } else {
-            panic!("Missing button label.");
-        };
-
-        FinishedButtonData {
-            style,
-            emoji,
-            disabled,
-            url,
-            label,
+        crate::form::ButtonSpec::<#data> {
+            label: #label,
+            label_function: #label_function,
+            custom_id: #custom_id,
+            style: #style,
+            link: #link,
+            link_function: #link_function,
+            emoji: #emoji,
+            emoji_function: #emoji_function,
+            disabled: #disabled,
+            disabled_function: #disabled_function,
         }
     }
 }
-
-impl From<ButtonAttributes> for CreateReplyData {
-    fn from(value: ButtonAttributes) -> Self {
-        let content = if let Some(content) = value.message_content {
-            Some(quote! { #content })
-        } else if let Some(content_function) = value.message_content_function {
-            Some(quote! { { #content_function(&data).into() } })
-        } else {
-            None
-        };
-
-        let is_ephemeral = if value.message_ephemeral.is_some() {
-            Some(quote! { true })
-        } else if let Some(ephemeral_function) = value.message_ephemeral_function {
-            Some(quote! { { #ephemeral_function(&data).into() } })
-        } else {
-            None
-        };
-
-        let attachment = value
-            .message_attachment_function
-            .map(|attachment_function| quote! { { #attachment_function(&data).into() } });
-
-        let allowed_mentions = value.message_allowed_mentions_function.map(
-            |allowed_mentions_function| quote! { { #allowed_mentions_function(&data).into() } },
-        );
-
-        let embed = value
-            .message_embed_function
-            .map(|embed_function| quote! { { #embed_function(&data).into() } });
-
-        let components = None; // specified separately
-
-        let is_reply = value.message_is_reply.map(|_| quote! { true });
-
-        Self {
-            content,
-            attachment,
-            allowed_mentions,
-            embed,
-            components,
-            is_reply,
-            is_ephemeral,
-        }
-    }
-}
-
-// ---
-
-// #[cfg(test)]
-// mod tests {
-//     use syn::{parse_quote, DeriveInput};
-//     use super::*;
-
-//     #[test]
-//     fn deriving_with_no_extra_attributes_fails() {
-//         let input: DeriveInput = parse_quote! {
-//             struct Button;
-//         };
-//         assert!(button(input).is_err());
-//     }
-
-//     #[test]
-//     fn deriving_using_just_label_attribute_succeeds() {
-//         let input: DeriveInput = parse_quote! {
-//             #[label = "Label"]
-//             struct Button;
-//         };
-//         assert!(button(input).is_ok());
-//     }
-
-//     #[test]
-//     fn deriving_using_just_label_function_attribute_succeeds() {
-//         let input: DeriveInput = parse_quote! {
-//             #[label_function = my::own::function]
-//             struct Button;
-//         };
-//         assert!(button(input).is_ok());
-//     }
-// }

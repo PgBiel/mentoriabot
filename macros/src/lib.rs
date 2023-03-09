@@ -1,6 +1,7 @@
 mod button;
 mod form;
 mod modal_component;
+mod reply;
 mod util;
 
 use proc_macro::TokenStream;
@@ -67,6 +68,7 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
         data,
         label,
         label_function,
+        custom_id,
         primary,
         secondary,
         success,
@@ -77,6 +79,22 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
         emoji_function,
         disabled,
         disabled_function,
+        interaction
+    )
+)]
+pub fn button(input: TokenStream) -> TokenStream {
+    let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
+
+    match button::button(struct_) {
+        Ok(x) => x,
+        Err(e) => e.write_errors().into(),
+    }
+}
+
+#[proc_macro_derive(
+    GenerateReply,
+    attributes(
+        data,
         message_content,
         message_content_function,
         message_attachment_function,
@@ -85,13 +103,12 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
         message_is_reply,
         message_ephemeral,
         message_ephemeral_function,
-        interaction
     )
 )]
-pub fn button(input: TokenStream) -> TokenStream {
+pub fn reply(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 
-    match button::button(struct_) {
+    match reply::reply(struct_) {
         Ok(x) => x,
         Err(e) => e.write_errors().into(),
     }
