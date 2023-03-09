@@ -4,7 +4,7 @@ use poise::serenity_prelude as serenity;
 
 use crate::{
     common::ApplicationContext,
-    interaction::{self, CustomId},
+    interaction::{self, CustomId, SelectValue},
 };
 
 /// Holds data regarding a particular Select Menu option.
@@ -43,7 +43,7 @@ pub struct SelectMenuSpec<Data = ()> {
     pub custom_id: Option<CustomId>,
 
     /// Associates a symbolic value with a display message and other info for the user.
-    pub values_map: Option<HashMap<String, SelectMenuOptionSpec<Data>>>,
+    pub values_map: Option<HashMap<SelectValue, SelectMenuOptionSpec<Data>>>,
 
     /// Minimum amount of options the user must select.
     pub min_values: Option<u64>,
