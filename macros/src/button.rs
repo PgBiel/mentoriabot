@@ -2,6 +2,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
+use syn::spanned::Spanned;
 
 use crate::util;
 
@@ -51,10 +52,15 @@ struct ButtonAttributes {
     disabled_function: Option<syn::Path>,
 }
 
-#[derive(Debug, Copy, Clone, darling::FromMeta)]
+#[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct InteractionAttr {
+    /// Marks this field as the receiver of the returned MessageComponentInteraction
+    /// object.
     interaction: Option<()>,
+
+    /// The default value of this field when instantiated.
+    default: Option<syn::Expr>,
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -182,88 +188,137 @@ fn single_button_create_with_interaction_code(
 ) -> Result<Option<TokenStream2>, darling::Error> {
     let mut result: Option<TokenStream2> = None;
     match &input.data {
-        syn::Data::Struct(data_struct) => {
-            match data_struct {
-                syn::DataStruct {
-                    fields: syn::Fields::Named(fields),
-                    ..
-                } => {
-                    let len = fields.named.len();
-                    for field in &fields.named {
-                        let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                        if attrs.interaction.is_some() {
-                            let field_name = field.ident.as_ref().expect("Expected named field");
+        syn::Data::Struct(data_struct) => match data_struct {
+            syn::DataStruct {
+                fields: syn::Fields::Named(fields),
+                ..
+            } => {
+                let len = fields.named.len();
+                for field in &fields.named {
+                    let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
+                    if attrs.interaction.is_some() {
+                        let field_name = field.ident.as_ref().expect("Expected named field");
 
-                            let other_fields = if len == 1 {
-                                None
-                            } else {
-                                Some(quote! { ..Default::default() })
-                            };
-                            result = Some(
-                                quote! { Self { #field_name: interaction.into(), #other_fields } },
-                            );
-                            break;
-                        }
+                        let other_fields = if len == 1 {
+                            None
+                        } else {
+                            Some(quote! { ..Default::default() })
+                        };
+                        result = Some(
+                            quote! { Self { #field_name: interaction.into(), #other_fields } },
+                        );
+                        break;
                     }
                 }
-                syn::DataStruct {
-                    fields: syn::Fields::Unnamed(fields),
-                    ..
-                } => {
-                    let len = fields.unnamed.len();
-                    for (i, field) in fields.unnamed.iter().enumerate() {
-                        let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                        if attrs.interaction.is_some() {
-                            if len == 1 && i == 0 {
-                                result = Some(quote! { Self(interaction.into()) });
-                            } else {
-                                result = Some(quote! {
-                                    {
-                                        let mut __new: Self = Default::default();
-                                        __new.#i = interaction.into();
-                                        __new
-                                    }
-                                });
-                            }
-                            break;
-                        }
-                    }
-                }
-                syn::DataStruct {
-                    fields: syn::Fields::Unit,
-                    ..
-                } => {} // can't hold data there
             }
-        }
+            syn::DataStruct {
+                fields: syn::Fields::Unnamed(fields),
+                ..
+            } => {
+                let len = fields.unnamed.len();
+                for (i, field) in fields.unnamed.iter().enumerate() {
+                    let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
+                    if attrs.interaction.is_some() {
+                        if len == 1 && i == 0 {
+                            result = Some(quote! { Self(interaction.into()) });
+                        } else {
+                            result = Some(quote! {
+                                {
+                                    let mut __new: Self = Default::default();
+                                    __new.#i = interaction.into();
+                                    __new
+                                }
+                            });
+                        }
+                        break;
+                    }
+                }
+            }
+            syn::DataStruct {
+                fields: syn::Fields::Unit,
+                ..
+            } => {
+                result = Some(quote! { Self });
+            }
+        },
         syn::Data::Enum(syn::DataEnum { variants, .. }) => {
+            let mut fallback = quote! { Default::default() }; // as a last resort
             for variant in variants {
                 let variant_name = &variant.ident;
-                match &variant.fields {
-                    syn::Fields::Named(fields) if fields.named.len() == 1 => {
-                        for field in &fields.named {
-                            let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                            if attrs.interaction.is_some() {
-                                let field_name =
-                                    field.ident.as_ref().expect("Expected named field");
+                let mut is_named = false;
+                let fields = match &variant.fields {
+                    syn::Fields::Named(fields) => {
+                        is_named = true;
+                        &fields.named
+                    }
+                    syn::Fields::Unnamed(fields) => &fields.unnamed,
+                    syn::Fields::Unit => {
+                        fallback = quote! { Self::#variant_name };
+                        continue;
+                    }
+                };
 
-                                result = Some(quote! {
-                                    Self::#variant_name { #field_name: interaction.into() }
-                                });
-                                break;
-                            }
+                let mut field_initializers = Vec::new();
+                let mut interaction_seen = false;
+                let mut non_default_field = None;
+                for field in fields {
+                    let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
+                    if attrs.interaction.is_some() {
+                        if interaction_seen {
+                            return Err(syn::Error::new(
+                                field.ident.as_ref().map(|i| i.span()).unwrap_or_else(|| field.span()),
+                                "Cannot have more than one field in the same variant with #[interaction]."
+                            ).into());
                         }
-                    }
-                    syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
-                        for field in &fields.unnamed {
-                            let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                            if attrs.interaction.is_some() {
-                                result = Some(quote! { Self(interaction.into()) })
-                            }
+
+                        interaction_seen = true;
+
+                        if non_default_field.is_some() {
+                            break; // see below
                         }
-                    }
-                    syn::Fields::Unit => break, // can't hold data
-                    _ => break,
+
+                        if is_named {
+                            let field_name = field.ident.as_ref().expect("Expected named field");
+                            field_initializers.push(quote! { #field_name: interaction.into() });
+                        } else {
+                            field_initializers.push(quote! { interaction.into() });
+                        }
+                        break;
+                    } else if let Some(initializer) = attrs.default {
+                        if is_named {
+                            let field_name = field.ident.as_ref().expect("Expected named field");
+                            field_initializers.push(quote! { #field_name: #initializer });
+                        } else {
+                            field_initializers.push(quote! { #initializer });
+                        }
+                    } else {
+                        non_default_field = Some(field);
+                        if interaction_seen {
+                            break; // cannot mix #[interaction] with non-#[default] fields
+                        }
+                    };
                 }
+
+                if interaction_seen {
+                    if let Some(non_default_field) = non_default_field {
+                        return Err(syn::Error::new(
+                            non_default_field.ident.as_ref().map(|i| i.span()).unwrap_or_else(|| non_default_field.span()),
+                            "Cannot specify #[interaction] for a field and not specify #[default = \"expr\"] on the others."
+                        ).into());
+                    }
+                    result = if is_named {
+                        Some(quote! { Self::#variant_name {
+                            #( #field_initializers ),*
+                        } })
+                    } else {
+                        Some(quote! { Self::#variant_name( #( #field_initializers ),* ) })
+                    };
+                    break;
+                }
+            }
+
+            if result.is_none() {
+                result = Some(fallback);
             }
         }
         syn::Data::Union(data_union) => {
