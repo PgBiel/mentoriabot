@@ -1,6 +1,6 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{common::ApplicationContext, interaction::CustomId};
+use crate::{common::ApplicationContext, error::Result, interaction::CustomId};
 
 pub mod button;
 pub mod reply;
@@ -20,7 +20,9 @@ pub trait SelectComponent<Data = ()> {
     /// Function to run when an interaction response is received.
     /// Creates an instance of this component holding the received
     /// interaction response.
-    fn create_with_interaction(interaction: serenity::MessageComponentInteraction) -> Box<Self>;
+    fn create_with_interaction(
+        interaction: serenity::MessageComponentInteraction,
+    ) -> Result<Box<Self>>;
 }
 
 /// Represents a single Button.
@@ -35,7 +37,9 @@ pub trait ButtonComponent<Data = ()> {
     /// Function to run when an interaction response is received.
     /// Creates an instance of this component holding the received
     /// interaction response.
-    fn create_with_interaction(interaction: serenity::MessageComponentInteraction) -> Box<Self>;
+    fn create_with_interaction(
+        interaction: serenity::MessageComponentInteraction,
+    ) -> Result<Box<Self>>;
 }
 
 pub trait ButtonsComponent<Data = ()> {
@@ -67,5 +71,7 @@ pub trait ButtonsComponent<Data = ()> {
     /// Function to run when an interaction response is received.
     /// Creates an instance of this component holding the received
     /// interaction response.
-    fn create_with_interaction(interaction: serenity::MessageComponentInteraction) -> Box<Self>;
+    fn create_with_interaction(
+        interaction: serenity::MessageComponentInteraction,
+    ) -> Result<Box<Self>>;
 }

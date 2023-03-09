@@ -97,8 +97,8 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 #button_spec.on_build(builder, context, data)
             }
 
-            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::std::boxed::Box<Self> {
-                ::std::boxed::Box::new(#create_with_interaction)
+            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> crate::error::Result<::std::boxed::Box<Self>> {
+                ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
 
@@ -130,8 +130,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
             ) -> crate::error::Result<::std::boxed::Box<Self>> {
-                ::std::result::Result::Ok(
-                    <Self as crate::form::ButtonComponent<#data_type>>::create_with_interaction((*interaction).clone()))
+                <Self as crate::form::ButtonComponent<#data_type>>::create_with_interaction((*interaction).clone())
             }
         }
     }.into())
