@@ -2,26 +2,34 @@ use std::collections::HashMap;
 
 use poise::serenity_prelude as serenity;
 
-use crate::interaction::{self, CustomId};
+use crate::{
+    common::ApplicationContext,
+    interaction::{self, CustomId},
+};
 
 /// Holds data regarding a particular Select Menu option.
 pub struct SelectMenuOptionSpec<Data = ()> {
     /// The option's literal label (please specify this, or a `label_function`)
     pub label: Option<String>,
 
-    /// A function (accepting &Data)
+    /// A function (accepting context and &Data)
     /// that returns the option's label as a Into<String> (specify this or `label`).
-    pub label_function: Option<Box<dyn Fn(&Data) -> String>>,
+    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
 
     /// The option's description (small explanation text), optional.
     pub description: Option<String>,
+
+    /// Function that takes context and &Data
+    /// and returns the option's description (optional).
+    pub description_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
 
     /// An optional single emoji to display near the label
     pub emoji: Option<serenity::ReactionType>,
 
     /// Function that returns the emoji to display near the button label
-    /// (takes &Data, returns Into<ReactionType>)
-    pub emoji_function: Option<Box<dyn Fn(&Data) -> serenity::ReactionType>>,
+    /// (takes context and &Data, returns ReactionType)
+    pub emoji_function:
+        Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> serenity::ReactionType>>,
 
     /// If this is the default selection option.
     pub is_default: bool,
@@ -47,13 +55,14 @@ pub struct SelectMenuSpec<Data = ()> {
     pub disabled: bool,
 
     /// Function that determines if this menu is disabled
-    /// (takes &Data, returns bool)
-    pub disabled_function: Option<Box<dyn Fn(&Data) -> bool>>,
+    /// (takes context and &Data, returns bool)
+    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> bool>>,
 }
 
 impl<D> SelectMenuSpec<D> {
     fn on_build<'a>(
         &self,
+        context: ApplicationContext<'_>,
         mut builder: &'a mut serenity::CreateSelectMenu,
         data: &D,
     ) -> (&'a mut serenity::CreateSelectMenu, interaction::CustomId) {
@@ -69,7 +78,7 @@ impl<D> SelectMenuSpec<D> {
         }
 
         if let Some(disabled_function) = self.disabled_function.as_ref() {
-            builder = builder.disabled(disabled_function(data));
+            builder = builder.disabled(disabled_function(context, data));
         } else {
             builder = builder.disabled(self.disabled);
         }
@@ -81,17 +90,19 @@ impl<D> SelectMenuSpec<D> {
                         f = f.value(value).default_selection(option.is_default);
 
                         if let Some(emoji_function) = option.emoji_function.as_ref() {
-                            f = f.emoji(emoji_function(data));
+                            f = f.emoji(emoji_function(context, data));
                         } else if let Some(emoji) = option.emoji.as_ref() {
                             f = f.emoji(emoji.clone());
                         }
 
-                        if let Some(description) = option.description.as_ref() {
+                        if let Some(description_function) = option.description_function.as_ref() {
+                            f = f.description(description_function(context, data));
+                        } else if let Some(description) = option.description.as_ref() {
                             f = f.description(description);
                         }
 
                         if let Some(label_function) = option.label_function.as_ref() {
-                            f = f.label(label_function(data));
+                            f = f.label(label_function(context, data));
                         } else {
                             f = f.label(option.label.clone().unwrap_or(String::from("")));
                         }
