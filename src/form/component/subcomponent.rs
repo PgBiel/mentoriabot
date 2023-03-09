@@ -1,45 +1,71 @@
 use poise::serenity_prelude as serenity;
 
-use crate::interaction::CustomId;
+use crate::{common::ApplicationContext, interaction::CustomId};
 
 pub mod button;
+pub mod reply;
 pub mod selectmenu;
-pub use button::Button;
-pub use selectmenu::SelectMenu;
+pub use button::ButtonSpec;
+pub use reply::ReplySpec;
+pub use selectmenu::SelectMenuSpec;
 
 /// Represents a single SelectMenu.
 pub trait SelectComponent<Data = ()> {
     fn on_build<'a>(
-        &self,
         builder: &'a mut serenity::CreateSelectMenu,
+        context: ApplicationContext<'_>,
         data: &Data,
     ) -> (&'a mut serenity::CreateSelectMenu, CustomId);
 
     /// Function to run when an interaction response is received.
-    fn set_interaction(&mut self, interaction: serenity::MessageComponentInteraction);
+    /// Creates an instance of this component holding the received
+    /// interaction response.
+    fn create_with_interaction(interaction: serenity::MessageComponentInteraction) -> Box<Self>;
 }
 
 /// Represents a single Button.
 pub trait ButtonComponent<Data = ()> {
     fn on_build<'a>(
-        &self,
         builder: &'a mut serenity::CreateButton,
+        context: ApplicationContext<'_>,
         data: &Data,
     ) -> (&'a mut serenity::CreateButton, Option<CustomId>);
     // use Option<CustomId> as link buttons do not have a Custom ID (and thus cannot be awaited)
 
     /// Function to run when an interaction response is received.
-    fn set_interaction(&mut self, interaction: serenity::MessageComponentInteraction);
+    /// Creates an instance of this component holding the received
+    /// interaction response.
+    fn create_with_interaction(interaction: serenity::MessageComponentInteraction) -> Box<Self>;
 }
 
 pub trait ButtonsComponent<Data = ()> {
+    const BUTTON_SPECS: Vec<ButtonSpec<Data>>;
+
     /// Returns the generated custom IDs
     fn on_build<'a>(
-        &self,
-        builder: &'a mut serenity::CreateActionRow,
+        context: ApplicationContext<'_>,
+        mut builder: &'a mut serenity::CreateActionRow,
         data: &Data,
-    ) -> (&'a mut serenity::CreateActionRow, Vec<CustomId>);
+    ) -> (&'a mut serenity::CreateActionRow, Vec<CustomId>) {
+        let mut custom_ids = Vec::new();
+
+        for button in Self::BUTTON_SPECS {
+            builder = builder.create_button(|b| {
+                let (b, custom_id) = button.on_build(b, context, data);
+
+                if let Some(custom_id) = custom_id {
+                    custom_ids.push(custom_id);
+                }
+
+                b
+            });
+        }
+
+        (builder, custom_ids)
+    }
 
     /// Function to run when an interaction response is received.
-    fn set_interaction(&mut self, interaction: serenity::MessageComponentInteraction);
+    /// Creates an instance of this component holding the received
+    /// interaction response.
+    fn create_with_interaction(interaction: serenity::MessageComponentInteraction) -> Box<Self>;
 }
