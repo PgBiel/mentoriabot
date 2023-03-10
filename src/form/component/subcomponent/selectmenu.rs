@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use poise::serenity_prelude as serenity;
 
 use crate::{
@@ -15,6 +13,9 @@ pub struct SelectMenuOptionSpec<Data = ()> {
     /// A function (accepting context and &Data)
     /// that returns the option's label as a Into<String> (specify this or `label`).
     pub label_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
+
+    /// Value key that maps to this option when an interaction response is received.
+    pub value_key: SelectValue,
 
     /// The option's description (small explanation text), optional.
     pub description: Option<String>,
@@ -43,7 +44,7 @@ pub struct SelectMenuSpec<Data = ()> {
     pub custom_id: Option<CustomId>,
 
     /// Associates a symbolic value with a display message and other info for the user.
-    pub values_map: Option<HashMap<SelectValue, SelectMenuOptionSpec<Data>>>,
+    pub options: Vec<SelectMenuOptionSpec<Data>>,
 
     /// Minimum amount of options the user must select.
     pub min_values: Option<u64>,
@@ -83,9 +84,10 @@ impl<D> SelectMenuSpec<D> {
             builder = builder.disabled(self.disabled);
         }
 
-        if let Some(values_map) = self.values_map.as_ref() {
+        if !self.options.is_empty() {
             builder = builder.options(|mut f| {
-                for (value, option) in values_map {
+                for option in &self.options {
+                    let value = &option.value_key;
                     f = f.create_option(|mut f| {
                         f = f.value(value).default_selection(option.is_default);
 

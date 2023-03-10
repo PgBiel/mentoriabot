@@ -35,7 +35,8 @@ pub trait SelectComponent<Data = ()> {
 /// an object (usually enum) that represents
 /// a user's specific choice in a selection menu.
 pub trait SelectOption<Data = ()>: From<SelectValue> {
-    fn get_spec() -> SelectMenuOptionSpec<Data>;
+    /// Returns the specs of all possible options.
+    fn get_specs() -> Vec<SelectMenuOptionSpec<Data>>;
 }
 
 /// Represents a single Button.
