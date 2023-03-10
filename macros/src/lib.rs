@@ -81,13 +81,38 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
         emoji_function,
         disabled,
         disabled_function,
-        interaction
+        interaction,
+        initializer
     )
 )]
 pub fn button(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 
     match button::button(struct_) {
+        Ok(x) => x,
+        Err(e) => e.write_errors().into(),
+    }
+}
+
+#[proc_macro_derive(
+    SelectOption,
+    attributes(
+        data,
+        label,
+        label_function,
+        value_key,
+        description,
+        description_function,
+        emoji,
+        emoji_function,
+        is_default,
+        initializer,
+    )
+)]
+pub fn select_option(input: TokenStream) -> TokenStream {
+    let enum_ = syn::parse_macro_input!(input as syn::DeriveInput);
+
+    match select_option::select_option(enum_) {
         Ok(x) => x,
         Err(e) => e.write_errors().into(),
     }

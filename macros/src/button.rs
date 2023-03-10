@@ -60,7 +60,7 @@ struct InteractionAttr {
     interaction: Option<()>,
 
     /// The default value of this field when instantiated.
-    default: Option<syn::Expr>,
+    initializer: Option<syn::Expr>,
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -283,7 +283,7 @@ fn single_button_create_with_interaction_code(
                             field_initializers.push(quote! { interaction.into() });
                         }
                         break;
-                    } else if let Some(initializer) = attrs.default {
+                    } else if let Some(initializer) = attrs.initializer {
                         if is_named {
                             let field_name = field.ident.as_ref().expect("Expected named field");
                             field_initializers.push(quote! { #field_name: #initializer });
@@ -293,7 +293,7 @@ fn single_button_create_with_interaction_code(
                     } else {
                         non_default_field = Some(field);
                         if interaction_seen {
-                            break; // cannot mix #[interaction] with non-#[default] fields
+                            break; // cannot mix #[interaction] with non-#[initializer] fields
                         }
                     };
                 }
@@ -302,7 +302,7 @@ fn single_button_create_with_interaction_code(
                     if let Some(non_default_field) = non_default_field {
                         return Err(syn::Error::new(
                             non_default_field.ident.as_ref().map(|i| i.span()).unwrap_or_else(|| non_default_field.span()),
-                            "Cannot specify #[interaction] for a field and not specify #[default = \"expr\"] on the others."
+                            "Cannot specify #[interaction] for a field and not specify #[initializer = \"expr\"] on the others."
                         ).into());
                     }
                     result = if is_named {
