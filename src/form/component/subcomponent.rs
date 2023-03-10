@@ -11,9 +11,7 @@ pub mod reply;
 pub mod selectmenu;
 pub use button::ButtonSpec;
 pub use reply::ReplySpec;
-pub use selectmenu::SelectMenuSpec;
-
-use self::selectmenu::SelectMenuOptionSpec;
+pub use selectmenu::{SelectMenuSpec, SelectMenuOptionSpec};
 
 /// Represents a single SelectMenu.
 pub trait SelectComponent<Data = ()> {
@@ -34,7 +32,7 @@ pub trait SelectComponent<Data = ()> {
 /// Represents a Select Option, that is,
 /// an object (usually enum) that represents
 /// a user's specific choice in a selection menu.
-pub trait SelectOption<Data = ()>: From<SelectValue> {
+pub trait SelectOption<Data = ()>: TryFrom<SelectValue> {
     /// Returns the specs of all possible options.
     fn get_specs() -> Vec<SelectMenuOptionSpec<Data>>;
 }
