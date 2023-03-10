@@ -3,7 +3,7 @@ use strum_macros::{self, EnumString};
 
 use crate::{
     common::ApplicationContext,
-    macros::{ButtonComponent, GenerateReply, InteractionForm},
+    macros::{ButtonComponent, SelectOption, GenerateReply, InteractionForm},
 };
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
@@ -100,6 +100,28 @@ fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
 #[danger]
 #[message_ephemeral]
 pub struct Button(#[interaction] serenity::MessageComponentInteraction);
+
+#[derive(SelectOption)]
+pub enum Test {
+    #[label = "Sussy"]
+    #[description = "Omg"]
+    #[is_default]
+    Sus,
+
+    #[label = "Oh no"]
+    Amogus(i32, Option<u64>),
+
+    #[label = "MOMENT"]
+    Rhombus {
+        caustic: i32,
+        mega: u64,
+        test: String,
+        wow: Option<String>,
+
+        #[initializer = "Box::new(Test::Sus)"]
+        giga: Box<Test>
+    },
+}
 
 #[derive(InteractionForm, Debug, Clone)]
 #[data = "()"]
