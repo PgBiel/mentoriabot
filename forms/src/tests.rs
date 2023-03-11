@@ -3,7 +3,7 @@ use strum_macros::{self, EnumString};
 
 use crate::{
     common::ApplicationContext,
-    macros::{ButtonComponent, SelectOption, GenerateReply, InteractionForm},
+    macros::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
 };
 
 #[derive(Debug, Copy, Clone, strum_macros::Display, EnumString)]
@@ -119,7 +119,7 @@ pub enum Test {
         wow: Option<String>,
 
         #[initializer = "Box::new(Test::Sus)"]
-        giga: Box<Test>
+        giga: Box<Test>,
     },
 }
 
