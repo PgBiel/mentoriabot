@@ -11,6 +11,12 @@ use crate::util;
 struct EnumAttributes {
     /// The Data type, used for the SelectOptionSpec.
     data: Option<syn::Type>,
+
+    /// Context's Data type.
+    ctx_data: syn::Type,
+
+    /// Context's Error type.
+    ctx_error: syn::Type,
 }
 
 #[derive(Debug, Clone, darling::FromMeta)]
@@ -90,25 +96,29 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
     // ---
     let data_type = enum_attrs.data.clone().unwrap_or(util::empty_tuple_type());
 
-    let option_specs = create_select_option_specs(&variants_and_options, &data_type);
+    let ctx_data = &enum_attrs.ctx_data;
+    let ctx_error = &enum_attrs.ctx_error;
+
+    let option_specs =
+        create_select_option_specs(&variants_and_options, &data_type, &ctx_data, &ctx_error);
     let from_select_value = from_select_value(&variants_and_options, &data_type)?;
     let enum_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics crate::form::SelectOption<#data_type> for #enum_ident #ty_generics #where_clause {
-            fn get_specs() -> ::std::vec::Vec<crate::form::SelectMenuOptionSpec<#data_type>> {
+        impl #impl_generics ::minirustbot_forms::SelectOption<#ctx_data, #ctx_error, #data_type> for #enum_ident #ty_generics #where_clause {
+            fn get_specs() -> ::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec<#ctx_data, #ctx_error, #data_type>> {
                 #option_specs
             }
         }
 
         #[::async_trait::async_trait]
-        impl #impl_generics ::core::convert::TryFrom<crate::interaction::SelectValue> for #enum_ident #ty_generics #where_clause {
-            type Error = crate::error::Error;
+        impl #impl_generics ::core::convert::TryFrom<::minirustbot_forms::interaction::SelectValue> for #enum_ident #ty_generics #where_clause {
+            type Error = ::minirustbot_forms::error::FormError;
 
             fn try_from(
-                value: crate::interaction::SelectValue
-            ) -> crate::error::Result<Self> {
+                value: ::minirustbot_forms::interaction::SelectValue
+            ) -> ::minirustbot_forms::error::Result<Self> {
                 #from_select_value
             }
         }
@@ -156,6 +166,8 @@ fn validate_option_attrs(
 fn create_select_option_specs(
     variants_with_options: &Vec<(&syn::Variant, SelectOptionAttributes)>,
     data_type: &syn::Type,
+    ctx_data: &syn::Type,
+    ctx_error: &syn::Type,
 ) -> TokenStream2 {
     let mut specs = Vec::new();
     for (_, options) in variants_with_options {
@@ -181,12 +193,12 @@ fn create_select_option_specs(
         let value_key = value_key.as_ref().expect("Missing value key");
 
         specs.push(quote! {
-            crate::form::SelectMenuOptionSpec::<#data_type> {
+            ::minirustbot_forms::SelectMenuOptionSpec::<#ctx_data, #ctx_error, #data_type> {
                 label: #label,
 
                 label_function: #label_function,
 
-                value_key: crate::interaction::SelectValue(#value_key.into()),
+                value_key: ::minirustbot_forms::interaction::SelectValue(#value_key.into()),
 
                 description: #description,
 
@@ -247,7 +259,8 @@ fn from_select_value(
                 }
             } else if is_named {
                 let field_name = field.ident.as_ref().expect("Expected named field");
-                field_initializers.push(quote! { #field_name: ::core::default::Default::default() });
+                field_initializers
+                    .push(quote! { #field_name: ::core::default::Default::default() });
             } else {
                 field_initializers.push(quote! { ::core::default::Default::default() });
             }
@@ -263,7 +276,7 @@ fn from_select_value(
     }
 
     // catch-all: error.
-    variant_match_arms.push(quote! { _ => return ::core::result::Result::Err(crate::error::FormError::InvalidUserResponse.into()) });
+    variant_match_arms.push(quote! { _ => return ::core::result::Result::Err(::minirustbot_forms::error::FormError::InvalidUserResponse.into()) });
 
     Ok(quote! {
         ::core::result::Result::Ok(match value.0.as_str() {

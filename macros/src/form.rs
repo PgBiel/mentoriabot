@@ -6,12 +6,18 @@ use quote::quote;
 use crate::util;
 
 /// Representation of the struct attributes
-#[derive(Debug, Default, darling::FromMeta)]
-#[darling(allow_unknown_fields, default)]
+#[derive(Debug, darling::FromMeta)]
+#[darling(allow_unknown_fields)]
 struct StructAttributes {
     /// Type of the Data object to be passed to components.
     /// By default, ()
     data: Option<syn::Type>,
+
+    /// Context's Data type.
+    ctx_data: syn::Type,
+
+    /// Context's Error type.
+    ctx_error: syn::Type,
 
     /// name of the function to run when the form is finished.
     /// It must take a single ApplicationContext object.
@@ -62,6 +68,9 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         .unwrap_or(util::empty_tuple_type());
     //  ^^^^^^^^^^ default to ()
 
+    let ctx_data = &struct_attrs.ctx_data;
+    let ctx_error = &struct_attrs.ctx_error;
+
     let mut components = Vec::new();
     let mut create_fields = Vec::new();
     let mut modal_creation: Option<TokenStream2> = None;
@@ -83,6 +92,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 field_type,
                 field_inner_type,
                 &data_type,
+                &ctx_data,
+                &ctx_error,
             ));
             create_fields.push(quote! { #field_name });
         } else if field_attrs.modal.is_some() {
@@ -99,6 +110,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 /* modal_type: */ field_type,
                 /* modal_inner_type: */ field_inner_type,
                 &data_type,
+                &ctx_data,
+                &ctx_error,
             ));
             create_fields.push(quote! { #field_name });
         } else {
@@ -116,9 +129,11 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     Ok(quote! { const _: () = {
         #[::async_trait::async_trait]
-        impl #impl_generics crate::form::InteractionForm for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::minirustbot_forms::InteractionForm for #struct_ident #ty_generics #where_clause {
+            type ContextData = #ctx_data;
+            type ContextError = #ctx_error;
 
-            async fn run_components(context: crate::common::ApplicationContext<'_>) -> crate::error::Result<::std::boxed::Box<Self>> {
+            async fn run_components(context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 let mut __component_data: #data_type = ::std::default::Default::default();
                 #modal_creation
                 #( #components )*
@@ -137,10 +152,12 @@ fn generate_message_component(
     field_type: &syn::Type,
     field_inner_type: &syn::Type,
     data_type: &syn::Type,
+    ctx_data: &syn::Type,
+    ctx_error: &syn::Type,
 ) -> TokenStream2 {
     // use .into() in case it's an Option<>, Box<> etc.
     quote! {
-        let #field_name: #field_type = (*<#field_inner_type as crate::form::MessageFormComponent<#data_type>>::run(context, &mut __component_data).await?).into();
+        let #field_name: #field_type = (*<#field_inner_type as ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type>>::run(context, &mut __component_data).await?).into();
     }
 }
 
@@ -149,16 +166,18 @@ fn generate_modal_creation(
     modal_type: &syn::Type,
     modal_inner_type: &syn::Type,
     data_type: &syn::Type,
+    ctx_data: &syn::Type,
+    ctx_error: &syn::Type,
 ) -> TokenStream2 {
     quote! {
-        let #modal_field_name: #modal_type = (*<#modal_inner_type as crate::form::ModalFormComponent<#data_type>>::run(context, &mut __component_data).await?).into();
+        let #modal_field_name: #modal_type = (*<#modal_inner_type as ::minirustbot_forms::ModalFormComponent<#ctx_data, #ctx_error, #data_type>>::run(context, &mut __component_data).await?).into();
     }
 }
 
 fn parse_on_finish(struct_attrs: &StructAttributes) -> Option<TokenStream2> {
     if let Some(on_finish) = &struct_attrs.on_finish {
         Some(quote! {
-            async fn on_finish(self, context: crate::common::ApplicationContext<'_>) -> crate::error::Result<::std::boxed::Box<Self>> {
+            async fn on_finish(self, context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 #on_finish(context).into()
             }
         })

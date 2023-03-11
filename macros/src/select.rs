@@ -14,6 +14,12 @@ struct SelectAttributes {
     /// By default, ()
     data: Option<syn::Type>,
 
+    /// Context's Data type.
+    ctx_data: syn::Type,
+
+    /// Context's Error type.
+    ctx_error: syn::Type,
+
     /// The button's fixed custom ID; if unspecified,
     /// it is auto-generated.
     custom_id: Option<String>,
@@ -115,18 +121,21 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         .clone()
         .unwrap_or(util::empty_tuple_type());
 
+    let ctx_data = &select_attrs.ctx_data;
+    let ctx_error = &select_attrs.ctx_error;
+
     let button_spec = create_select_spec(&select_attrs, &data_type);
     let create_with_interaction = create_variant_with_interaction(&variants_and_options)?;
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics crate::form::SelectComponent<#data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::minirustbot_forms::SelectComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             fn on_build<'button_macro>(
                 builder: &'button_macro mut ::poise::serenity_prelude::CreateButton,
-                context: crate::form::ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &#data_type
-            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<crate::interaction::CustomId>) {
+            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<::minirustbot_forms::interaction::CustomId>) {
                 #button_spec.on_build(builder, context, data)
             }
 
@@ -136,19 +145,19 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         }
 
         #[::async_trait::async_trait]
-        impl #impl_generics crate::form::MessageFormComponent<#data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             async fn send_component(
-                context: crate::common::ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type,
-            ) -> crate::error::Result<::std::vec::Vec<crate::interaction::CustomId>> {
+            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
 
                 let mut __custom_ids = vec![];
                 context.send(|f|
-                    <Self as crate::form::GenerateReply<#data_type>>::create_reply(f, context, data)
+                    <Self as ::minirustbot_forms::GenerateReply<#data_type>>::create_reply(f, context, data)
                         .components(|f| f
                             .create_action_row(|f| f
                                 .create_button(|f| {
-                                    let (builder, custom_id) = <Self as crate::form::ButtonComponent<#data_type>>::on_build(f, context, &data);
+                                    let (builder, custom_id) = <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::on_build(f, context, &data);
                                     if let Some(custom_id) = custom_id {
                                         __custom_ids.push(custom_id);
                                     }
@@ -159,12 +168,12 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             }
 
             async fn on_response(
-                context: crate::common::ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
-            ) -> crate::error::Result<::std::boxed::Box<Self>> {
+            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 ::std::result::Result::Ok(
-                    <Self as crate::form::ButtonComponent<#data_type>>::create_with_interaction((*interaction).clone()))
+                    <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::create_with_interaction((*interaction).clone()))
             }
         }
     }.into())
@@ -347,7 +356,7 @@ fn create_select_spec(button_attrs: &SelectAttributes, data: &syn::Type) -> Toke
     // let style = util::wrap_option_into(&style);
 
     // quote! {
-    //     crate::form::ButtonSpec::<#data> {
+    //     ::minirustbot_forms::ButtonSpec::<#data> {
     //         label: #label,
     //         label_function: #label_function,
     //         custom_id: #custom_id,

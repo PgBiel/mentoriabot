@@ -31,6 +31,8 @@ use proc_macro::TokenStream;
 ///
 /// ```
 /// #[derive(InteractionForm)]
+/// #[ctx_data = "Data"]
+/// #[ctx_error = "Error"]
 /// #[data = "MyDataType"]
 /// #[on_finish = my_function]
 /// pub struct MyForm {
@@ -44,7 +46,10 @@ use proc_macro::TokenStream;
 ///     buttons: MyButtonsComponent, // then this
 /// }
 /// ```
-#[proc_macro_derive(InteractionForm, attributes(data, on_finish, modal, component))]
+#[proc_macro_derive(
+    InteractionForm,
+    attributes(data, ctx_data, ctx_error, on_finish, modal, component)
+)]
 pub fn form(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 
@@ -68,6 +73,8 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
     ButtonComponent,
     attributes(
         data,
+        ctx_data,
+        ctx_error,
         label,
         label_function,
         custom_id,
@@ -98,6 +105,8 @@ pub fn button(input: TokenStream) -> TokenStream {
     SelectOption,
     attributes(
         data,
+        ctx_data,
+        ctx_error,
         label,
         label_function,
         value_key,
@@ -122,6 +131,8 @@ pub fn select_option(input: TokenStream) -> TokenStream {
     GenerateReply,
     attributes(
         data,
+        ctx_data,
+        ctx_error,
         message_content,
         message_content_function,
         message_attachment_function,

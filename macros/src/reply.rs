@@ -12,6 +12,12 @@ struct ReplyAttrs {
     /// The Data type to be accepted by the Reply.
     data: Option<syn::Type>,
 
+    /// Context's Data type.
+    ctx_data: syn::Type,
+
+    /// Context's Error type.
+    ctx_error: syn::Type,
+
     /// The content of the message to be sent.
     message_content: Option<String>,
 
@@ -59,16 +65,19 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         .clone()
         .unwrap_or(util::empty_tuple_type());
 
+    let ctx_data = &struct_attrs.ctx_data;
+    let ctx_error = &struct_attrs.ctx_error;
+
     let reply_spec = create_reply_spec(&struct_attrs, &data_type);
 
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics crate::form::GenerateReply<#data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             fn create_reply<'a, 'b>(
                 builder: &'a mut poise::CreateReply<'b>,
-                context: ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &#data_type,
             ) -> &'a mut poise::CreateReply<'b> {
                 #reply_spec.create_reply(builder, context, data)
@@ -87,8 +96,11 @@ fn create_reply_spec(attrs: &ReplyAttrs, data: &syn::Type) -> TokenStream2 {
     let ephemeral = attrs.message_ephemeral.is_some();
     let ephemeral_function = util::wrap_option_box(&attrs.message_ephemeral_function);
 
+    let ctx_data = &attrs.ctx_data;
+    let ctx_error = &attrs.ctx_error;
+
     quote! {
-        crate::form::ReplySpec::<#data> {
+        ::minirustbot_forms::ReplySpec::<#ctx_data, #ctx_error, #data> {
             content: #content,
             content_function: #content_function,
             attachment_function: #attachment_function,

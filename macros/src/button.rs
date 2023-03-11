@@ -14,6 +14,12 @@ struct ButtonAttributes {
     /// By default, ()
     data: Option<syn::Type>,
 
+    /// Context's Data type.
+    ctx_data: syn::Type,
+
+    /// Context's Error type.
+    ctx_error: syn::Type,
+
     /// The button's literal label (please specify this, or a `label_function`)
     label: Option<String>,
 
@@ -80,6 +86,9 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         .clone()
         .unwrap_or(util::empty_tuple_type());
 
+    let ctx_data = &struct_attrs.ctx_data;
+    let ctx_error = &struct_attrs.ctx_error;
+
     let button_spec = create_button_spec(&struct_attrs, &data_type);
     let create_with_interaction = single_button_create_with_interaction_code(&input)?
         .unwrap_or_else(|| quote! { Default::default() });
@@ -88,34 +97,34 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics crate::form::ButtonComponent<#data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             fn on_build<'button_macro>(
                 builder: &'button_macro mut ::poise::serenity_prelude::CreateButton,
-                context: crate::form::ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &#data_type
-            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<crate::interaction::CustomId>) {
+            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<::minirustbot_forms::interaction::CustomId>) {
                 #button_spec.on_build(builder, context, data)
             }
 
-            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> crate::error::Result<::std::boxed::Box<Self>> {
+            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
 
         #[::async_trait::async_trait]
-        impl #impl_generics crate::form::MessageFormComponent<#data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             async fn send_component(
-                context: crate::common::ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type,
-            ) -> crate::error::Result<::std::vec::Vec<crate::interaction::CustomId>> {
+            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
 
                 let mut __custom_ids = vec![];
                 context.send(|f|
-                    <Self as crate::form::GenerateReply<#data_type>>::create_reply(f, context, data)
+                    <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(f, context, data)
                         .components(|f| f
                             .create_action_row(|f| f
                                 .create_button(|f| {
-                                    let (builder, custom_id) = <Self as crate::form::ButtonComponent<#data_type>>::on_build(f, context, &data);
+                                    let (builder, custom_id) = <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::on_build(f, context, &data);
                                     if let Some(custom_id) = custom_id {
                                         __custom_ids.push(custom_id);
                                     }
@@ -126,11 +135,11 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             }
 
             async fn on_response(
-                context: crate::common::ApplicationContext<'_>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
-            ) -> crate::error::Result<::std::boxed::Box<Self>> {
-                <Self as crate::form::ButtonComponent<#data_type>>::create_with_interaction((*interaction).clone())
+            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+                <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::create_with_interaction((*interaction).clone())
             }
         }
     }.into())
@@ -359,8 +368,11 @@ fn create_button_spec(button_attrs: &ButtonAttributes, data: &syn::Type) -> Toke
 
     let style = util::wrap_option_into(&style);
 
+    let ctx_data = &button_attrs.ctx_data;
+    let ctx_error = &button_attrs.ctx_error;
+
     quote! {
-        crate::form::ButtonSpec::<#data> {
+        ::minirustbot_forms::ButtonSpec::<#ctx_data, #ctx_error, #data> {
             label: #label,
             label_function: #label_function,
             custom_id: #custom_id,
