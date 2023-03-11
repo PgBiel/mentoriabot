@@ -6,15 +6,16 @@ mod common;
 mod config;
 mod error;
 mod events;
-mod form;
-mod interaction;
-mod util;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
 
 pub mod macros {
     pub use minirustbot_macros::*;
+}
+
+pub mod forms {
+    pub use minirustbot_forms::*;
 }
 
 const CONFIG_FILE: &str = "config.json";
