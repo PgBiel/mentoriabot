@@ -1,7 +1,8 @@
 use poise::serenity_prelude as serenity;
 
 use crate::{
-    common::{ApplicationContext, Data, ErrorBox},
+    common::{ApplicationContext, Data},
+    error::Error,
     forms::{
         macros::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
         InteractionForm,
@@ -33,7 +34,7 @@ fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
 
 #[derive(ButtonComponent, GenerateReply, Clone, Debug)]
 #[ctx_data = "Data"]
-#[ctx_error = "ErrorBox"]
+#[ctx_error = "Error"]
 #[message_content = "bruh"]
 #[label_function = "label_function"]
 #[danger]
@@ -42,7 +43,7 @@ pub struct Button(#[interaction] serenity::MessageComponentInteraction);
 
 #[derive(SelectOption)]
 #[ctx_data = "Data"]
-#[ctx_error = "ErrorBox"]
+#[ctx_error = "Error"]
 pub enum Test {
     #[label = "Sussy"]
     #[description = "Omg"]
@@ -66,7 +67,7 @@ pub enum Test {
 
 #[derive(InteractionForm, Debug, Clone)]
 #[ctx_data = "Data"]
-#[ctx_error = "ErrorBox"]
+#[ctx_error = "Error"]
 #[data = "()"]
 pub struct TestForm {
     #[modal]
@@ -80,7 +81,7 @@ pub struct TestForm {
 
 /// Runs test form
 #[poise::command(slash_command)]
-pub async fn testform(ctx: ApplicationContext<'_>) -> Result<(), ErrorBox> {
+pub async fn testform(ctx: ApplicationContext<'_>) -> Result<(), Error> {
     let data = TestForm::execute(ctx).await?;
     println!("Got testform data: {:?}", data);
     Ok(())

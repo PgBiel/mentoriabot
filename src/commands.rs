@@ -1,4 +1,4 @@
-use crate::common::{Data, ErrorBox};
+use crate::{common::Data, error::Error};
 
 mod modal;
 mod ping;
@@ -10,6 +10,6 @@ pub use ping::ping;
 pub use testform::testform;
 pub use userup::userup;
 
-pub fn get_commands() -> Vec<poise::Command<Data, ErrorBox>> {
+pub fn get_commands() -> Vec<poise::Command<Data, Error>> {
     vec![ping(), userup(), modal(), testform()]
 }

@@ -1,6 +1,6 @@
 use poise::Modal;
 
-use crate::common::{ApplicationContext, ErrorBox};
+use crate::{common::ApplicationContext, error::Error};
 
 #[derive(Default, Modal)]
 #[name = "Modal title"]
@@ -26,7 +26,7 @@ struct TestModal {
 pub async fn modal(
     ctx: ApplicationContext<'_>,
     #[description = "Modal title"] title: Option<String>,
-) -> Result<(), ErrorBox> {
+) -> Result<(), Error> {
     let data = TestModal::execute(ctx).await?;
     if let Some(modal_data) = data {
         let response = format!(

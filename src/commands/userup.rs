@@ -1,7 +1,8 @@
 use poise::serenity_prelude as serenity;
 
 use crate::{
-    common::{ApplicationContext, ErrorBox},
+    common::ApplicationContext,
+    error::Error,
     forms::interaction,
 };
 
@@ -10,7 +11,7 @@ use crate::{
 pub async fn userup(
     ctx: ApplicationContext<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
-) -> Result<(), ErrorBox> {
+) -> Result<(), Error> {
     let u = user.as_ref().unwrap_or_else(|| ctx.author());
     let response = format!("{}'s account was created at {}", u.name, u.created_at());
     let id = ctx.interaction.id();
