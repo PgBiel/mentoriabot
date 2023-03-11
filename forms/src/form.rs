@@ -3,17 +3,26 @@ use poise::ApplicationContext;
 
 use crate::error::Result;
 
-/// Represents a form of sequential Discord interactions (without a Modal).
+/// Represents a form of sequential Discord interactions.
 #[async_trait]
 pub trait InteractionForm: Sync {
     type ContextData: Send + Sync;
     type ContextError: Send + Sync;
 
-    /// Runs this form's components.
+    /// Runs this form's components and builds this form's instance.
+    ///
+    /// Usually you'll want to use the [`execute`] method; this method
+    /// is for behavior overriding.
+    ///
+    /// [`execute`]: InteractionForm::execute
     async fn run_components(
         context: ApplicationContext<'_, Self::ContextData, Self::ContextError>,
     ) -> Result<Box<Self>>;
 
+    /// Executes this form with the given context.
+    /// This will run each component in order, and then run [`on_finish`].
+    ///
+    /// [`on_finish`]: InteractionForm::on_finish
     async fn execute(
         context: ApplicationContext<'_, Self::ContextData, Self::ContextError>,
     ) -> Result<Box<Self>> {
@@ -22,6 +31,11 @@ pub trait InteractionForm: Sync {
         Ok(data)
     }
 
+    /// Optional function to run when the form is finished.
+    /// Normally, you'll just run [`execute`] and then use the finished
+    /// form object.
+    ///
+    /// [`execute`]: InteractionForm::execute
     async fn on_finish(
         self: Box<Self>,
         _context: ApplicationContext<'_, Self::ContextData, Self::ContextError>,

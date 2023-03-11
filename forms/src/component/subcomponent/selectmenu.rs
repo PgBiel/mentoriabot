@@ -7,8 +7,8 @@ pub struct SelectMenuOptionSpec<ContextData, ContextError, Data = ()> {
     /// The option's literal label (please specify this, or a `label_function`)
     pub label: Option<String>,
 
-    /// A function (accepting context and &Data)
-    /// that returns the option's label as a Into<String> (specify this or `label`).
+    /// A function (accepting context and `&Data`)
+    /// that returns the option's label as a `String` (specify this or `label`).
     pub label_function:
         Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
@@ -61,7 +61,7 @@ pub struct SelectMenuSpec<ContextData, ContextError, Data = ()> {
     pub disabled: bool,
 
     /// Function that determines if this menu is disabled
-    /// (takes context and &Data, returns bool)
+    /// (takes context and `&Data`, returns bool)
     pub disabled_function:
         Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }

@@ -1,3 +1,5 @@
+//! A module for Form components.
+
 mod generatereply;
 mod message;
 mod modal;

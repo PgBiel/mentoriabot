@@ -6,11 +6,11 @@ pub struct ReplySpec<ContextData, ContextError, Data = ()> {
     pub content: Option<String>,
 
     /// A function that returns the content of the message to be sent,
-    /// as a String, taking as parameters the context and &Data.
+    /// as a `String`, taking as parameters the context and `&Data`.
     pub content_function:
         Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
-    /// A function that takes the CreateReply builder, the context, `&Data`,
+    /// A function that takes the `CreateReply` builder, the context, `&Data`,
     /// and internally adds attachments.
     pub attachment_function: Option<
         Box<

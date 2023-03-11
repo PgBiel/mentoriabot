@@ -8,8 +8,8 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     /// The button's literal label (please specify this, or a `label_function`)
     pub label: Option<String>,
 
-    /// A function (accepting context and &Data)
-    /// that returns the button's label as a Into<String> (specify this or `label`).
+    /// A function (accepting context and `&Data`)
+    /// that returns the button's label as a `String` (specify this or `label`).
     pub label_function:
         Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
@@ -23,7 +23,7 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     /// NOTE: Such a button cannot be awaited for.
     pub link: Option<String>,
 
-    /// Function takes context and &Data, and returns the link the button leads to (Into<String>).
+    /// Function takes context and &Data, and returns the link the button leads to (a `String`).
     pub link_function:
         Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
@@ -31,7 +31,7 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     pub emoji: Option<serenity::ReactionType>,
 
     /// Function that returns the emoji to display near the button label
-    /// (takes context and &Data, returns Into<ReactionType>)
+    /// (takes context and `&Data`, returns `ReactionType`)
     pub emoji_function: Option<
         Box<
             dyn Fn(
@@ -45,7 +45,7 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     pub disabled: bool,
 
     /// Function that determines if this button is disabled
-    /// (takes context and &Data, returns bool)
+    /// (takes context and `&Data`, returns `bool`)
     pub disabled_function:
         Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }

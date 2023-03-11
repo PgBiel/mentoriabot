@@ -3,10 +3,7 @@ use poise::serenity_prelude as serenity;
 use crate::{
     common::{ApplicationContext, Data},
     error::Error,
-    forms::{
-        macros::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
-        InteractionForm,
-    },
+    forms::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
 };
 
 #[derive(Debug, Default, Clone, poise::Modal)]

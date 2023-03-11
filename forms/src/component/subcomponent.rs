@@ -1,3 +1,5 @@
+//! A module for helpers for specific types of Form components.
+
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
 use crate::{

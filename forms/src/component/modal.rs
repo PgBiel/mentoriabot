@@ -3,6 +3,10 @@ use poise::{ApplicationContext, Modal as PoiseModal};
 
 use crate::error::{FormError, Result};
 
+/// A Modal Component. This is blanket-implemented for all [`poise::Modal`] types,
+/// but you may wish to override its behavior (by default, the `Modal` is itself).
+///
+/// [`poise::Modal`]: ::poise::Modal
 #[async_trait]
 pub trait ModalFormComponent<
     ContextData: Send + Sync,
