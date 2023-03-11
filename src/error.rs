@@ -2,15 +2,13 @@ use std::fmt::{Display, Formatter};
 
 use poise::serenity_prelude as serenity;
 
-mod form;
-
-pub use form::FormError;
+use crate::forms;
 
 /// An error in MiniRustBot.
 #[derive(Debug)]
 pub enum Error {
     /// An error occurred while running an InteractionForm
-    Form(FormError),
+    Form(forms::FormError),
 
     EnumParse(strum::ParseError),
 
