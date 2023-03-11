@@ -13,6 +13,7 @@ pub use component::{
     SelectOption,
 };
 pub use error::FormError;
+pub use form::InteractionForm;
 pub use interaction::{CustomId, SelectValue};
 
 pub mod macros {

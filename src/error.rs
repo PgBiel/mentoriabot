@@ -21,8 +21,8 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl From<FormError> for Error {
-    fn from(err: FormError) -> Self {
+impl From<forms::FormError> for Error {
+    fn from(err: forms::FormError) -> Self {
         Self::Form(err)
     }
 }
