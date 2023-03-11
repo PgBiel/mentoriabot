@@ -1,8 +1,6 @@
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
-use crate::{
-    interaction::{self, CustomId, SelectValue},
-};
+use crate::interaction::{self, CustomId, SelectValue};
 
 /// Holds data regarding a particular Select Menu option.
 pub struct SelectMenuOptionSpec<ContextData, ContextError, Data = ()> {
@@ -11,7 +9,8 @@ pub struct SelectMenuOptionSpec<ContextData, ContextError, Data = ()> {
 
     /// A function (accepting context and &Data)
     /// that returns the option's label as a Into<String> (specify this or `label`).
-    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
+    pub label_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// Value key that maps to this option when an interaction response is received.
     pub value_key: SelectValue,
@@ -21,15 +20,22 @@ pub struct SelectMenuOptionSpec<ContextData, ContextError, Data = ()> {
 
     /// Function that takes context and &Data
     /// and returns the option's description (optional).
-    pub description_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
+    pub description_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// An optional single emoji to display near the label
     pub emoji: Option<serenity::ReactionType>,
 
     /// Function that returns the emoji to display near the button label
     /// (takes context and &Data, returns ReactionType)
-    pub emoji_function:
-        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> serenity::ReactionType>>,
+    pub emoji_function: Option<
+        Box<
+            dyn Fn(
+                ApplicationContext<'_, ContextData, ContextError>,
+                &Data,
+            ) -> serenity::ReactionType,
+        >,
+    >,
 
     /// If this is the default selection option.
     pub is_default: bool,
@@ -56,7 +62,8 @@ pub struct SelectMenuSpec<ContextData, ContextError, Data = ()> {
 
     /// Function that determines if this menu is disabled
     /// (takes context and &Data, returns bool)
-    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
+    pub disabled_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
 impl<CD, CE, D> SelectMenuSpec<CD, CE, D> {

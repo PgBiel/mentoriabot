@@ -43,7 +43,10 @@ where
         data: &mut Data,
     ) -> Result<Box<Self>>;
 
-    async fn run(context: ApplicationContext<'_, ContextData, ContextError>, data: &mut Data) -> Result<Box<Self>> {
+    async fn run(
+        context: ApplicationContext<'_, ContextData, ContextError>,
+        data: &mut Data,
+    ) -> Result<Box<Self>> {
         let ids = Self::send_component(context, data).await?;
         let response = Self::wait_for_response(context, data, ids).await?;
 

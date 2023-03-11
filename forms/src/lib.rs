@@ -1,6 +1,6 @@
+pub mod component;
 pub mod error;
 pub mod form;
-pub mod component;
 pub mod interaction;
 mod util;
 
@@ -9,12 +9,10 @@ mod tests;
 
 pub use component::{
     ButtonComponent, ButtonSpec, ButtonsComponent, GenerateReply, MessageFormComponent,
-    ModalFormComponent, SelectComponent, SelectOption,
-    ReplySpec, SelectMenuSpec, SelectMenuOptionSpec,
+    ModalFormComponent, ReplySpec, SelectComponent, SelectMenuOptionSpec, SelectMenuSpec,
+    SelectOption,
 };
-
 pub use error::FormError;
-
 pub use interaction::{CustomId, SelectValue};
 
 pub mod macros {

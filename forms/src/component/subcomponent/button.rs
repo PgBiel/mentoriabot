@@ -1,8 +1,6 @@
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
-use crate::{
-    interaction::{self, CustomId},
-};
+use crate::interaction::{self, CustomId};
 
 /// Holds all data necessary to display a Discord button.
 #[derive(Default)]
@@ -12,7 +10,8 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
 
     /// A function (accepting context and &Data)
     /// that returns the button's label as a Into<String> (specify this or `label`).
-    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
+    pub label_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// The button's fixed custom ID; if unspecified,
     /// it is auto-generated.
@@ -25,22 +24,30 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     pub link: Option<String>,
 
     /// Function takes context and &Data, and returns the link the button leads to (Into<String>).
-    pub link_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
+    pub link_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// An optional single emoji to display near the label
     pub emoji: Option<serenity::ReactionType>,
 
     /// Function that returns the emoji to display near the button label
     /// (takes context and &Data, returns Into<ReactionType>)
-    pub emoji_function:
-        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> serenity::ReactionType>>,
+    pub emoji_function: Option<
+        Box<
+            dyn Fn(
+                ApplicationContext<'_, ContextData, ContextError>,
+                &Data,
+            ) -> serenity::ReactionType,
+        >,
+    >,
 
     /// If this button is disabled and cannot be clicked
     pub disabled: bool,
 
     /// Function that determines if this button is disabled
     /// (takes context and &Data, returns bool)
-    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
+    pub disabled_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
 impl<CD, CE, D> ButtonSpec<CD, CE, D> {

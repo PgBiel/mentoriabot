@@ -10,7 +10,7 @@ pub mod reply;
 pub mod selectmenu;
 pub use button::ButtonSpec;
 pub use reply::ReplySpec;
-pub use selectmenu::{SelectMenuSpec, SelectMenuOptionSpec};
+pub use selectmenu::{SelectMenuOptionSpec, SelectMenuSpec};
 
 /// Represents a single SelectMenu.
 pub trait SelectComponent<ContextData, ContextError, Data = ()> {

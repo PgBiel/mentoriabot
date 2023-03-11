@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+
 use poise::serenity_prelude as serenity;
 
 /// Represents an error within an InteractionForm object.
@@ -20,7 +21,7 @@ impl Display for FormError {
             Self::InvalidUserResponse => write!(f, "Invalid user interaction response given"),
             Self::CannotAwaitComponent => {
                 write!(f, "This form component is not awaitable (e.g. link button)")
-            },
+            }
             Self::Serenity(cause) => Display::fmt(cause, f),
         }
     }

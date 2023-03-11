@@ -7,7 +7,6 @@ pub use generatereply::GenerateReply;
 pub use message::MessageFormComponent;
 pub use modal::ModalFormComponent;
 pub use subcomponent::{
-    ButtonComponent, ButtonSpec, ButtonsComponent, SelectComponent,
-    SelectOption,
-    ReplySpec, SelectMenuSpec, SelectMenuOptionSpec,
+    ButtonComponent, ButtonSpec, ButtonsComponent, ReplySpec, SelectComponent,
+    SelectMenuOptionSpec, SelectMenuSpec, SelectOption,
 };

@@ -7,7 +7,8 @@ pub struct ReplySpec<ContextData, ContextError, Data = ()> {
 
     /// A function that returns the content of the message to be sent,
     /// as a String, taking as parameters the context and &Data.
-    pub content_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
+    pub content_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// A function that takes the CreateReply builder, the context, `&Data`,
     /// and internally adds attachments.
@@ -53,7 +54,8 @@ pub struct ReplySpec<ContextData, ContextError, Data = ()> {
 
     /// A function that takes a `&Data` and returns a `bool` (`true` if the message should be sent
     /// as ephemeral).
-    pub ephemeral_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
+    pub ephemeral_function:
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
 impl<CD, CE, D> ReplySpec<CD, CE, D> {
