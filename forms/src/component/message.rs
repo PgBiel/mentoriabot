@@ -19,7 +19,8 @@ where
     ContextError: Send + Sync,
     Data: Send + Sync,
 {
-    /// Method to send the component's interaction to Discord.
+    /// Method to send the component's interaction(s) to Discord.
+    /// This should return all Custom IDs for which a User response is expected.
     async fn send_component(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut Data,
@@ -28,7 +29,7 @@ where
     /// Method that waits for the user's response to the interaction.
     async fn wait_for_response(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &mut Data,
+        _data: &mut Data,
         custom_ids: Vec<CustomId>,
     ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>> {
         interaction::wait_for_message_interactions(context, custom_ids)
@@ -43,6 +44,8 @@ where
         data: &mut Data,
     ) -> Result<Box<Self>>;
 
+    /// The main method, causes the component to be sent to Discord
+    /// and its response awaited by invoking the other methods.
     async fn run(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut Data,

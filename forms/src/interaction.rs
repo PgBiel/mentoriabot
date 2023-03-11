@@ -24,12 +24,17 @@ pub async fn wait_for_message_interaction<ContextData, ContextError>(
 /// matching Custom ID will be returned. Otherwise, waits until 15 minutes
 /// (interaction token expiration time) have passed.
 ///
-/// This may return `None` if no response was received (e.g. due to timeout),
-/// or `Some(Arc<MessageComponentInteraction>)` if an interaction was received with the response.
+/// This may return `None` if no response was received (e.g. due to timeout, or
+/// if no custom IDs were given), or return `Some(Arc<MessageComponentInteraction>)`
+/// if an interaction was received with the response.
 pub async fn wait_for_message_interactions<ContextData, ContextError>(
     ctx: ApplicationContext<'_, ContextData, ContextError>,
     custom_ids: Vec<impl ToString>,
 ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
+    if custom_ids.is_empty() {
+        return Ok(None);
+    }
+
     let custom_ids = custom_ids
         .iter()
         .map(ToString::to_string)
