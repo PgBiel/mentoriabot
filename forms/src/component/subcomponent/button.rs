@@ -1,19 +1,18 @@
-use poise::serenity_prelude as serenity;
+use poise::{serenity_prelude as serenity, ApplicationContext};
 
 use crate::{
-    common::ApplicationContext,
     interaction::{self, CustomId},
 };
 
 /// Holds all data necessary to display a Discord button.
 #[derive(Default)]
-pub struct ButtonSpec<Data = ()> {
+pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     /// The button's literal label (please specify this, or a `label_function`)
     pub label: Option<String>,
 
     /// A function (accepting context and &Data)
     /// that returns the button's label as a Into<String> (specify this or `label`).
-    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
+    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// The button's fixed custom ID; if unspecified,
     /// it is auto-generated.
@@ -26,7 +25,7 @@ pub struct ButtonSpec<Data = ()> {
     pub link: Option<String>,
 
     /// Function takes context and &Data, and returns the link the button leads to (Into<String>).
-    pub link_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
+    pub link_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// An optional single emoji to display near the label
     pub emoji: Option<serenity::ReactionType>,
@@ -34,21 +33,21 @@ pub struct ButtonSpec<Data = ()> {
     /// Function that returns the emoji to display near the button label
     /// (takes context and &Data, returns Into<ReactionType>)
     pub emoji_function:
-        Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> serenity::ReactionType>>,
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> serenity::ReactionType>>,
 
     /// If this button is disabled and cannot be clicked
     pub disabled: bool,
 
     /// Function that determines if this button is disabled
     /// (takes context and &Data, returns bool)
-    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> bool>>,
+    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
-impl<D> ButtonSpec<D> {
+impl<CD, CE, D> ButtonSpec<CD, CE, D> {
     pub fn on_build<'a>(
         &self,
         mut builder: &'a mut serenity::CreateButton,
-        context: ApplicationContext<'_>,
+        context: ApplicationContext<'_, CD, CE>,
         data: &D,
     ) -> (
         &'a mut serenity::CreateButton,

@@ -3,22 +3,20 @@ mod selectvalue;
 use std::{sync::Arc, time::Duration};
 
 pub use custom_id::CustomId;
-use poise::serenity_prelude as serenity;
+use poise::{serenity_prelude as serenity, ApplicationContext};
 pub use selectvalue::SelectValue;
 
-use crate::common::ApplicationContext;
-
 /// Wait for a given interaction's response.
-pub async fn wait_for_message_interaction(
-    ctx: ApplicationContext<'_>,
+pub async fn wait_for_message_interaction<ContextData, ContextError>(
+    ctx: ApplicationContext<'_, ContextData, ContextError>,
     custom_id: impl ToString,
 ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
     wait_for_message_interactions(ctx, vec![custom_id]).await
 }
 
 /// Wait for the first response in a set of expected interaction responses.
-pub async fn wait_for_message_interactions(
-    ctx: ApplicationContext<'_>,
+pub async fn wait_for_message_interactions<ContextData, ContextError>(
+    ctx: ApplicationContext<'_, ContextData, ContextError>,
     custom_ids: Vec<impl ToString>,
 ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
     let custom_ids = custom_ids

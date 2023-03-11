@@ -1,18 +1,17 @@
-use poise::serenity_prelude as serenity;
+use poise::{serenity_prelude as serenity, ApplicationContext};
 
 use crate::{
-    common::ApplicationContext,
     interaction::{self, CustomId, SelectValue},
 };
 
 /// Holds data regarding a particular Select Menu option.
-pub struct SelectMenuOptionSpec<Data = ()> {
+pub struct SelectMenuOptionSpec<ContextData, ContextError, Data = ()> {
     /// The option's literal label (please specify this, or a `label_function`)
     pub label: Option<String>,
 
     /// A function (accepting context and &Data)
     /// that returns the option's label as a Into<String> (specify this or `label`).
-    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
+    pub label_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// Value key that maps to this option when an interaction response is received.
     pub value_key: SelectValue,
@@ -22,7 +21,7 @@ pub struct SelectMenuOptionSpec<Data = ()> {
 
     /// Function that takes context and &Data
     /// and returns the option's description (optional).
-    pub description_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
+    pub description_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// An optional single emoji to display near the label
     pub emoji: Option<serenity::ReactionType>,
@@ -30,7 +29,7 @@ pub struct SelectMenuOptionSpec<Data = ()> {
     /// Function that returns the emoji to display near the button label
     /// (takes context and &Data, returns ReactionType)
     pub emoji_function:
-        Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> serenity::ReactionType>>,
+        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> serenity::ReactionType>>,
 
     /// If this is the default selection option.
     pub is_default: bool,
@@ -38,13 +37,13 @@ pub struct SelectMenuOptionSpec<Data = ()> {
 
 /// Holds all data necessary to display a Discord select menu.
 #[derive(Default)]
-pub struct SelectMenuSpec<Data = ()> {
+pub struct SelectMenuSpec<ContextData, ContextError, Data = ()> {
     /// The button's fixed custom ID; if unspecified,
     /// it is auto-generated.
     pub custom_id: Option<CustomId>,
 
     /// Associates a symbolic value with a display message and other info for the user.
-    pub options: Vec<SelectMenuOptionSpec<Data>>,
+    pub options: Vec<SelectMenuOptionSpec<ContextData, ContextError, Data>>,
 
     /// Minimum amount of options the user must select.
     pub min_values: Option<u64>,
@@ -57,13 +56,13 @@ pub struct SelectMenuSpec<Data = ()> {
 
     /// Function that determines if this menu is disabled
     /// (takes context and &Data, returns bool)
-    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> bool>>,
+    pub disabled_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
-impl<D> SelectMenuSpec<D> {
+impl<CD, CE, D> SelectMenuSpec<CD, CE, D> {
     fn on_build<'a>(
         &self,
-        context: ApplicationContext<'_>,
+        context: ApplicationContext<'_, CD, CE>,
         mut builder: &'a mut serenity::CreateSelectMenu,
         data: &D,
     ) -> (&'a mut serenity::CreateSelectMenu, interaction::CustomId) {

@@ -10,4 +10,4 @@ license = "MIT"
 poise = "0.5.2"
 tokio = { version = "1.25.0", features = ["full"] }
 async-trait = "0.1.64"
-minirustbot_macros = { path = "macros" }
+minirustbot_macros = { path = "../macros" }

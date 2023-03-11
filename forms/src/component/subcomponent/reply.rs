@@ -1,15 +1,13 @@
-use poise::serenity_prelude as serenity;
-
-use crate::common::ApplicationContext;
+use poise::{serenity_prelude as serenity, ApplicationContext};
 
 /// Holds all data necessary to display a component's reply message.
-pub struct ReplySpec<Data = ()> {
+pub struct ReplySpec<ContextData, ContextError, Data = ()> {
     /// The content of the sent message with the button.
     pub content: Option<String>,
 
     /// A function that returns the content of the message to be sent,
     /// as a String, taking as parameters the context and &Data.
-    pub content_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> String>>,
+    pub content_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
 
     /// A function that takes the CreateReply builder, the context, `&Data`,
     /// and internally adds attachments.
@@ -17,7 +15,7 @@ pub struct ReplySpec<Data = ()> {
         Box<
             dyn for<'a, 'b> Fn(
                 &'a mut poise::CreateReply<'b>,
-                ApplicationContext<'_>,
+                ApplicationContext<'_, ContextData, ContextError>,
                 &Data,
             ) -> &'a mut poise::CreateReply<'b>,
         >,
@@ -29,7 +27,7 @@ pub struct ReplySpec<Data = ()> {
         Box<
             dyn for<'a, 'b> Fn(
                 &'a mut serenity::CreateAllowedMentions,
-                ApplicationContext<'b>,
+                ApplicationContext<'b, ContextData, ContextError>,
                 &Data,
             ) -> &'a mut serenity::CreateAllowedMentions,
         >,
@@ -41,7 +39,7 @@ pub struct ReplySpec<Data = ()> {
         Box<
             dyn for<'a, 'b> Fn(
                 &'a mut serenity::CreateEmbed,
-                ApplicationContext<'b>,
+                ApplicationContext<'b, ContextData, ContextError>,
                 &Data,
             ) -> &'a mut serenity::CreateEmbed,
         >,
@@ -55,14 +53,14 @@ pub struct ReplySpec<Data = ()> {
 
     /// A function that takes a `&Data` and returns a `bool` (`true` if the message should be sent
     /// as ephemeral).
-    pub ephemeral_function: Option<Box<dyn Fn(ApplicationContext<'_>, &Data) -> bool>>,
+    pub ephemeral_function: Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
-impl<D> ReplySpec<D> {
+impl<CD, CE, D> ReplySpec<CD, CE, D> {
     pub fn create_reply<'a, 'b>(
         &self,
         mut builder: &'a mut poise::CreateReply<'b>,
-        context: ApplicationContext<'_>,
+        context: ApplicationContext<'_, CD, CE>,
         data: &D,
     ) -> &'a mut poise::CreateReply<'b> {
         builder = builder.content(

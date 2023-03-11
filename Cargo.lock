@@ -714,6 +714,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "minirustbot_forms",
+ "minirustbot_macros",
  "poise",
  "retainer",
  "serde",
@@ -726,6 +727,23 @@ dependencies = [
 [[package]]
 name = "minirustbot_forms"
 version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "minirustbot_macros",
+ "poise",
+ "tokio",
+]
+
+[[package]]
+name = "minirustbot_macros"
+version = "0.1.0"
+dependencies = [
+ "darling",
+ "poise",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "miniz_oxide"

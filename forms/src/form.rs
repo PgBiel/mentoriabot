@@ -1,29 +1,24 @@
 use async_trait::async_trait;
 
-use crate::{common::ApplicationContext, error::Result};
-
-pub mod component;
-pub mod testform;
-
-pub use component::{
-    ButtonComponent, ButtonSpec, ButtonsComponent, GenerateReply, MessageFormComponent,
-    ModalFormComponent, SelectComponent, SelectOption,
-    ReplySpec, SelectMenuSpec, SelectMenuOptionSpec,
-};
+use crate::error::Result;
+use poise::ApplicationContext;
 
 /// Represents a form of sequential Discord interactions (without a Modal).
 #[async_trait]
 pub trait InteractionForm: Sync {
-    /// Runs this form's components.
-    async fn run_components(context: ApplicationContext<'_>) -> Result<Box<Self>>;
+    type ContextData: Send + Sync;
+    type ContextError: Send + Sync;
 
-    async fn execute(context: ApplicationContext<'_>) -> Result<Box<Self>> {
+    /// Runs this form's components.
+    async fn run_components(context: ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> Result<Box<Self>>;
+
+    async fn execute(context: ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> Result<Box<Self>> {
         let mut data = Self::run_components(context).await?;
         data = data.on_finish(context).await?;
         Ok(data)
     }
 
-    async fn on_finish(self: Box<Self>, _context: ApplicationContext<'_>) -> Result<Box<Self>> {
+    async fn on_finish(self: Box<Self>, _context: ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> Result<Box<Self>> {
         Ok(self)
     }
 }
