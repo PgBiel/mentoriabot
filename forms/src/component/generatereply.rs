@@ -1,14 +1,21 @@
+use async_trait::async_trait;
 use poise::ApplicationContext;
 
+use crate::error::Result;
+
+use super::Buildable;
+
 /// Indicates a reply can be generated for this component type.
-/// See [`ReplySpec`] for a struct that can be helpful
-/// when using this trait.
+/// Does so by generating asynchronously a [`Buildable`] for a [`poise::CreateReply`].
+/// This can be a lambda or a [`ReplySpec`], for example.
 ///
 /// [`ReplySpec`]: super::subcomponent::ReplySpec
+#[async_trait]
 pub trait GenerateReply<ContextData, ContextError, Data = ()> {
-    fn create_reply<'a, 'b>(
-        builder: &'a mut poise::CreateReply<'b>,
+    type ReplyBuilder: for<'a> Buildable<poise::CreateReply<'a>>;
+
+    async fn create_reply<'a, 'b>(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &Data,
-    ) -> &'a mut poise::CreateReply<'b>;
+    ) -> Result<Self::ReplyBuilder>;
 }

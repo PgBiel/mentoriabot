@@ -5,7 +5,11 @@ use std::{convert::Infallible, fmt::Display, str::FromStr};
 use crate::util::generate_custom_id;
 
 /// Represents an interaction's custom ID.
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
+///
+/// Note that this struct implements [`Default`] by
+/// generating a pseudorandom value, based on the current Unix
+/// timestamp.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CustomId(pub String);
 
 impl CustomId {
@@ -26,5 +30,26 @@ impl FromStr for CustomId {
 impl Display for CustomId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.0, f)
+    }
+}
+
+/// Defaults the Custom ID to a pseudorandom value,
+/// based on the current Unix timestamp.
+impl Default for CustomId {
+    fn default() -> Self {
+        Self::generate()
+    }
+}
+
+/// For types that may hold a custom ID.
+pub trait HasCustomId {
+
+    /// Get this instance's Custom ID, if present.
+    fn get_custom_id(&self) -> Option<&CustomId>;
+}
+
+impl HasCustomId for CustomId {
+    fn get_custom_id(&self) -> Option<&CustomId> {
+        Some(self)
     }
 }

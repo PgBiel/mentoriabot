@@ -1,26 +1,35 @@
 //! A module for helpers for specific types of Form components.
 
+use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
 use crate::{
     error::Result,
-    interaction::{CustomId, SelectValue},
+    interaction::SelectValue,
 };
 
 pub mod button;
 pub mod reply;
 pub mod selectmenu;
+
 pub use button::ButtonSpec;
 pub use reply::ReplySpec;
 pub use selectmenu::{SelectMenuOptionSpec, SelectMenuSpec};
 
+use super::BuildableWithId;
+
 /// Represents a single SelectMenu.
+#[async_trait]
 pub trait SelectComponent<ContextData, ContextError, Data = ()> {
-    fn on_build<'a>(
-        builder: &'a mut serenity::CreateSelectMenu,
+    /// The Select Menu buildable returned by `generate_menu`.
+    type SelectBuilder: BuildableWithId<serenity::CreateSelectMenu>;
+
+    /// Generates this menu's Spec, allowing it to be built
+    /// and sent to Discord.
+    async fn generate_menu(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &Data,
-    ) -> (&'a mut serenity::CreateSelectMenu, CustomId);
+    ) -> Result<Self::SelectBuilder>;
 
     /// Function to run when an interaction response is received.
     /// Creates an instance of this component holding the received
@@ -33,19 +42,25 @@ pub trait SelectComponent<ContextData, ContextError, Data = ()> {
 /// Represents a Select Option, that is,
 /// an object (usually enum) that represents
 /// a user's specific choice in a selection menu.
-pub trait SelectOption<ContextData, ContextError, Data = ()>: TryFrom<SelectValue> {
+pub trait SelectOption: TryFrom<SelectValue> {
     /// Returns the specs of all possible options.
-    fn get_specs() -> Vec<SelectMenuOptionSpec<ContextData, ContextError, Data>>;
+    fn get_specs() -> Vec<SelectMenuOptionSpec>;
 }
 
 /// Represents a single Button.
+#[async_trait]
 pub trait ButtonComponent<ContextData, ContextError, Data = ()> {
-    fn on_build<'a>(
-        builder: &'a mut serenity::CreateButton,
+    /// The Select Menu buildable returned by `generate_button`.
+    type ButtonBuilder: BuildableWithId<serenity::CreateButton>;
+
+    /// Generates this button's Spec, allowing it to be built
+    /// and sent to Discord. You'll generally want to use
+    /// [`ButtonSpec`], but you're free to implement your own
+    /// [`BuildableWithId`]-implementing types for this.
+    async fn generate_button(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &Data,
-    ) -> (&'a mut serenity::CreateButton, Option<CustomId>);
-    // use Option<CustomId> as link buttons do not have a Custom ID (and thus cannot be awaited)
+    ) -> Result<Self::ButtonBuilder>;
 
     /// Function to run when an interaction response is received.
     /// Creates an instance of this component holding the received
@@ -55,31 +70,19 @@ pub trait ButtonComponent<ContextData, ContextError, Data = ()> {
     ) -> Result<Box<Self>>;
 }
 
+/// Represents a row of buttons in a component.
+#[async_trait]
 pub trait ButtonsComponent<ContextData, ContextError, Data = ()> {
-    const BUTTON_SPECS: Vec<ButtonSpec<ContextData, ContextError, Data>>;
+    /// The Select Menu buildable returned by `generate_buttons`.
+    type ButtonBuilder: BuildableWithId<serenity::CreateButton>;
 
-    /// Returns the generated custom IDs
-    fn on_build<'a>(
+    /// Generates the specs of this Button row. Usually you'll wish
+    /// to use [`ButtonSpec`], but you have to freedom to return your own
+    /// types for this.
+    async fn generate_buttons<'a>(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        mut builder: &'a mut serenity::CreateActionRow,
         data: &Data,
-    ) -> (&'a mut serenity::CreateActionRow, Vec<CustomId>) {
-        let mut custom_ids = Vec::new();
-
-        for button in Self::BUTTON_SPECS {
-            builder = builder.create_button(|b| {
-                let (b, custom_id) = button.on_build(b, context, data);
-
-                if let Some(custom_id) = custom_id {
-                    custom_ids.push(custom_id);
-                }
-
-                b
-            });
-        }
-
-        (builder, custom_ids)
-    }
+    ) -> Result<Vec<Self::ButtonBuilder>>;
 
     /// Function to run when an interaction response is received.
     /// Creates an instance of this component holding the received

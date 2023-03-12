@@ -1,21 +1,16 @@
-use poise::{serenity_prelude as serenity, ApplicationContext};
+use poise::serenity_prelude as serenity;
 
-use crate::interaction::{self, CustomId};
+use crate::{interaction::{CustomId, HasCustomId}, component::Buildable};
 
 /// Holds all data necessary to display a Discord button.
-#[derive(Default)]
-pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
-    /// The button's literal label (please specify this, or a `label_function`)
-    pub label: Option<String>,
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct ButtonSpec {
+    /// The button's literal label.
+    pub label: String,
 
-    /// A function (accepting context and `&Data`)
-    /// that returns the button's label as a `String` (specify this or `label`).
-    pub label_function:
-        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
-
-    /// The button's fixed custom ID; if unspecified,
-    /// it is auto-generated.
-    pub custom_id: Option<CustomId>,
+    /// The button's fixed custom ID,
+    /// which defaults to an auto-generated one.
+    pub custom_id: CustomId,
 
     pub style: Option<serenity::ButtonStyle>,
 
@@ -23,81 +18,65 @@ pub struct ButtonSpec<ContextData, ContextError, Data = ()> {
     /// NOTE: Such a button cannot be awaited for.
     pub link: Option<String>,
 
-    /// Function takes context and &Data, and returns the link the button leads to (a `String`).
-    pub link_function:
-        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> String>>,
-
     /// An optional single emoji to display near the label
     pub emoji: Option<serenity::ReactionType>,
 
-    /// Function that returns the emoji to display near the button label
-    /// (takes context and `&Data`, returns `ReactionType`)
-    pub emoji_function: Option<
-        Box<
-            dyn Fn(
-                ApplicationContext<'_, ContextData, ContextError>,
-                &Data,
-            ) -> serenity::ReactionType,
-        >,
-    >,
-
     /// If this button is disabled and cannot be clicked
     pub disabled: bool,
-
-    /// Function that determines if this button is disabled
-    /// (takes context and `&Data`, returns `bool`)
-    pub disabled_function:
-        Option<Box<dyn Fn(ApplicationContext<'_, ContextData, ContextError>, &Data) -> bool>>,
 }
 
-impl<CD, CE, D> ButtonSpec<CD, CE, D> {
-    pub fn on_build<'a>(
+impl ButtonSpec {
+    /// Returns the link this button points to,
+    /// if it is not empty. Otherwise `None`.
+    fn get_link_if_valid(&self) -> Option<&String> {
+        match self.link.as_ref() {
+            Some(link) if !link.is_empty() => Some(link),
+            _ => None
+        }
+    }
+}
+
+impl Buildable<serenity::CreateButton> for ButtonSpec {
+    fn on_build<'a>(
         &self,
         mut builder: &'a mut serenity::CreateButton,
-        context: ApplicationContext<'_, CD, CE>,
-        data: &D,
-    ) -> (
-        &'a mut serenity::CreateButton,
-        Option<interaction::CustomId>,
-    ) {
-        builder = builder.label(
-            self.label_function
-                .as_ref()
-                .map_or_else(|| self.label.clone(), |f| Some(f(context, data)))
-                .unwrap_or(String::from("")),
-        );
+    ) -> &'a mut serenity::CreateButton {
+        builder = builder.label(self.label.clone());
 
-        let mut custom_id = None;
-
-        if let Some(link_function) = &self.link_function {
-            builder = builder.url(link_function(context, data));
-        } else if let Some(link) = &self.link {
+        if let Some(link) = self.get_link_if_valid() {
             builder = builder.url(link);
         } else {
             // if not a link button => can have custom ID and custom style
-            let custom_id_value = self.custom_id.clone().unwrap_or_else(CustomId::generate);
+            let custom_id = self.custom_id.clone();
 
-            builder = builder.custom_id(&custom_id_value);
-
-            custom_id = Some(custom_id_value);
+            builder = builder.custom_id(&custom_id);
 
             if let Some(style) = self.style {
-                builder = builder.style(style);
+                if style != serenity::ButtonStyle::Link {  // not a link so
+                    builder = builder.style(style);
+                }
             }
         }
 
-        if let Some(disabled_function) = &self.disabled_function {
-            builder = builder.disabled(disabled_function(context, data));
-        } else {
-            builder = builder.disabled(self.disabled);
-        }
+        builder = builder.disabled(self.disabled);
 
-        if let Some(emoji_function) = &self.emoji_function {
-            builder = builder.emoji(emoji_function(context, data));
-        } else if let Some(emoji) = self.emoji.as_ref() {
+        if let Some(emoji) = self.emoji.as_ref() {
             builder = builder.emoji(emoji.clone());
         }
 
-        (builder, custom_id)
+        builder
+    }
+}
+
+/// Will return the absence of a Custom ID
+/// if this ButtonSpec contains a link.
+/// Otherwise, returns `self.custom_id`.
+impl HasCustomId for ButtonSpec {
+    fn get_custom_id(&self) -> Option<&CustomId> {
+        if self.get_link_if_valid().is_some() {  // link buttons can't have a Custom ID
+            None
+        } else {
+            Some(&self.custom_id)
+        }
     }
 }
