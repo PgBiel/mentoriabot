@@ -6,6 +6,9 @@ mod common;
 mod config;
 mod error;
 mod events;
+mod schema;
+mod model;
+mod connection;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
@@ -25,6 +28,7 @@ async fn main() {
     let config_contents = std::fs::read_to_string(CONFIG_FILE).unwrap();
     let parsed_config = serde_json::from_str::<Config>(&config_contents).unwrap();
 
+    let conn = connection::create_connection(parsed_config.get_database_url());
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands::get_commands(),
