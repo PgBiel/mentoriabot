@@ -25,9 +25,8 @@ mod util;
 mod tests;
 
 pub use component::{
-    ButtonSpec, GenerateReply, Subcomponent, MessageFormComponent,
-    ModalFormComponent, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec,
-    SelectOption,
+    ButtonSpec, GenerateReply, MessageFormComponent, ModalFormComponent, ReplySpec,
+    SelectMenuOptionSpec, SelectMenuSpec, SelectOption, Subcomponent,
 };
 pub use error::FormError;
 pub use form::InteractionForm;

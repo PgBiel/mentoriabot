@@ -4,7 +4,13 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
 
-use crate::util::{self, macros::{take_attribute_optional, take_attribute_or_its_function_optional, take_attribute_or_its_function_required}};
+use crate::util::{
+    self,
+    macros::{
+        take_attribute_optional, take_attribute_or_its_function_optional,
+        take_attribute_or_its_function_required,
+    },
+};
 
 /// Representation of the struct attributes
 #[derive(Debug, Clone, darling::FromMeta)]

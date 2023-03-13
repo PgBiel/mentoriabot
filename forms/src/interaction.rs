@@ -2,9 +2,8 @@ mod custom_id;
 mod selectvalue;
 use std::{sync::Arc, time::Duration};
 
-use poise::{serenity_prelude as serenity, ApplicationContext};
-
 pub use custom_id::{CustomId, HasCustomId};
+use poise::{serenity_prelude as serenity, ApplicationContext};
 pub use selectvalue::SelectValue;
 
 /// Wait for a given interaction's response.

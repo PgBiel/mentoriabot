@@ -43,7 +43,6 @@ impl Default for CustomId {
 
 /// For types that may hold a custom ID.
 pub trait HasCustomId {
-
     /// Get this instance's Custom ID, if present.
     fn get_custom_id(&self) -> Option<&CustomId>;
 }

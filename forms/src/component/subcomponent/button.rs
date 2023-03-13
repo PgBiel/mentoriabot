@@ -1,6 +1,9 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{interaction::{CustomId, HasCustomId}, component::Buildable};
+use crate::{
+    component::Buildable,
+    interaction::{CustomId, HasCustomId},
+};
 
 /// Holds all data necessary to display a Discord button.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -31,7 +34,7 @@ impl ButtonSpec {
     fn get_link_if_valid(&self) -> Option<&String> {
         match self.link.as_ref() {
             Some(link) if !link.is_empty() => Some(link),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -52,7 +55,8 @@ impl Buildable<serenity::CreateButton> for ButtonSpec {
             builder = builder.custom_id(&custom_id);
 
             if let Some(style) = self.style {
-                if style != serenity::ButtonStyle::Link {  // not a link so
+                if style != serenity::ButtonStyle::Link {
+                    // not a link so
                     builder = builder.style(style);
                 }
             }
@@ -73,7 +77,8 @@ impl Buildable<serenity::CreateButton> for ButtonSpec {
 /// Otherwise, returns `self.custom_id`.
 impl HasCustomId for ButtonSpec {
     fn get_custom_id(&self) -> Option<&CustomId> {
-        if self.get_link_if_valid().is_some() {  // link buttons can't have a Custom ID
+        if self.get_link_if_valid().is_some() {
+            // link buttons can't have a Custom ID
             None
         } else {
             Some(&self.custom_id)

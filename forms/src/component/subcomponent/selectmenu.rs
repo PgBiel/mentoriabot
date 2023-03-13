@@ -1,6 +1,9 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{interaction::{CustomId, SelectValue}, component::Buildable};
+use crate::{
+    component::Buildable,
+    interaction::{CustomId, SelectValue},
+};
 
 /// Holds data regarding a particular Select Menu option.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]

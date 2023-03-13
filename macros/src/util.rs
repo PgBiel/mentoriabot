@@ -124,7 +124,7 @@ pub(crate) mod macros {
             } else {
                 quote! { Default::default() }
             }
-        }
+        };
     }
 
     macro_rules! take_attribute_or_its_function_required {
@@ -136,7 +136,7 @@ pub(crate) mod macros {
             } else {
                 panic!("Must specify one of #[$attr_name] or #[$func_name]")
             }
-        }
+        };
     }
 
     macro_rules! take_attribute_or_its_function_optional {
@@ -148,10 +148,10 @@ pub(crate) mod macros {
             } else {
                 quote! { Default::default() }
             }
-        }
+        };
     }
 
     pub(crate) use take_attribute_optional;
-    pub(crate) use take_attribute_or_its_function_required;
     pub(crate) use take_attribute_or_its_function_optional;
+    pub(crate) use take_attribute_or_its_function_required;
 }

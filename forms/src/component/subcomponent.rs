@@ -26,7 +26,9 @@ use super::BuildableWithId;
 ///
 /// [`MessageComponentInteraction`]: serenity::MessageComponentInteraction
 #[async_trait]
-pub trait Subcomponent<ContextData, ContextError, FormData = ()>: TryFrom<serenity::MessageComponentInteraction, Error = FormError> {
+pub trait Subcomponent<ContextData, ContextError, FormData = ()>:
+    TryFrom<serenity::MessageComponentInteraction, Error = FormError>
+{
     type BuilderType: Send + Sync;
     type ReturnedBuildable: BuildableWithId<Self::BuilderType> + Send + Sync;
 
@@ -35,7 +37,6 @@ pub trait Subcomponent<ContextData, ContextError, FormData = ()>: TryFrom<sereni
         data: &FormData,
     ) -> Result<Vec<Self::ReturnedBuildable>>;
 }
-
 
 /// Represents a Select Option, that is,
 /// an object (usually enum) that represents
