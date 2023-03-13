@@ -114,3 +114,44 @@ pub fn vec_tuple_2_to_hash_map(v: Vec<Tuple2<String>>) -> proc_macro2::TokenStre
         ])
     }
 }
+
+/// Utility macros for macro impls
+pub(crate) mod macros {
+    macro_rules! take_attribute_optional {
+        ($attrs:expr; $attr_name:ident) => {
+            if let Some($attr_name) = $attrs.$attr_name.as_ref() {
+                quote! { #$attr_name.into() }
+            } else {
+                quote! { Default::default() }
+            }
+        }
+    }
+
+    macro_rules! take_attribute_or_its_function_required {
+        ($attrs:expr; $attr_name:ident, $func_name:ident) => {
+            if let Some($func_name) = $attrs.$func_name.as_ref() {
+                quote! { #$func_name(context, data).await?.into() }
+            } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
+                quote! { #$attr_name.into() }
+            } else {
+                panic!("Must specify one of #[$attr_name] or #[$func_name]")
+            }
+        }
+    }
+
+    macro_rules! take_attribute_or_its_function_optional {
+        ($attrs:expr; $attr_name:ident, $func_name:ident) => {
+            if let Some($func_name) = $attrs.$func_name.as_ref() {
+                quote! { #$func_name(context, data).await?.into() }
+            } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
+                quote! { #$attr_name.into() }
+            } else {
+                quote! { Default::default() }
+            }
+        }
+    }
+
+    pub(crate) use take_attribute_optional;
+    pub(crate) use take_attribute_or_its_function_required;
+    pub(crate) use take_attribute_or_its_function_optional;
+}

@@ -4,7 +4,7 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
 
-use crate::util;
+use crate::util::{self, macros::{take_attribute_optional, take_attribute_or_its_function_optional, take_attribute_or_its_function_required}};
 
 /// Representation of the struct attributes
 #[derive(Debug, Clone, darling::FromMeta)]
@@ -97,19 +97,33 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
-            fn on_build<'button_macro>(
-                builder: &'button_macro mut ::poise::serenity_prelude::CreateButton,
-                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &#data_type
-            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<::minirustbot_forms::interaction::CustomId>) {
-                #button_spec.on_build(builder, context, data)
+        #[::async_trait::async_trait]
+        impl #impl_generics ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+            type BuilderType = ::poise::serenity_prelude::CreateButton;
+            type ReturnedBuildable = ::minirustbot_forms::ButtonSpec;
+            async fn generate_buildables(
+                context: ApplicationContext<'_, ContextData, ContextError>,
+                data: &FormData,
+            ) -> Result<Vec<Self::ReturnedBuildable>> {
+                Ok(::std::vec![ #button_spec ])
             }
+
+
 
             fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
+
+        impl #impl_generics TryFrom<::poise::serenity_prelude::MessageComponentInteraction> for #struct_ident #ty_generics #where_clause {
+            type Error = ::minirustbot_forms::error::FormError;
+
+            fn try_from(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::minirustbot_forms::error::Result<Self> {
+                ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
+            }
+        }
+
+        // impl #impl_generics ::minirustbot_forms::Buildable<>
 
         #[::async_trait::async_trait]
         impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
@@ -342,15 +356,17 @@ fn single_button_create_with_interaction_code(
 }
 
 fn create_button_spec(button_attrs: &ButtonAttributes, data: &syn::Type) -> TokenStream2 {
-    let label = util::wrap_option_into(&button_attrs.label);
-    let label_function = util::wrap_option_box(&button_attrs.label_function);
-    let custom_id = util::wrap_option_into(&button_attrs.custom_id);
-    let link = util::wrap_option_into(&button_attrs.link);
-    let link_function = util::wrap_option_box(&button_attrs.link_function);
-    let emoji = util::wrap_option_into(&button_attrs.emoji);
-    let emoji_function = util::wrap_option_box(&button_attrs.emoji_function);
-    let disabled = button_attrs.disabled.is_some();
-    let disabled_function = util::wrap_option_box(&button_attrs.disabled_function);
+    let label = take_attribute_or_its_function_required!(&button_attrs; label, label_function);
+    let custom_id = take_attribute_optional!(&button_attrs; custom_id);
+    let link = take_attribute_or_its_function_optional!(&button_attrs; link, link_function);
+    let emoji = take_attribute_or_its_function_optional!(&button_attrs; emoji, emoji_function);
+
+    let disabled = if let Some(disabled_function) = &button_attrs.disabled_function {
+        quote! { #disabled_function(context, data).into() }
+    } else {
+        let disabled = button_attrs.disabled.is_some();
+        quote! { #disabled.into() }
+    };
 
     let style = if button_attrs.primary.is_some() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
@@ -368,21 +384,14 @@ fn create_button_spec(button_attrs: &ButtonAttributes, data: &syn::Type) -> Toke
 
     let style = util::wrap_option_into(&style);
 
-    let ctx_data = &button_attrs.ctx_data;
-    let ctx_error = &button_attrs.ctx_error;
-
     quote! {
-        ::minirustbot_forms::ButtonSpec::<#ctx_data, #ctx_error, #data> {
+        ::minirustbot_forms::ButtonSpec {
             label: #label,
-            label_function: #label_function,
             custom_id: #custom_id,
             style: #style,
             link: #link,
-            link_function: #link_function,
             emoji: #emoji,
-            emoji_function: #emoji_function,
             disabled: #disabled,
-            disabled_function: #disabled_function,
         }
     }
 }
