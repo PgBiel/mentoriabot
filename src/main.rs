@@ -8,6 +8,7 @@ mod error;
 mod events;
 mod schema;
 mod model;
+mod repository;
 mod connection;
 
 use common::Data;
@@ -28,7 +29,9 @@ async fn main() {
     let config_contents = std::fs::read_to_string(CONFIG_FILE).unwrap();
     let parsed_config = serde_json::from_str::<Config>(&config_contents).unwrap();
 
-    let conn = connection::create_connection(parsed_config.get_database_url());
+    let database_url = parsed_config.get_database_url().clone();
+    let conn = connection::create_connection(&database_url);
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands::get_commands(),

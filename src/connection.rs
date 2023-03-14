@@ -1,6 +1,7 @@
-use diesel::Connection;
+use diesel_async::AsyncConnection;
 
-pub fn create_connection(database_url: &String) -> diesel::PgConnection {
-    diesel::PgConnection::establish(database_url)
+pub async fn create_connection(database_url: &String) -> diesel_async::AsyncPgConnection {
+    diesel_async::AsyncPgConnection::establish(database_url)
+        .await
         .expect("Failed to connect to database.")
 }
