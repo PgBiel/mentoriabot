@@ -1,7 +1,9 @@
+// @generated automatically by Diesel CLI.
+
 diesel::table! {
-    users {
-        id -> Integer,
-        name -> VarChar,
-        bio -> VarChar,
+    users (id) {
+        id -> Int4,
+        name -> Varchar,
+        bio -> Nullable<Text>,
     }
 }
