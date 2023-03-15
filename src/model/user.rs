@@ -5,7 +5,7 @@ use crate::schema::*;
 pub struct User {
     pub id: i32,
     pub name: String,
-    pub discord_userid: i64,
+    pub discord_userid: String,  // <-- as i64 (not u64) is the largest supported type in postgres
     pub bio: Option<String>,
 }
 
@@ -13,6 +13,6 @@ pub struct User {
 #[table_name = "users"]
 pub struct NewUser {
     pub name: String,
-    pub discord_userid: i64,
-    pub bio: String,
+    pub discord_userid: String,
+    pub bio: Option<String>,
 }
