@@ -1,8 +1,8 @@
 use async_trait::async_trait;
-use diesel::{QueryDsl, ExpressionMethods, OptionalExtension};
+use diesel::{QueryDsl, ExpressionMethods, OptionalExtension, Table};
 use diesel_async::RunQueryDsl;
 
-use crate::{model::{User, NewUser}, schema::users, error::Result};
+use crate::{model::{User, NewUser}, schema::users, error::{Result, Error}};
 
 use super::{repo_insert, Repository, repo_update, repo_remove, repo_get_by_id};
 
@@ -28,16 +28,22 @@ impl Repository for UserRepository {
 
     const TABLE: Self::Table = users::table;
 
-    async fn insert(conn: &mut diesel_async::AsyncPgConnection, user: &NewUser) -> Result<User> {
+    async fn insert(conn: &mut diesel_async::AsyncPgConnection, user: NewUser) -> Result<User> {
+        user.discord_userid.parse::<u64>()
+            .map_err(|_| Error::Other("Provided invalid ID for user"))?;
+
         repo_insert!(conn, users::table; user)
     }
 
-    async fn update(conn: &mut diesel_async::AsyncPgConnection, old_user: &User, new_user: &NewUser) -> Result<User> {
-        repo_update!(conn; old_user => new_user)
+    async fn update(conn: &mut diesel_async::AsyncPgConnection, old_user: User, new_user: NewUser) -> Result<User> {
+        new_user.discord_userid.parse::<u64>()
+            .map_err(|_| Error::Other("Provided invalid ID for user"))?;
+
+        repo_update!(conn; &old_user => new_user)
     }
 
-    async fn remove(conn: &mut diesel_async::AsyncPgConnection, user: &User) -> Result<()> {
-        repo_remove!(conn; user)
+    async fn remove(conn: &mut diesel_async::AsyncPgConnection, user: User) -> Result<()> {
+        repo_remove!(conn; &user)
     }
 }
 
