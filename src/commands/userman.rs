@@ -17,7 +17,10 @@ struct UserModal {
 }
 
 /// Manages users in the database.
-#[poise::command(slash_command, ephemeral, subcommands("add", "get", "remove", "all"))]
+#[poise::command(slash_command,
+    subcommands("add", "get", "remove", "all"),
+    ephemeral,
+)]
 pub async fn userman(
     ctx: ApplicationContext<'_>
 ) -> Result<()> {
@@ -25,7 +28,7 @@ pub async fn userman(
     Ok(())
 }
 
-
+/// Adds a User to the database.
 #[poise::command(slash_command, ephemeral)]
 pub async fn add(
     ctx: ApplicationContext<'_>,
@@ -41,16 +44,16 @@ pub async fn add(
                 discord_userid: user.id.as_u64().to_string(),
                 bio: modal_data.bio,
             };
-            let user;
+            let inserted_user;
             {
                 let conn_mutex = ctx.data.connection.get_connection();
                 let mut conn = conn_mutex.lock().await;
-                user = UserRepository::insert(&mut conn, new_user).await?;
+                inserted_user = UserRepository::upsert(&mut conn, new_user).await?;
             }
             let response = format!(
                 "Successfully added Mr. {}. to the database (with{} a bio).",
-                user.name,
-                if user.bio.is_none() { "out" } else { "" }
+                inserted_user.name,
+                if inserted_user.bio.is_none() { "out" } else { "" }
             );
             ctx.send(|f| f.content(response).ephemeral(true)).await?;
         }
@@ -61,6 +64,7 @@ pub async fn add(
     Ok(())
 }
 
+/// Gets a User from the database
 #[poise::command(slash_command, ephemeral)]
 pub async fn get(
     ctx: ApplicationContext<'_>,
@@ -102,6 +106,7 @@ pub async fn get(
     Ok(())
 }
 
+/// Removes a User from the database
 #[poise::command(slash_command, ephemeral)]
 pub async fn remove(
     ctx: ApplicationContext<'_>,
