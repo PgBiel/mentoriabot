@@ -1,5 +1,6 @@
 {
     "token": "InsertTokenHere",
     "guild_id": "12345",
-    "database_url": "postgres://username:password@localhost/minirustbot_test"
+    "database_url": "postgres://username:password@localhost/minirustbot_test",
+    "admin_userids": [1234, 5678]
 }
