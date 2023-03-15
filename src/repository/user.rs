@@ -10,11 +10,31 @@ use super::{repo_insert, Repository, repo_update, repo_remove, repo_get_by_id};
 pub struct UserRepository;
 
 impl UserRepository {
-    async fn get(
+    pub async fn get(
         conn: &mut diesel_async::AsyncPgConnection,
         id: i32
     ) -> Result<Option<User>> {
         repo_get_by_id!(conn, users::table, /*id_column=*/users::id; id)
+    }
+
+    pub async fn find_by_discordid(
+        conn: &mut diesel_async::AsyncPgConnection,
+        discord_id: u64
+    ) -> Result<Option<User>> {
+        users::table.filter(users::discord_userid.eq(discord_id.to_string()))
+            .first(conn)
+            .await
+            .optional()
+            .map_err(From::from)
+    }
+
+    pub async fn find_all(
+        conn: &mut diesel_async::AsyncPgConnection
+    ) -> Result<Vec<User>> {
+        users::table.select(users::table::all_columns())
+            .get_results(conn)
+            .await
+            .map_err(From::from)
     }
 }
 
