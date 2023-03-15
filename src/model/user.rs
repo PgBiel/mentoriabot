@@ -1,14 +1,14 @@
-use diesel::{Queryable, Insertable};
+use diesel::{Queryable, Insertable, Identifiable, AsChangeset};
 use crate::schema::*;
 
-#[derive(Debug, Queryable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Identifiable, Clone, PartialEq, Eq)]
 pub struct User {
     pub id: i32,
     pub name: String,
     pub bio: Option<String>,
 }
 
-#[derive(Debug, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Insertable, AsChangeset, Clone, PartialEq, Eq)]
 #[table_name = "users"]
 pub struct NewUser {
     pub name: String,
