@@ -5,6 +5,7 @@ use crate::schema::*;
 pub struct User {
     pub id: i32,
     pub name: String,
+    pub discord_userid: i64,
     pub bio: Option<String>,
 }
 
@@ -12,5 +13,6 @@ pub struct User {
 #[table_name = "users"]
 pub struct NewUser {
     pub name: String,
+    pub discord_userid: i64,
     pub bio: String,
 }
