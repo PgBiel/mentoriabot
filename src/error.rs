@@ -21,6 +21,8 @@ pub enum Error {
     /// A Diesel connection error occurred
     DieselConnection(diesel::result::ConnectionError),
 
+    Generic(Box<dyn std::error::Error + Send + Sync>),
+
     /// Some other error
     Other(&'static str),
 }
@@ -62,9 +64,10 @@ impl Display for Error {
         match self {
             Self::Form(inner) => Display::fmt(&inner, f),
             Self::EnumParse(inner) => Display::fmt(&inner, f),
+            Self::Serenity(inner) => Display::fmt(&inner, f),
             Self::Diesel(inner) => Display::fmt(&inner, f),
             Self::DieselConnection(inner) => Display::fmt(&inner, f),
-            Self::Serenity(inner) => Display::fmt(&inner, f),
+            Self::Generic(inner) => Display::fmt(&inner, f),
             Self::Other(message) => write!(f, "{}", message),
         }
     }
@@ -78,6 +81,7 @@ impl std::error::Error for Error {
             Self::Serenity(inner) => Some(inner),
             Self::Diesel(inner) => Some(inner),
             Self::DieselConnection(inner) => Some(inner),
+            Self::Generic(inner) => Some(&**inner),
             _ => None,
         }
     }
