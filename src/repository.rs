@@ -8,7 +8,7 @@ mod user;
 pub use user::UserRepository;
 
 pub mod macros;
-pub(crate) use macros::{repo_insert, repo_update, repo_remove, repo_get_by_id};
+pub(crate) use macros::{repo_insert, repo_upsert, repo_update, repo_remove, repo_get_by_id};
 
 #[async_trait]
 pub trait Repository {
@@ -26,17 +26,26 @@ pub trait Repository {
 
     const TABLE: Self::Table;
 
+    /// Insert a new Entity to the database.
     async fn insert(
         conn: &mut AsyncPgConnection,
         new_entity: Self::NewEntity
     ) -> Result<Self::Entity>;
 
+    /// Insert a new Entity to the database, or update if it already exists.
+    async fn upsert(
+        conn: &mut AsyncPgConnection,
+        new_entity: Self::NewEntity
+    ) -> Result<Self::Entity>;
+
+    /// Update an existing Entity with new data.
     async fn update(
         conn: &mut AsyncPgConnection,
         old_entity: Self::Entity,
         new_entity: Self::NewEntity
     ) -> Result<Self::Entity>;
 
+    /// Remove an Entity from the database.
     async fn remove(
         conn: &mut AsyncPgConnection,
         entity: Self::Entity

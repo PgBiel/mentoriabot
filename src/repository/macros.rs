@@ -11,6 +11,22 @@ macro_rules! repo_insert {
     }
 }
 
+macro_rules! repo_upsert {
+    ($conn:expr, $table:expr; $conflict_columns:expr; $new_entity:expr) => {
+        {
+            let entity = diesel::insert_into($table)
+                .values($new_entity)
+                .on_conflict($conflict_columns)
+                .do_update()
+                .set($new_entity)
+                .get_result($conn)
+                .await?;
+
+            $crate::error::Result::Ok(entity)
+        }
+    }
+}
+
 macro_rules! repo_update {
     ($conn:expr; $old_entity:expr => $new_entity:expr) => {
         {
@@ -47,6 +63,7 @@ macro_rules! repo_get_by_id {
 }
 
 pub(crate) use repo_insert;
+pub(crate) use repo_upsert;
 pub(crate) use repo_update;
 pub(crate) use repo_remove;
 pub(crate) use repo_get_by_id;

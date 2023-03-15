@@ -4,7 +4,7 @@ use diesel_async::RunQueryDsl;
 
 use crate::{model::{User, NewUser}, schema::users, error::{Result, Error}};
 
-use super::{repo_insert, Repository, repo_update, repo_remove, repo_get_by_id};
+use super::{repo_insert, Repository, repo_upsert, repo_update, repo_remove, repo_get_by_id};
 
 /// Manages User instances.
 pub struct UserRepository;
@@ -53,6 +53,13 @@ impl Repository for UserRepository {
             .map_err(|_| Error::Other("Provided invalid ID for user"))?;
 
         repo_insert!(conn, users::table; user)
+    }
+
+    async fn upsert(conn: &mut diesel_async::AsyncPgConnection, user: NewUser) -> Result<User> {
+        user.discord_userid.parse::<u64>()
+            .map_err(|_| Error::Other("Provided invalid ID for user"))?;
+
+        repo_upsert!(conn, users::table; users::discord_userid; &user)
     }
 
     async fn update(conn: &mut diesel_async::AsyncPgConnection, old_user: User, new_user: NewUser) -> Result<User> {
