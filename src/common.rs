@@ -1,10 +1,19 @@
-use crate::error::Error;
+use std::sync::Mutex;
 
-pub struct Data {} // User data, which is stored and accessible in all command invocations
+use crate::{error::Error, connection::ConnectionManager};
+
+// User data, which is stored and accessible in all command invocations
+pub struct Data {
+    pub connection: ConnectionManager,
+    pub admin_userids: Vec<u64>,
+}
 
 impl Data {
-    pub fn new() -> Self {
-        Data {}
+    pub fn new(
+        connection: ConnectionManager,
+        admin_userids: Vec<u64>
+    ) -> Self {
+        Data { connection, admin_userids }
     }
 }
 

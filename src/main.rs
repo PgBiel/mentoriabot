@@ -30,7 +30,7 @@ async fn main() {
     let parsed_config = serde_json::from_str::<Config>(&config_contents).unwrap();
 
     let database_url = parsed_config.get_database_url().clone();
-    let conn = connection::create_connection(&database_url);
+    let conn = connection::ConnectionManager::create(&database_url).await;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -48,7 +48,7 @@ async fn main() {
                     GuildId(parsed_config.get_guild_id()),
                 )
                 .await?;
-                Ok(Data::new())
+                Ok(Data::new(conn, parsed_config.get_admin_userids().clone()))
             })
         });
 

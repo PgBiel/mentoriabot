@@ -5,6 +5,7 @@ pub struct MiniRustBotConfig {
     token: String,
     guild_id: u64,
     database_url: String,
+    admin_userids: Vec<u64>
 }
 
 impl MiniRustBotConfig {
@@ -18,5 +19,9 @@ impl MiniRustBotConfig {
 
     pub fn get_database_url(&self) -> &String {
         &self.database_url
+    }
+
+    pub fn get_admin_userids(&self) -> &Vec<u64> {
+        &self.admin_userids
     }
 }
