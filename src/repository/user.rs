@@ -4,7 +4,7 @@ use diesel_async::RunQueryDsl;
 
 use crate::{model::{User, NewUser}, schema::users, error::Result};
 
-use super::{repo_insert, Repository, repo_update, repo_remove, repo_get_by_id};
+use super::{Repository, repo_get_by_id};
 
 /// Manages User instances.
 pub struct UserRepository;
@@ -27,18 +27,6 @@ impl Repository for UserRepository {
     type NewEntity = NewUser;
 
     const TABLE: Self::Table = users::table;
-
-    async fn insert(conn: &mut diesel_async::AsyncPgConnection, user: &NewUser) -> Result<User> {
-        repo_insert!(conn, users::table; user)
-    }
-
-    async fn update(conn: &mut diesel_async::AsyncPgConnection, old_user: &User, new_user: &NewUser) -> Result<User> {
-        repo_update!(conn; old_user => new_user)
-    }
-
-    async fn remove(conn: &mut diesel_async::AsyncPgConnection, user: &User) -> Result<()> {
-        repo_remove!(conn; user)
-    }
 }
 
 // #[cfg(test)]
