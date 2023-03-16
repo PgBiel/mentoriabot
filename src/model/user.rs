@@ -1,11 +1,17 @@
 use diesel::{Queryable, Insertable, Identifiable, AsChangeset};
 use crate::schema::*;
 
+use super::DiscordIdField;
+
 #[derive(Debug, Queryable, Identifiable, Clone, PartialEq, Eq)]
 pub struct User {
     pub id: i32,
     pub name: String,
-    pub discord_userid: String,  // <-- as i64 (not u64) is the largest supported type in postgres
+
+    // custom deserialization as it's a String in the database
+    // due to integer size limitations in Postgres
+    #[diesel(deserialize_as = DiscordIdField)]
+    pub discord_userid: u64,
     pub bio: Option<String>,
 }
 
