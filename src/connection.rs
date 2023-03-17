@@ -3,10 +3,16 @@ use std::sync::Arc;
 use diesel_async::AsyncConnection;
 use tokio::sync as tokio;
 
+/// Holds a database Connection object, with a [`tokio::sync::Mutex`]
+/// to allow asynchronous locking of access to it.
+///
+/// [`tokio::sync::Mutex`]: tokio::Mutex
 pub struct ConnectionManager {
     connection: Arc<tokio::Mutex<diesel_async::AsyncPgConnection>>,
 }
 
+/// General function for forcibly creating a connection to the database.
+/// Panics on failure.
 pub async fn create_connection(database_url: &str) -> diesel_async::AsyncPgConnection {
     diesel_async::AsyncPgConnection::establish(database_url)
         .await
@@ -14,12 +20,18 @@ pub async fn create_connection(database_url: &str) -> diesel_async::AsyncPgConne
 }
 
 impl ConnectionManager {
+    /// Creates a Connection Manager by initializing a connection
+    /// to the given Database URL.
+    ///
+    /// Panics on failure.
     pub async fn create(database_url: &str) -> Self {
         ConnectionManager {
             connection: Arc::new(tokio::Mutex::new(create_connection(database_url).await)),
         }
     }
 
+    /// Gets the connection held by this ConnectionManager, wrapped in a Mutex
+    /// to allow for concurrent access.
     pub fn get_connection(&self) -> Arc<tokio::Mutex<diesel_async::AsyncPgConnection>> {
         Arc::clone(&self.connection)
     }

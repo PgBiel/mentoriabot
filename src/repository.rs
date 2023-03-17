@@ -12,6 +12,7 @@ pub use user::UserRepository;
 pub mod macros;
 pub(crate) use macros::{repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert};
 
+/// Trait for a generic entity Repository.
 #[async_trait]
 pub trait Repository {
     /// The table with the data this repository this will use

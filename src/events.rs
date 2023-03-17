@@ -2,6 +2,7 @@ use poise::{serenity_prelude as serenity, Event};
 
 use crate::{common, error::Error};
 
+/// Handles special Discord events that this bot has received.
 pub fn handle<'a>(
     _ctx: &'a serenity::Context,
     _event: &'a Event<'a>,
