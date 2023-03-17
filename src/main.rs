@@ -30,7 +30,9 @@ async fn main() {
 config.example.json structure.");
 
     let database_url = parsed_config.get_database_url();
-    let conn = connection::ConnectionManager::create(database_url).await;
+    let conn = connection::ConnectionManager::create(database_url)
+        .await
+        .expect("Failed to connect to the bot's database.");
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
