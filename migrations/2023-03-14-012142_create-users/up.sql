@@ -1,7 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    discord_id VARCHAR PRIMARY KEY CHECK(discord_id ~ '^\d{,20}$'),
     name VARCHAR NOT NULL,
-    discord_userid VARCHAR UNIQUE NOT NULL,
     bio TEXT
 );

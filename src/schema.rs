@@ -1,10 +1,9 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    users (id) {
-        id -> Int4,
+    users (discord_id) {
+        discord_id -> Varchar,
         name -> Varchar,
-        discord_userid -> Varchar,
         bio -> Nullable<Text>,
     }
 }

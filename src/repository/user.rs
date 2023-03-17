@@ -13,20 +13,11 @@ use crate::{
 pub struct UserRepository;
 
 impl UserRepository {
-    pub async fn get(conn: &mut diesel_async::AsyncPgConnection, id: i32) -> Result<Option<User>> {
-        repo_get_by_id!(conn, users::table, /*id_column=*/users::id; id)
-    }
-
-    pub async fn find_by_discordid(
+    pub async fn get(
         conn: &mut diesel_async::AsyncPgConnection,
-        discord_id: DiscordId,
+        discord_id: DiscordId
     ) -> Result<Option<User>> {
-        users::table
-            .filter(users::discord_userid.eq(discord_id))
-            .first(conn)
-            .await
-            .optional()
-            .map_err(From::from)
+        repo_get_by_id!(conn, users::table, /*id_column=*/users::discord_id; discord_id)
     }
 
     pub async fn find_all(conn: &mut diesel_async::AsyncPgConnection) -> Result<Vec<User>> {
@@ -53,7 +44,7 @@ impl Repository for UserRepository {
     }
 
     async fn upsert(conn: &mut diesel_async::AsyncPgConnection, user: NewUser) -> Result<User> {
-        repo_upsert!(conn, users::table; users::discord_userid; &user)
+        repo_upsert!(conn, users::table; /*conflict_columns=*/users::discord_id; &user)
     }
 
     async fn update(

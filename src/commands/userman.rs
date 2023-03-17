@@ -42,8 +42,8 @@ pub async fn add(
         let data = UserModal::execute(ctx).await?;
         if let Some(modal_data) = data {
             let new_user = NewUser {
+                discord_id: user.id.into(),
                 name: modal_data.name,
-                discord_userid: user.id.into(),
                 bio: modal_data.bio,
             };
             let inserted_user;
@@ -81,7 +81,7 @@ pub async fn get(
     } else {
         let conn_mutex = ctx.data.connection.get_connection();
         let mut conn = conn_mutex.lock().await;
-        let found_user = UserRepository::find_by_discordid(&mut conn, user.id.into()).await?;
+        let found_user = UserRepository::get(&mut conn, user.id.into()).await?;
         if let Some(found_user) = found_user {
             let bio = found_user.bio;
             let response = format!(
@@ -127,7 +127,7 @@ pub async fn remove(
     } else {
         let conn_mutex = ctx.data.connection.get_connection();
         let mut conn = conn_mutex.lock().await;
-        let found_user = UserRepository::find_by_discordid(&mut conn, user.id.into()).await?;
+        let found_user = UserRepository::get(&mut conn, user.id.into()).await?;
         if let Some(found_user) = found_user {
             let removed_msg = format!(
                 "Successfully removed {} from the database.",
