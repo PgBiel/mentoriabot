@@ -30,8 +30,10 @@ async fn main() {
 config.example.json structure.",
     );
 
-    let database_url = parsed_config.get_database_url();
-    let conn = connection::ConnectionManager::create(database_url)
+    let Config { database_url, token, guild_id, admin_userids } =
+        parsed_config;
+
+    let conn = connection::ConnectionManager::create(&database_url)
         .await
         .expect("Failed to connect to the bot's database.");
 
@@ -41,17 +43,17 @@ config.example.json structure.",
             event_handler: events::handle,
             ..Default::default()
         })
-        .token(parsed_config.get_token())
+        .token(&token)
         .intents(serenity::GatewayIntents::non_privileged())
-        .setup(|ctx, _ready, framework| {
+        .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_in_guild(
                     ctx,
                     &framework.options().commands,
-                    GuildId(parsed_config.get_guild_id()),
+                    GuildId(guild_id),
                 )
                 .await?;
-                Ok(Data::new(conn, parsed_config.get_admin_userids().clone()))
+                Ok(Data::new(conn, admin_userids))
             })
         });
 
