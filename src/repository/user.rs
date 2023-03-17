@@ -15,7 +15,7 @@ pub struct UserRepository;
 impl UserRepository {
     pub async fn get(
         conn: &mut diesel_async::AsyncPgConnection,
-        discord_id: DiscordId
+        discord_id: DiscordId,
     ) -> Result<Option<User>> {
         repo_get_by_id!(conn, users::table, /*id_column=*/users::discord_id; discord_id)
     }

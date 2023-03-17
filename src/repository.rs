@@ -1,7 +1,5 @@
 use async_trait::async_trait;
-use diesel::query_builder::{
-    AsQuery, IntoUpdateTarget,
-};
+use diesel::query_builder::{AsQuery, IntoUpdateTarget};
 use diesel_async::{methods::LoadQuery, AsyncPgConnection, RunQueryDsl};
 
 use crate::error::Result;
@@ -19,9 +17,7 @@ pub trait Repository {
     type Table: diesel::Table + Send + Sync;
 
     /// The entity type to be queried from the table
-    type Entity: diesel::Queryable<<Self::Table as AsQuery>::SqlType, diesel::pg::Pg>
-        + Send
-        + Sync;
+    type Entity: diesel::Queryable<<Self::Table as AsQuery>::SqlType, diesel::pg::Pg> + Send + Sync;
 
     /// The struct used to insert a new entity
     /// (Usually lacks a primary key, as it hasn't been inserted yet)

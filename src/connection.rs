@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use diesel_async::AsyncConnection;
 use tokio::sync as tokio;
+
 use crate::error::Result;
 
 /// Holds a database Connection object, with a [`tokio::sync::Mutex`]

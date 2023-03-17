@@ -22,12 +22,13 @@ const CONFIG_FILE: &str = "config.json";
 
 #[tokio::main]
 async fn main() {
-    let config_contents = std::fs::read_to_string(CONFIG_FILE)
-        .expect("Could not read the bot's config.json.");
+    let config_contents =
+        std::fs::read_to_string(CONFIG_FILE).expect("Could not read the bot's config.json.");
 
-    let parsed_config = serde_json::from_str::<Config>(&config_contents)
-        .expect("Failed to parse the bot's config.json. Ensure it follows the \
-config.example.json structure.");
+    let parsed_config = serde_json::from_str::<Config>(&config_contents).expect(
+        "Failed to parse the bot's config.json. Ensure it follows the \
+config.example.json structure.",
+    );
 
     let database_url = parsed_config.get_database_url();
     let conn = connection::ConnectionManager::create(database_url)
