@@ -4,19 +4,15 @@ use serenity::GuildId;
 mod commands;
 mod common;
 mod config;
+mod connection;
 mod error;
 mod events;
-mod schema;
 mod model;
 mod repository;
-mod connection;
+mod schema;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
-
-pub mod macros {
-    pub use minirustbot_macros::*;
-}
 
 pub mod forms {
     pub use minirustbot_forms::*;

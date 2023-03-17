@@ -5,7 +5,7 @@ pub struct MiniRustBotConfig {
     token: String,
     guild_id: u64,
     database_url: String,
-    admin_userids: Vec<u64>
+    admin_userids: Vec<u64>,
 }
 
 impl MiniRustBotConfig {
