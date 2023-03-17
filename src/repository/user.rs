@@ -1,37 +1,37 @@
 use async_trait::async_trait;
-use diesel::{QueryDsl, ExpressionMethods, OptionalExtension, Table};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, Table};
 use diesel_async::RunQueryDsl;
 
-use crate::{model::{User, NewUser}, schema::users, error::{Result, Error}};
-
-use super::{repo_insert, Repository, repo_upsert, repo_update, repo_remove, repo_get_by_id};
+use super::{repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, Repository};
+use crate::{
+    error::Result,
+    model::{DiscordId, NewUser, User},
+    schema::users,
+};
 
 /// Manages User instances.
 pub struct UserRepository;
 
 impl UserRepository {
-    pub async fn get(
-        conn: &mut diesel_async::AsyncPgConnection,
-        id: i32
-    ) -> Result<Option<User>> {
+    pub async fn get(conn: &mut diesel_async::AsyncPgConnection, id: i32) -> Result<Option<User>> {
         repo_get_by_id!(conn, users::table, /*id_column=*/users::id; id)
     }
 
     pub async fn find_by_discordid(
         conn: &mut diesel_async::AsyncPgConnection,
-        discord_id: u64
+        discord_id: DiscordId,
     ) -> Result<Option<User>> {
-        users::table.filter(users::discord_userid.eq(discord_id.to_string()))
+        users::table
+            .filter(users::discord_userid.eq(discord_id))
             .first(conn)
             .await
             .optional()
             .map_err(From::from)
     }
 
-    pub async fn find_all(
-        conn: &mut diesel_async::AsyncPgConnection
-    ) -> Result<Vec<User>> {
-        users::table.select(users::table::all_columns())
+    pub async fn find_all(conn: &mut diesel_async::AsyncPgConnection) -> Result<Vec<User>> {
+        users::table
+            .select(users::table::all_columns())
             .get_results(conn)
             .await
             .map_err(From::from)
@@ -49,23 +49,18 @@ impl Repository for UserRepository {
     const TABLE: Self::Table = users::table;
 
     async fn insert(conn: &mut diesel_async::AsyncPgConnection, user: NewUser) -> Result<User> {
-        user.discord_userid.parse::<u64>()
-            .map_err(|_| Error::Other("Provided invalid ID for user"))?;
-
         repo_insert!(conn, users::table; user)
     }
 
     async fn upsert(conn: &mut diesel_async::AsyncPgConnection, user: NewUser) -> Result<User> {
-        user.discord_userid.parse::<u64>()
-            .map_err(|_| Error::Other("Provided invalid ID for user"))?;
-
         repo_upsert!(conn, users::table; users::discord_userid; &user)
     }
 
-    async fn update(conn: &mut diesel_async::AsyncPgConnection, old_user: User, new_user: NewUser) -> Result<User> {
-        new_user.discord_userid.parse::<u64>()
-            .map_err(|_| Error::Other("Provided invalid ID for user"))?;
-
+    async fn update(
+        conn: &mut diesel_async::AsyncPgConnection,
+        old_user: User,
+        new_user: NewUser,
+    ) -> Result<User> {
         repo_update!(conn; &old_user => new_user)
     }
 
@@ -80,8 +75,8 @@ impl Repository for UserRepository {
 
 //     #[test]
 //     fn test_basic_operations() {
-//         let db_url = std::env::var("DATABASE_URL").expect("Testing database requires DATABASE_URL env var.");
-//         let conn = create_connection(&db_url);
-        
+//         let db_url = std::env::var("DATABASE_URL").expect("Testing database requires DATABASE_URL
+// env var.");         let conn = create_connection(&db_url);
+
 //     }
 // }

@@ -1,7 +1,7 @@
-use diesel::{Queryable, Insertable, Identifiable, AsChangeset};
-use crate::schema::*;
+use diesel::{AsChangeset, Identifiable, Insertable, Queryable};
 
-use super::DiscordIdField;
+use super::DiscordId;
+use crate::schema::*;
 
 #[derive(Debug, Queryable, Identifiable, Clone, PartialEq, Eq)]
 pub struct User {
@@ -10,8 +10,7 @@ pub struct User {
 
     // custom deserialization as it's a String in the database
     // due to integer size limitations in Postgres
-    #[diesel(deserialize_as = DiscordIdField)]
-    pub discord_userid: u64,
+    pub discord_userid: DiscordId,
     pub bio: Option<String>,
 }
 
@@ -19,6 +18,6 @@ pub struct User {
 #[table_name = "users"]
 pub struct NewUser {
     pub name: String,
-    pub discord_userid: String,
+    pub discord_userid: DiscordId,
     pub bio: Option<String>,
 }
