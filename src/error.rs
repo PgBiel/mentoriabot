@@ -21,9 +21,11 @@ pub enum Error {
     /// A Diesel connection error occurred
     DieselConnection(diesel::result::ConnectionError),
 
+    #[allow(dead_code)]
     Generic(Box<dyn std::error::Error + Send + Sync>),
 
     /// Some other error
+    #[allow(dead_code)]
     Other(&'static str),
 }
 

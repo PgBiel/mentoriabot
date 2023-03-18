@@ -1,4 +1,6 @@
 //! Implements the #[derive(SelectComponent)] derive macro
+#![allow(dead_code)] // temporary
+
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -327,7 +329,7 @@ fn create_variant_with_interaction(
     })
 }
 
-fn create_select_spec(button_attrs: &SelectAttributes, data: &syn::Type) -> TokenStream2 {
+fn create_select_spec(_button_attrs: &SelectAttributes, _data: &syn::Type) -> TokenStream2 {
     unimplemented!()
     // let label = util::wrap_option_into(&button_attrs.label);
     // let label_function = util::wrap_option_box(&button_attrs.label_function);

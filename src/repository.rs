@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use diesel::query_builder::{AsQuery, IntoUpdateTarget};
-use diesel_async::{methods::LoadQuery, AsyncPgConnection, RunQueryDsl};
+use diesel::query_builder::AsQuery;
+use diesel_async::AsyncPgConnection;
 
 use crate::error::Result;
 

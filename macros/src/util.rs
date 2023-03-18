@@ -38,6 +38,7 @@ pub fn extract_type_parameter<'a>(outer_type: &str, t: &'a syn::Type) -> Option<
 }
 
 /// Converts None => `None` and Some(x) => `Some(#x)`
+#[allow(dead_code)]
 pub fn wrap_option<T: quote::ToTokens>(literal: &Option<T>) -> syn::Expr {
     match literal {
         Some(literal) => syn::parse_quote! { Some(#literal) },
@@ -74,7 +75,7 @@ impl syn::fold::Fold for AllLifetimesToStatic {
 #[derive(Debug)]
 pub struct List<T>(pub Vec<T>);
 impl<T: darling::FromMeta> darling::FromMeta for List<T> {
-    fn from_list(items: &[::syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
         items
             .iter()
             .map(|item| T::from_nested_meta(item))
@@ -92,12 +93,12 @@ impl<T> Default for List<T> {
 #[derive(Debug)]
 pub struct Tuple2<T>(pub T, pub T);
 impl<T: darling::FromMeta> darling::FromMeta for Tuple2<T> {
-    fn from_list(items: &[::syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
         Ok(match items {
             [a, b] => Self(T::from_nested_meta(a)?, T::from_nested_meta(b)?),
             _ => {
                 return Err(syn::Error::new(
-                    proc_macro2::Span::call_site(),
+                    proc_macro2::Span::call_site().into(),
                     "expected two items `(\"a\", \"b\")`",
                 )
                 .into())
@@ -106,6 +107,7 @@ impl<T: darling::FromMeta> darling::FromMeta for Tuple2<T> {
     }
 }
 
+#[allow(dead_code)]
 pub fn vec_tuple_2_to_hash_map(v: Vec<Tuple2<String>>) -> proc_macro2::TokenStream {
     let (keys, values): (Vec<String>, Vec<String>) = v.into_iter().map(|x| (x.0, x.1)).unzip();
     quote::quote! {

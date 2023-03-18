@@ -224,7 +224,7 @@ fn create_select_option_specs(
 
 fn from_select_value(
     variants_with_options: &Vec<(&syn::Variant, SelectOptionAttributes)>,
-    data_type: &syn::Type,
+    _data_type: &syn::Type,
 ) -> Result<TokenStream2, darling::Error> {
     let mut variant_match_arms = Vec::new();
 

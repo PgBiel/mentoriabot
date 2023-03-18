@@ -30,6 +30,8 @@ use proc_macro::TokenStream;
 /// Usage:
 ///
 /// ```
+/// use minirustbot_macros::InteractionForm;
+///
 /// #[derive(InteractionForm)]
 /// #[ctx_data = "Data"]
 /// #[ctx_error = "Error"]

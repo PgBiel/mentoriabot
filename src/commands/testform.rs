@@ -1,9 +1,9 @@
-use poise::serenity_prelude as serenity;
+// use poise::serenity_prelude as serenity;
 
 use crate::{
-    common::{ApplicationContext, Data},
+    common::ApplicationContext,
     error::Error,
-    forms::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
+    // forms::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
 };
 
 // #[derive(Debug, Default, Clone, poise::Modal)]
@@ -78,7 +78,7 @@ use crate::{
 
 /// Runs test form
 #[poise::command(slash_command)]
-pub async fn testform(ctx: ApplicationContext<'_>) -> Result<(), Error> {
+pub async fn testform(_ctx: ApplicationContext<'_>) -> Result<(), Error> {
     // let data = TestForm::execute(ctx).await?;
     // println!("Got testform data: {:?}", data);
     Ok(())
