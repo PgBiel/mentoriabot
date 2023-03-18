@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
 use diesel_async::{
+    pooled_connection::{deadpool::Pool, AsyncDieselConnectionManager},
     AsyncConnection, AsyncPgConnection,
-    pooled_connection::{AsyncDieselConnectionManager, deadpool::Pool}
 };
 
-use crate::error::Result;
-use crate::repository::{LectureRepository, LectureStudentRepository, UserRepository};
+use crate::{
+    error::Result,
+    repository::{LectureRepository, LectureStudentRepository, UserRepository},
+};
 
 /// Manages database Connection and Repository objects, using a
 /// connection [`Pool`].
@@ -21,9 +23,7 @@ pub struct DatabaseManager {
 pub fn create_connection_pool(database_url: &str) -> Result<Pool<AsyncPgConnection>> {
     let manager = AsyncDieselConnectionManager::new(database_url);
 
-    Pool::builder(manager)
-        .build()
-        .map_err(From::from)
+    Pool::builder(manager).build().map_err(From::from)
 }
 
 impl DatabaseManager {
@@ -41,7 +41,7 @@ impl DatabaseManager {
             pool,
             user_repository,
             lecture_repository,
-            lecture_student_repository
+            lecture_student_repository,
         })
     }
 

@@ -1,8 +1,8 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 use diesel::query_builder::AsQuery;
-use diesel_async::AsyncPgConnection;
-use diesel_async::pooled_connection::deadpool;
+use diesel_async::{pooled_connection::deadpool, AsyncPgConnection};
 
 use crate::error::Result;
 
@@ -50,16 +50,10 @@ pub trait BasicRepository {
     }
 
     /// Gets an entity by their Primary Key.
-    async fn get(
-        &self,
-        pk: Self::PrimaryKey,
-    ) -> Result<Option<Self::Entity>>;
+    async fn get(&self, pk: Self::PrimaryKey) -> Result<Option<Self::Entity>>;
 
     /// Insert a new Entity to the database.
-    async fn insert(
-        &self,
-        new_entity: Self::NewEntity,
-    ) -> Result<Self::Entity>;
+    async fn insert(&self, new_entity: Self::NewEntity) -> Result<Self::Entity>;
 
     /// Remove an Entity from the database.
     async fn remove(&self, entity: &Self::Entity) -> Result<usize>;
@@ -72,10 +66,7 @@ pub trait BasicRepository {
 #[async_trait]
 pub trait Repository: BasicRepository {
     /// Insert a new Entity to the database, or update if it already exists.
-    async fn upsert(
-        &self,
-        new_entity: Self::NewEntity,
-    ) -> Result<Self::Entity>;
+    async fn upsert(&self, new_entity: Self::NewEntity) -> Result<Self::Entity>;
 
     /// Update an existing Entity with new data.
     async fn update(

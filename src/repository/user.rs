@@ -1,8 +1,8 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
-use diesel_async::pooled_connection::deadpool::Pool;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
     repo_find_all, repo_find_by_first, repo_get, repo_insert, repo_remove, repo_update,
@@ -16,7 +16,7 @@ use crate::{
 
 /// Manages User instances.
 pub struct UserRepository {
-    pool: Arc<Pool<AsyncPgConnection>>
+    pool: Arc<Pool<AsyncPgConnection>>,
 }
 
 impl UserRepository {
@@ -24,16 +24,13 @@ impl UserRepository {
     /// connection pool.
     pub fn new(pool: &Arc<Pool<AsyncPgConnection>>) -> Self {
         Self {
-            pool: Arc::clone(pool)
+            pool: Arc::clone(pool),
         }
     }
 
     /// Searches for all Users that are Students of
     /// a particular Lecture.
-    pub async fn find_by_lecture(
-        &self,
-        lecture: &Lecture,
-    ) -> Result<Vec<User>> {
+    pub async fn find_by_lecture(&self, lecture: &Lecture) -> Result<Vec<User>> {
         users::table
             .inner_join(lecture_students::table)
             .filter(lecture_students::lecture_id.eq(lecture.id))
@@ -64,10 +61,7 @@ impl BasicRepository for UserRepository {
     }
 
     /// Gets a User by their Discord ID.
-    async fn get(
-        &self,
-        discord_id: DiscordId,
-    ) -> Result<Option<User>> {
+    async fn get(&self, discord_id: DiscordId) -> Result<Option<User>> {
         repo_get!(self, users::table; discord_id)
     }
 
@@ -90,11 +84,7 @@ impl Repository for UserRepository {
         repo_upsert!(self, users::table; /*conflict_columns=*/users::discord_id; &user)
     }
 
-    async fn update(
-        &self,
-        old_user: &User,
-        new_user: NewUser,
-    ) -> Result<User> {
+    async fn update(&self, old_user: &User, new_user: NewUser) -> Result<User> {
         repo_update!(self; old_user => new_user)
     }
 }

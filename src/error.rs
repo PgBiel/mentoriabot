@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
-use diesel_async::pooled_connection::deadpool;
 
+use diesel_async::pooled_connection::deadpool;
 use poise::serenity_prelude as serenity;
 
 use crate::forms;
@@ -62,7 +62,7 @@ macro_rules! impl_from_error {
                 Self::$variant(err)
             }
         }
-    }
+    };
 }
 
 impl_from_error!(forms::FormError => Form);

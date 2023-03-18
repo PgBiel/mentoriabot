@@ -1,8 +1,8 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
-use diesel_async::pooled_connection::deadpool::Pool;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
     repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, repo_update, repo_upsert,
@@ -16,7 +16,7 @@ use crate::{
 
 /// Manages Lecture instances.
 pub struct LectureRepository {
-    pool: Arc<Pool<AsyncPgConnection>>
+    pool: Arc<Pool<AsyncPgConnection>>,
 }
 
 impl LectureRepository {
@@ -24,16 +24,13 @@ impl LectureRepository {
     /// connection pool.
     pub fn new(pool: &Arc<Pool<AsyncPgConnection>>) -> Self {
         Self {
-            pool: Arc::clone(pool)
+            pool: Arc::clone(pool),
         }
     }
 
     /// Searches for Lectures by a particular teacher (with a particular Discord ID),
     /// in ascending 'start_at' order (starting earlier first).
-    pub async fn find_by_teacher(
-        &self,
-        teacher_id: DiscordId,
-    ) -> Result<Vec<Lecture>> {
+    pub async fn find_by_teacher(&self, teacher_id: DiscordId) -> Result<Vec<Lecture>> {
         repo_find_by!(
             self, lectures::table;
             lectures::teacher_id.eq(teacher_id);
@@ -59,9 +56,7 @@ impl LectureRepository {
 
     /// Searches for all Lectures starting after the current point in time,
     /// in ascending order (starting earlier first).
-    pub async fn find_will_start(
-        &self,
-    ) -> Result<Vec<Lecture>> {
+    pub async fn find_will_start(&self) -> Result<Vec<Lecture>> {
         self.find_starts_after(chrono::Utc::now()).await
     }
 
@@ -103,10 +98,7 @@ impl BasicRepository for LectureRepository {
         repo_get!(self, lectures::table; id)
     }
 
-    async fn insert(
-        &self,
-        lecture: NewLecture,
-    ) -> Result<Lecture> {
+    async fn insert(&self, lecture: NewLecture) -> Result<Lecture> {
         repo_insert!(self, lectures::table; lecture)
     }
 
@@ -121,18 +113,11 @@ impl BasicRepository for LectureRepository {
 
 #[async_trait]
 impl Repository for LectureRepository {
-    async fn upsert(
-        &self,
-        lecture: NewLecture,
-    ) -> Result<Lecture> {
+    async fn upsert(&self, lecture: NewLecture) -> Result<Lecture> {
         repo_upsert!(self, lectures::table; /*conflict_columns=*/lectures::id; &lecture)
     }
 
-    async fn update(
-        &self,
-        old_lecture: &Lecture,
-        new_lecture: NewLecture,
-    ) -> Result<Lecture> {
+    async fn update(&self, old_lecture: &Lecture, new_lecture: NewLecture) -> Result<Lecture> {
         repo_update!(self; old_lecture => new_lecture)
     }
 }

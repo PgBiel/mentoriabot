@@ -1,8 +1,8 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, BasicRepository};
 use crate::{
@@ -22,7 +22,7 @@ impl LectureStudentRepository {
     /// connection pool.
     pub fn new(pool: &Arc<Pool<AsyncPgConnection>>) -> Self {
         Self {
-            pool: Arc::clone(pool)
+            pool: Arc::clone(pool),
         }
     }
 
@@ -53,18 +53,12 @@ impl LectureStudentRepository {
     }
 
     /// Gets all LectureStudents belonging to a certain Lecture.
-    pub async fn find_by_lecture(
-        &self,
-        lecture_id: i64,
-    ) -> Result<Vec<LectureStudent>> {
+    pub async fn find_by_lecture(&self, lecture_id: i64) -> Result<Vec<LectureStudent>> {
         repo_find_by!(self, lecture_students::table; lecture_students::lecture_id.eq(lecture_id))
     }
 
     /// Searches for all instances of LectureStudent for a certain User.
-    pub async fn find_by_user(
-        &self,
-        user_id: DiscordId,
-    ) -> Result<Vec<LectureStudent>> {
+    pub async fn find_by_user(&self, user_id: DiscordId) -> Result<Vec<LectureStudent>> {
         lecture_students::table
             .filter(lecture_students::user_id.eq(user_id))
             .get_results(&mut self.lock_connection().await?)
@@ -89,17 +83,11 @@ impl BasicRepository for LectureStudentRepository {
         Arc::clone(&self.pool)
     }
 
-    async fn get(
-        &self,
-        pk: Self::PrimaryKey,
-    ) -> Result<Option<LectureStudent>> {
+    async fn get(&self, pk: Self::PrimaryKey) -> Result<Option<LectureStudent>> {
         repo_get!(self, lecture_students::table; pk)
     }
 
-    async fn insert(
-        &self,
-        lecture: NewLectureStudent,
-    ) -> Result<LectureStudent> {
+    async fn insert(&self, lecture: NewLectureStudent) -> Result<LectureStudent> {
         repo_insert!(self, lecture_students::table; lecture)
     }
 

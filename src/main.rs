@@ -14,8 +14,8 @@ mod util;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
-use crate::common::FrameworkError;
-use crate::error::Error;
+
+use crate::{common::FrameworkError, error::Error};
 
 pub mod forms {
     pub use minirustbot_forms::*;
@@ -26,54 +26,53 @@ const CONFIG_FILE: &str = "config.json";
 fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
     Box::pin(async move {
         let response = match &framework_error {
-            FrameworkError::CommandCheckFailed {
-                error: None,
-                ..
-            } => {
+            FrameworkError::CommandCheckFailed { error: None, .. } => {
                 "You cannot use this command for unknown reasons.".to_string()
-            },
+            }
             FrameworkError::CommandCheckFailed {
                 error: Some(Error::CommandCheck(message)),
                 ..
-            } => {
-                message.to_string()
-            },
+            } => message.to_string(),
             FrameworkError::MissingBotPermissions {
                 missing_permissions,
                 ..
             } => {
                 format!(
                     "The bot is missing the following permission{}: {}",
-                    if missing_permissions.get_permission_names().len() > 1 { "s" } else { "" },
+                    if missing_permissions.get_permission_names().len() > 1 {
+                        "s"
+                    } else {
+                        ""
+                    },
                     missing_permissions
                 )
-            },
+            }
             FrameworkError::MissingUserPermissions {
                 missing_permissions,
                 ..
-            } => {
-                match missing_permissions {
-                    None => "You are missing certain permissions to run this command.".to_string(),
-                    Some(missing_permissions) => format!(
-                        "You are missing the following permission{}: {}",
-                        if missing_permissions.get_permission_names().len() > 1 { "s" } else { "" },
-                        missing_permissions
-                    ),
-                }
+            } => match missing_permissions {
+                None => "You are missing certain permissions to run this command.".to_string(),
+                Some(missing_permissions) => format!(
+                    "You are missing the following permission{}: {}",
+                    if missing_permissions.get_permission_names().len() > 1 {
+                        "s"
+                    } else {
+                        ""
+                    },
+                    missing_permissions
+                ),
             },
             FrameworkError::DmOnly { .. } => {
                 "This command is exclusive to Direct Messages (DMs).".to_string()
-            },
-            FrameworkError::GuildOnly { .. } => {
-                "This command is exclusive to guilds.".to_string()
-            },
+            }
+            FrameworkError::GuildOnly { .. } => "This command is exclusive to guilds.".to_string(),
             FrameworkError::NsfwOnly { .. } => {
                 "This command is exclusive to NSFW channels.".to_string()
-            },
-            FrameworkError::NotAnOwner { .. } => {
-                "You're not a bot administrator.".to_string()
-            },
-            FrameworkError::CooldownHit { remaining_cooldown, .. } => {
+            }
+            FrameworkError::NotAnOwner { .. } => "You're not a bot administrator.".to_string(),
+            FrameworkError::CooldownHit {
+                remaining_cooldown, ..
+            } => {
                 if remaining_cooldown.as_secs() < 1 {
                     "Please try running this command again.".to_string()
                 } else {
@@ -82,10 +81,10 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                         util::convert_duration_to_string(remaining_cooldown.clone())
                     )
                 }
-            },
+            }
             FrameworkError::UnknownInteraction { .. } => {
                 "I do not recognize that command.".to_string()
-            },
+            }
             _ => {
                 eprintln!("Unexpected bot error: {}", framework_error);
                 "Unexpected error occurred.".to_string()
@@ -127,7 +126,10 @@ config.example.json structure.",
             commands: commands::get_commands(),
             event_handler: events::handle,
             on_error,
-            owners: admin_userids.iter().map(|id | serenity::UserId(id.clone())).collect(),
+            owners: admin_userids
+                .iter()
+                .map(|id| serenity::UserId(id.clone()))
+                .collect(),
             ..Default::default()
         })
         .token(&token)

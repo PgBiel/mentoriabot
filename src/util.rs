@@ -9,7 +9,11 @@ pub fn convert_duration_to_string(duration: std::time::Duration) -> String {
         } else if dur.num_hours() < 1 {
             format!("{} minutes", dur.num_minutes())
         } else if dur.num_days() < 1 {
-            format!("{} hours and {} minutes", dur.num_hours(), dur.num_minutes())
+            format!(
+                "{} hours and {} minutes",
+                dur.num_hours(),
+                dur.num_minutes()
+            )
         } else {
             format!("{} days", dur.num_days())
         }
