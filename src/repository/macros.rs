@@ -63,9 +63,9 @@ macro_rules! repo_find_all {
     }};
 }
 
+pub(crate) use repo_find_all;
 pub(crate) use repo_get_by_id;
 pub(crate) use repo_insert;
 pub(crate) use repo_remove;
 pub(crate) use repo_update;
 pub(crate) use repo_upsert;
-pub(crate) use repo_find_all;

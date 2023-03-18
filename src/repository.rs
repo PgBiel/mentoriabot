@@ -7,9 +7,13 @@ use crate::error::Result;
 mod user;
 pub use user::UserRepository;
 
+mod lecture;
+pub use lecture::*;
+
 pub mod macros;
+
 pub(crate) use macros::{
-    repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, repo_find_all
+    repo_find_all, repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert,
 };
 
 /// Trait for a generic entity Repository.

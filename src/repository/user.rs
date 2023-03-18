@@ -3,7 +3,7 @@ use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::RunQueryDsl;
 
 use super::{
-    repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, repo_find_all, Repository
+    repo_find_all, repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, Repository,
 };
 use crate::{
     error::Result,
