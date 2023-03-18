@@ -127,7 +127,7 @@ config.example.json structure.",
             commands: commands::get_commands(),
             event_handler: events::handle,
             on_error,
-            owners: admin_userids.into_iter().map(serenity::UserId).collect(),
+            owners: admin_userids.iter().map(|id | serenity::UserId(id.clone())).collect(),
             ..Default::default()
         })
         .token(&token)

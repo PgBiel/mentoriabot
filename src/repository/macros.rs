@@ -47,9 +47,10 @@ macro_rules! repo_update {
 
 macro_rules! repo_remove {
     ($self:ident; $entity:expr) => {{
-        diesel::delete($entity).execute(&mut $self.lock_connection().await?).await?;
-
-        $crate::error::Result::Ok(())
+        diesel::delete($entity)
+            .execute(&mut $self.lock_connection().await?)
+            .await
+            .map_err(From::from)
     }};
 }
 

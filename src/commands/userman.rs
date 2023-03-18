@@ -118,15 +118,13 @@ pub async fn remove(
         ctx.send(|b| b.content("Error: Not an admin user.").ephemeral(true))
             .await?;
     } else {
-        let conn_mutex = ctx.data.connection.get_connection();
-        let mut conn = conn_mutex.lock().await;
-        let found_user = UserRepository::get(&mut conn, user.id.into()).await?;
+        let found_user = ctx.data().db.user_repository().get(user.id.into()).await?;
         if let Some(found_user) = found_user {
             let removed_msg = format!(
                 "Successfully removed {} from the database.",
                 found_user.name
             );
-            UserRepository::remove(&mut conn, found_user).await?;
+            ctx.data().db.user_repository().remove(&found_user).await?;
 
             ctx.send(|b| b.content(removed_msg).ephemeral(true)).await?;
         } else {
@@ -147,9 +145,7 @@ pub async fn all(ctx: ApplicationContext<'_>) -> Result<()> {
         ctx.send(|b| b.content("Error: Not an admin user.").ephemeral(true))
             .await?;
     } else {
-        let conn_mutex = ctx.data.connection.get_connection();
-        let mut conn = conn_mutex.lock().await;
-        let users = UserRepository::find_all(&mut conn).await?;
+        let users = ctx.data().db.user_repository().find_all().await?;
         let mut text = String::from("Users:");
         for user in users {
             text.push_str(&format!("\n- {:?}", user));

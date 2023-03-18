@@ -23,7 +23,7 @@ impl Data {
 pub type Context<'a> = poise::Context<'a, Data, Error>;
 
 /// Any error which occurred while using poise
-pub type FrameworkError<'a> = poise::FrameworkError<'_, Data, Error>;
+pub type FrameworkError<'a> = poise::FrameworkError<'a, Data, Error>;
 
 /// The bot's custom Application Context type
 pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, Error>;

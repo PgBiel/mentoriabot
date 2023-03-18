@@ -110,8 +110,8 @@ impl BasicRepository for LectureRepository {
         repo_insert!(self, lectures::table; lecture)
     }
 
-    async fn remove(&self, lecture: Lecture) -> Result<()> {
-        repo_remove!(self; &lecture)
+    async fn remove(&self, lecture: &Lecture) -> Result<usize> {
+        repo_remove!(self; lecture)
     }
 
     async fn find_all(&self) -> Result<Vec<Lecture>> {
@@ -130,9 +130,9 @@ impl Repository for LectureRepository {
 
     async fn update(
         &self,
-        old_lecture: Lecture,
+        old_lecture: &Lecture,
         new_lecture: NewLecture,
     ) -> Result<Lecture> {
-        repo_update!(self; &old_lecture => new_lecture)
+        repo_update!(self; old_lecture => new_lecture)
     }
 }

@@ -62,7 +62,7 @@ pub trait BasicRepository {
     ) -> Result<Self::Entity>;
 
     /// Remove an Entity from the database.
-    async fn remove(&self, entity: &Self::Entity) -> Result<()>;
+    async fn remove(&self, entity: &Self::Entity) -> Result<usize>;
 
     /// Find all entities stored in the database.
     async fn find_all(&self) -> Result<Vec<Self::Entity>>;

@@ -75,7 +75,7 @@ impl BasicRepository for UserRepository {
         repo_insert!(self, users::table; user)
     }
 
-    async fn remove(&self, user: &User) -> Result<()> {
+    async fn remove(&self, user: &User) -> Result<usize> {
         repo_remove!(self; user)
     }
 
