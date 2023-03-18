@@ -1,8 +1,10 @@
 use async_trait::async_trait;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, Table};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::RunQueryDsl;
 
-use super::{repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, Repository};
+use super::{
+    repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, repo_find_all, Repository
+};
 use crate::{
     error::Result,
     model::{DiscordId, NewUser, User},
@@ -18,14 +20,6 @@ impl UserRepository {
         discord_id: DiscordId,
     ) -> Result<Option<User>> {
         repo_get_by_id!(conn, users::table, /*id_column=*/users::discord_id; discord_id)
-    }
-
-    pub async fn find_all(conn: &mut diesel_async::AsyncPgConnection) -> Result<Vec<User>> {
-        users::table
-            .select(users::table::all_columns())
-            .get_results(conn)
-            .await
-            .map_err(From::from)
     }
 }
 
@@ -57,6 +51,10 @@ impl Repository for UserRepository {
 
     async fn remove(conn: &mut diesel_async::AsyncPgConnection, user: User) -> Result<()> {
         repo_remove!(conn; &user)
+    }
+
+    async fn find_all(conn: &mut diesel_async::AsyncPgConnection) -> Result<Vec<User>> {
+        repo_find_all!(conn, users::table, users::table)
     }
 }
 

@@ -53,8 +53,19 @@ macro_rules! repo_get_by_id {
     };
 }
 
+macro_rules! repo_find_all {
+    ($conn:expr, $table:expr, $table_ty:ty) => {{
+        $table
+            .select(<$table_ty as diesel::Table>::all_columns())
+            .get_results($conn)
+            .await
+            .map_err(From::from)
+    }};
+}
+
 pub(crate) use repo_get_by_id;
 pub(crate) use repo_insert;
 pub(crate) use repo_remove;
 pub(crate) use repo_update;
 pub(crate) use repo_upsert;
+pub(crate) use repo_find_all;

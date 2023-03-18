@@ -8,7 +8,9 @@ mod user;
 pub use user::UserRepository;
 
 pub mod macros;
-pub(crate) use macros::{repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert};
+pub(crate) use macros::{
+    repo_get_by_id, repo_insert, repo_remove, repo_update, repo_upsert, repo_find_all
+};
 
 /// Trait for a generic entity Repository.
 #[async_trait]
@@ -46,4 +48,7 @@ pub trait Repository {
 
     /// Remove an Entity from the database.
     async fn remove(conn: &mut AsyncPgConnection, entity: Self::Entity) -> Result<()>;
+
+    /// Find all entities stored in the database.
+    async fn find_all(conn: &mut AsyncPgConnection) -> Result<Vec<Self::Entity>>;
 }
