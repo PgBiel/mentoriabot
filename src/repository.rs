@@ -1,6 +1,8 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 use diesel::query_builder::AsQuery;
 use diesel_async::AsyncPgConnection;
+use diesel_async::pooled_connection::deadpool;
 
 use crate::error::Result;
 
@@ -11,7 +13,7 @@ mod lecture;
 pub use lecture::LectureRepository;
 
 mod lecture_student;
-pub use lecture_student::*;
+pub use lecture_student::LectureStudentRepository;
 
 pub mod macros;
 
@@ -39,23 +41,31 @@ pub trait BasicRepository {
 
     const TABLE: Self::Table;
 
+    /// Returns the active connection pool.
+    fn get_connection_pool(&self) -> Arc<deadpool::Pool<AsyncPgConnection>>;
+
+    /// Locks the connection for own usage.
+    async fn lock_connection(&self) -> Result<deadpool::Object<AsyncPgConnection>> {
+        self.get_connection_pool().get().await.map_err(From::from)
+    }
+
     /// Gets an entity by their Primary Key.
     async fn get(
-        conn: &mut AsyncPgConnection,
+        &self,
         pk: Self::PrimaryKey,
     ) -> Result<Option<Self::Entity>>;
 
     /// Insert a new Entity to the database.
     async fn insert(
-        conn: &mut AsyncPgConnection,
+        &self,
         new_entity: Self::NewEntity,
     ) -> Result<Self::Entity>;
 
     /// Remove an Entity from the database.
-    async fn remove(conn: &mut AsyncPgConnection, entity: Self::Entity) -> Result<()>;
+    async fn remove(&self, entity: &Self::Entity) -> Result<()>;
 
     /// Find all entities stored in the database.
-    async fn find_all(conn: &mut AsyncPgConnection) -> Result<Vec<Self::Entity>>;
+    async fn find_all(&self) -> Result<Vec<Self::Entity>>;
 }
 
 /// Trait for a full-fledged repository which can also update.
@@ -63,14 +73,14 @@ pub trait BasicRepository {
 pub trait Repository: BasicRepository {
     /// Insert a new Entity to the database, or update if it already exists.
     async fn upsert(
-        conn: &mut AsyncPgConnection,
+        &self,
         new_entity: Self::NewEntity,
     ) -> Result<Self::Entity>;
 
     /// Update an existing Entity with new data.
     async fn update(
-        conn: &mut AsyncPgConnection,
-        old_entity: Self::Entity,
+        &self,
+        old_entity: &Self::Entity,
         new_entity: Self::NewEntity,
     ) -> Result<Self::Entity>;
 }

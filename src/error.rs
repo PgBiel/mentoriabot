@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use diesel_async::pooled_connection::deadpool;
 
 use poise::serenity_prelude as serenity;
 
@@ -6,20 +7,43 @@ use crate::forms;
 
 /// An error in MiniRustBot.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error {
-    /// An error occurred while running an InteractionForm
+    /// A [`FormError`] occurred while running an InteractionForm
+    ///
+    /// [`FormError`]: forms::FormError
     Form(forms::FormError),
 
     EnumParse(strum::ParseError),
 
-    /// An error occurred in Serenity
+    /// An [`Error`] occurred in Serenity
+    ///
+    /// [`Error`]: serenity::Error
     Serenity(serenity::Error),
 
-    /// A Diesel operational error occurred
+    /// A Diesel operational [`Error`] occurred
+    ///
+    /// [`Error`]: diesel::result::Error
     Diesel(diesel::result::Error),
 
-    /// A Diesel connection error occurred
+    /// A Diesel [`ConnectionError`] occurred.
+    ///
+    /// [`ConnectionError`]: diesel::result::ConnectionError
     DieselConnection(diesel::result::ConnectionError),
+
+    /// A Deadpool [`BuildError`] occurred.
+    ///
+    /// [`BuildError`]: deadpool::BuildError
+    DeadpoolBuild(deadpool::BuildError),
+
+    /// A Deadpool [`PoolError`] occurred.
+    ///
+    /// [`PoolError`]: deadpool::PoolError
+    DeadpoolPool(deadpool::PoolError),
+
+    /// If a command check failed (e.g. check
+    /// if the user has a certain role).
+    CommandCheck(&'static str),
 
     #[allow(dead_code)]
     Generic(Box<dyn std::error::Error + Send + Sync>),
@@ -31,35 +55,23 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl From<forms::FormError> for Error {
-    fn from(err: forms::FormError) -> Self {
-        Self::Form(err)
+macro_rules! impl_from_error {
+    ($err:ty => $variant:ident) => {
+        impl From<$err> for Error {
+            fn from(err: $err) -> Self {
+                Self::$variant(err)
+            }
+        }
     }
 }
 
-impl From<strum::ParseError> for Error {
-    fn from(err: strum::ParseError) -> Self {
-        Self::EnumParse(err)
-    }
-}
-
-impl From<serenity::Error> for Error {
-    fn from(err: serenity::Error) -> Self {
-        Self::Serenity(err)
-    }
-}
-
-impl From<diesel::result::Error> for Error {
-    fn from(err: diesel::result::Error) -> Self {
-        Self::Diesel(err)
-    }
-}
-
-impl From<diesel::result::ConnectionError> for Error {
-    fn from(err: diesel::result::ConnectionError) -> Self {
-        Self::DieselConnection(err)
-    }
-}
+impl_from_error!(forms::FormError => Form);
+impl_from_error!(strum::ParseError => EnumParse);
+impl_from_error!(serenity::Error => Serenity);
+impl_from_error!(diesel::result::Error => Diesel);
+impl_from_error!(diesel::result::ConnectionError => DieselConnection);
+impl_from_error!(deadpool::BuildError => DeadpoolBuild);
+impl_from_error!(deadpool::PoolError => DeadpoolPool);
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -69,6 +81,9 @@ impl Display for Error {
             Self::Serenity(inner) => Display::fmt(&inner, f),
             Self::Diesel(inner) => Display::fmt(&inner, f),
             Self::DieselConnection(inner) => Display::fmt(&inner, f),
+            Self::DeadpoolBuild(inner) => Display::fmt(&inner, f),
+            Self::DeadpoolPool(inner) => Display::fmt(&inner, f),
+            Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
             Self::Other(message) => write!(f, "{}", message),
         }
@@ -83,6 +98,8 @@ impl std::error::Error for Error {
             Self::Serenity(inner) => Some(inner),
             Self::Diesel(inner) => Some(inner),
             Self::DieselConnection(inner) => Some(inner),
+            Self::DeadpoolBuild(inner) => Some(inner),
+            Self::DeadpoolPool(inner) => Some(inner),
             Self::Generic(inner) => Some(&**inner),
             _ => None,
         }

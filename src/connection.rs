@@ -1,61 +1,67 @@
 use std::sync::Arc;
 
-use diesel_async::AsyncConnection;
-use tokio::sync as tokio;
+use diesel_async::{
+    AsyncConnection, AsyncPgConnection,
+    pooled_connection::{AsyncDieselConnectionManager, deadpool::Pool}
+};
 
 use crate::error::Result;
+use crate::repository::{LectureRepository, LectureStudentRepository, UserRepository};
 
-/// Holds a database Connection object, with a [`tokio::sync::Mutex`]
-/// to allow asynchronous locking of access to it.
-///
-/// [`tokio::sync::Mutex`]: tokio::Mutex
-pub struct ConnectionManager {
-    connection: Arc<tokio::Mutex<diesel_async::AsyncPgConnection>>,
+/// Manages database Connection and Repository objects, using a
+/// connection [`Pool`].
+pub struct DatabaseManager {
+    pool: Arc<Pool<AsyncPgConnection>>,
+    user_repository: UserRepository,
+    lecture_repository: LectureRepository,
+    lecture_student_repository: LectureStudentRepository,
 }
 
-/// General function for creating a connection to the database.
-pub async fn create_connection(database_url: &str) -> Result<diesel_async::AsyncPgConnection> {
-    diesel_async::AsyncPgConnection::establish(database_url)
-        .await
+/// General function for creating a connection pool to the database.
+pub fn create_connection_pool(database_url: &str) -> Result<Pool<AsyncPgConnection>> {
+    let manager = AsyncDieselConnectionManager::new(database_url);
+
+    Pool::builder(manager)
+        .build()
         .map_err(From::from)
 }
 
-impl ConnectionManager {
-    /// Creates a Connection Manager by initializing a connection
-    /// to the given Database URL, if possible
-    pub async fn create(database_url: &str) -> Result<Self> {
-        let connection = create_connection(database_url).await?;
-        Ok(ConnectionManager {
-            connection: Arc::new(tokio::Mutex::new(connection)),
+impl DatabaseManager {
+    /// Creates a Database Manager by initializing a connection
+    /// to the given Database URL.
+    pub fn new(database_url: &str) -> Result<Self> {
+        let pool = create_connection_pool(database_url)?;
+        let pool = Arc::new(pool);
+
+        let user_repository = UserRepository::new(&pool);
+        let lecture_repository = LectureRepository::new(&pool);
+        let lecture_student_repository = LectureStudentRepository::new(&pool);
+
+        Ok(Self {
+            pool,
+            user_repository,
+            lecture_repository,
+            lecture_student_repository
         })
     }
 
-    /// Gets the connection held by this ConnectionManager, wrapped in a Mutex
-    /// to allow for concurrent access.
-    pub fn get_connection(&self) -> Arc<tokio::Mutex<diesel_async::AsyncPgConnection>> {
-        Arc::clone(&self.connection)
+    /// Gets the connection held by this DatabaseManager.
+    pub fn get_connection_pool(&self) -> Arc<Pool<AsyncPgConnection>> {
+        Arc::clone(&self.pool)
     }
 
-    // pub async fn run_with_connection<T, F, Fut>(
-    //     &self,
-    //     f: F
-    // ) -> Result<T>
-    // where
-    //     F: FnOnce(Arc<tokio::Mutex<diesel_async::AsyncPgConnection>>) -> Fut,
-    //     Fut: Future<Output = T>
-    // {
-    //     // let mut conn = self.connection.try_lock().map_err(|_| Error::Other("Failed to lock
-    // connection"))?;     Ok(f(Arc::clone(&self.connection)).await)
-    // }
+    /// Returns a [`UserRepository`] object using the current connection pool.
+    pub fn user_repository(&self) -> &UserRepository {
+        &self.user_repository
+    }
 
-    // pub async fn run_with_connection_boxed<T, F>(
-    //     &self,
-    //     f: F
-    // ) -> Result<T>
-    // where
-    //     F: FnOnce(&mut diesel_async::AsyncPgConnection) -> BoxFuture<T>
-    // {
-    //     let mut conn = self.connection.try_lock().map_err(|_| Error::Other("Failed to lock
-    // connection"))?;     Ok(f(&mut conn).await)
-    // }
+    /// Returns a [`LectureRepository`] object using the current connection pool.
+    pub fn lecture_repository(&self) -> &LectureRepository {
+        &self.lecture_repository
+    }
+
+    /// Returns a [`LectureStudentRepository`] object using the current connection pool.
+    pub fn lecture_student_repository(&self) -> &LectureStudentRepository {
+        &self.lecture_student_repository
+    }
 }

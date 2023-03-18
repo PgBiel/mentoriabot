@@ -1,8 +1,8 @@
 macro_rules! repo_get {
-    ($conn:expr, $table:expr; $pk:expr) => {
+    ($self:ident, $table:expr; $pk:expr) => {
         $table
             .find($pk)
-            .first($conn)
+            .first(&mut $self.lock_connection().await?)
             .await
             .optional()
             .map_err(From::from)
@@ -10,10 +10,10 @@ macro_rules! repo_get {
 }
 
 macro_rules! repo_insert {
-    ($conn:expr, $table:expr; $new_entity:expr) => {{
+    ($self:ident, $table:expr; $new_entity:expr) => {{
         let entity = diesel::insert_into($table)
             .values($new_entity)
-            .get_result($conn)
+            .get_result(&mut $self.lock_connection().await?)
             .await?;
 
         $crate::error::Result::Ok(entity)
@@ -21,13 +21,13 @@ macro_rules! repo_insert {
 }
 
 macro_rules! repo_upsert {
-    ($conn:expr, $table:expr; $conflict_columns:expr; $new_entity:expr) => {{
+    ($self:ident, $table:expr; $conflict_columns:expr; $new_entity:expr) => {{
         let entity = diesel::insert_into($table)
             .values($new_entity)
             .on_conflict($conflict_columns)
             .do_update()
             .set($new_entity)
-            .get_result($conn)
+            .get_result(&mut $self.lock_connection().await?)
             .await?;
 
         $crate::error::Result::Ok(entity)
@@ -35,10 +35,10 @@ macro_rules! repo_upsert {
 }
 
 macro_rules! repo_update {
-    ($conn:expr; $old_entity:expr => $new_entity:expr) => {{
+    ($self:ident; $old_entity:expr => $new_entity:expr) => {{
         let entity = diesel::update($old_entity)
             .set($new_entity)
-            .get_result($conn)
+            .get_result(&mut $self.lock_connection().await?)
             .await?;
 
         $crate::error::Result::Ok(entity)
@@ -46,18 +46,18 @@ macro_rules! repo_update {
 }
 
 macro_rules! repo_remove {
-    ($conn:expr; $entity:expr) => {{
-        diesel::delete($entity).execute($conn).await?;
+    ($self:ident; $entity:expr) => {{
+        diesel::delete($entity).execute(&mut $self.lock_connection().await?).await?;
 
         $crate::error::Result::Ok(())
     }};
 }
 
 macro_rules! repo_find_by_first {
-    ($conn:expr, $table:expr; $column:expr; $value:expr) => {
+    ($self:ident, $table:expr; $column:expr; $value:expr) => {
         $table
             .filter($column.eq($value))
-            .first($conn)
+            .first(&mut $self.lock_connection().await?)
             .await
             .optional()
             .map_err(From::from)
@@ -65,38 +65,38 @@ macro_rules! repo_find_by_first {
 }
 
 macro_rules! repo_find_by {
-    ($conn:expr, $table:expr; $filter_expr:expr) => {
+    ($self:ident, $table:expr; $filter_expr:expr) => {
         $table
             .filter($filter_expr)
-            .get_results($conn)
+            .get_results(&mut $self.lock_connection().await?)
             .await
             .map_err(From::from)
     };
 
-    ($conn:expr, $table:expr; $filter_expr:expr; @order_by: $order_by:expr) => {
+    ($self:ident, $table:expr; $filter_expr:expr; @order_by: $order_by:expr) => {
         $table
             .filter($filter_expr)
             .order_by($order_by)
-            .get_results($conn)
+            .get_results(&mut $self.lock_connection().await?)
             .await
             .map_err(From::from)
     };
 }
 
 macro_rules! repo_find_all {
-    ($conn:expr, $table:expr, $table_ty:ty) => {{
+    ($self:ident, $table:expr, $table_ty:ty) => {{
         $table
             .select(<$table_ty as diesel::Table>::all_columns())
-            .get_results($conn)
+            .get_results(&mut $self.lock_connection().await?)
             .await
             .map_err(From::from)
     }};
 
-    ($conn:expr, $table:expr, $table_ty:ty; @order_by: $order_by:expr) => {{
+    ($self:ident, $table:expr, $table_ty:ty; @order_by: $order_by:expr) => {{
         $table
             .select(<$table_ty as diesel::Table>::all_columns())
             .order_by($order_by)
-            .get_results($conn)
+            .get_results(&mut $self.lock_connection().await?)
             .await
             .map_err(From::from)
     }};
