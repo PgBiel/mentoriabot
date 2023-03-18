@@ -30,8 +30,12 @@ async fn main() {
 config.example.json structure.",
     );
 
-    let Config { database_url, token, guild_id, admin_userids } =
-        parsed_config;
+    let Config {
+        database_url,
+        token,
+        guild_id,
+        admin_userids,
+    } = parsed_config;
 
     let conn = connection::ConnectionManager::create(&database_url)
         .await

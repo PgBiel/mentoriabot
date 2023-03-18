@@ -16,6 +16,8 @@ use poise::serenity_prelude as serenity;
 macro_rules! impl_from_u64_id {
     ($from_type:ty) => {
         impl From<$from_type> for DiscordId {
+            /// Converts this ID type to a DiscordId
+            /// by wrapping its underlying u64 value.
             fn from(value: $from_type) -> Self {
                 Into::<u64>::into(value).into()
             }
@@ -24,17 +26,30 @@ macro_rules! impl_from_u64_id {
 }
 
 /// For deserializing Discord IDs from database
-#[derive(FromSqlRow, AsExpression, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    FromSqlRow,
+    AsExpression,
+    serde::Serialize,
+    serde::Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+)]
 #[diesel(sql_type = VarChar)]
 pub struct DiscordId(u64);
 
 impl Into<u64> for DiscordId {
+    /// Converts this DiscordId to its underlying u64 value.
     fn into(self) -> u64 {
         self.0
     }
 }
 
 impl From<u64> for DiscordId {
+    /// Converts a u64 id to a DiscordId.
     fn from(id: u64) -> Self {
         Self(id)
     }
@@ -43,6 +58,8 @@ impl From<u64> for DiscordId {
 impl FromStr for DiscordId {
     type Err = <u64 as FromStr>::Err;
 
+    /// Attempts to parse a string as a u64, to then
+    /// convert the parsed number to a DiscordId.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         <u64 as FromStr>::from_str(s).map(Self)
     }
@@ -65,6 +82,7 @@ impl ToSql<VarChar, diesel::pg::Pg> for DiscordId
 where
     String: ToSql<VarChar, diesel::pg::Pg>,
 {
+    /// Allows usage of DiscordId with diesel, with VarChar fields.
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
         let converted_self = self.to_string();
         <String as ToSql<VarChar, diesel::pg::Pg>>::to_sql(&converted_self, &mut out.reborrow()) // see ToSql docs regarding temp values
@@ -76,6 +94,7 @@ where
     DB: diesel::backend::Backend,
     String: FromSql<VarChar, DB>,
 {
+    /// Allows usage of DiscordId with diesel, with VarChar fields.
     fn from_sql(bytes: RawValue<'_, DB>) -> diesel::deserialize::Result<Self> {
         String::from_sql(bytes).and_then(|s| s.parse().map_err(Into::into))
     }
