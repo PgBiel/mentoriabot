@@ -16,7 +16,8 @@ retainer = "0.3.0"
 async-trait = "0.1.64"
 strum = "0.24.1"
 strum_macros = "0.24.3"
-diesel = "2.0.0"
+diesel = { version = "2.0.0", features = ["chrono"] }
 diesel-async = { version = "0.2.1", features = ["postgres"] }
+chrono = "0.4.24"
 minirustbot_macros = { path = "macros" }
 minirustbot_forms = { path = "forms" }
