@@ -8,7 +8,7 @@ use crate::schema::*;
 ///
 /// [`User`]: super::User
 /// [`Lecture`]: super::Lecture
-#[derive(Queryable, Identifiable, Insertable, Debug, Clone, PartialEq, Eq)]
+#[derive(Queryable, Identifiable, Insertable, Debug, Copy, Clone, PartialEq, Eq)]
 #[diesel(primary_key(user_id, lecture_id))]
 pub struct LectureStudent {
     pub lecture_id: i64,

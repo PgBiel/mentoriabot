@@ -1,3 +1,14 @@
+macro_rules! repo_get {
+    ($conn:expr, $table:expr; $pk:expr) => {
+        $table
+            .find($pk)
+            .first($conn)
+            .await
+            .optional()
+            .map_err(From::from)
+    };
+}
+
 macro_rules! repo_insert {
     ($conn:expr, $table:expr; $new_entity:expr) => {{
         let entity = diesel::insert_into($table)
@@ -42,13 +53,32 @@ macro_rules! repo_remove {
     }};
 }
 
-macro_rules! repo_get_by_id {
-    ($conn:expr, $table:expr, $id_column:expr; $id:expr) => {
+macro_rules! repo_find_by_first {
+    ($conn:expr, $table:expr; $column:expr; $value:expr) => {
         $table
-            .filter($id_column.eq($id))
+            .filter($column.eq($value))
             .first($conn)
             .await
             .optional()
+            .map_err(From::from)
+    };
+}
+
+macro_rules! repo_find_by {
+    ($conn:expr, $table:expr; $filter_expr:expr) => {
+        $table
+            .filter($filter_expr)
+            .get_results($conn)
+            .await
+            .map_err(From::from)
+    };
+
+    ($conn:expr, $table:expr; $filter_expr:expr; @order_by: $order_by:expr) => {
+        $table
+            .filter($filter_expr)
+            .order_by($order_by)
+            .get_results($conn)
+            .await
             .map_err(From::from)
     };
 }
@@ -61,10 +91,21 @@ macro_rules! repo_find_all {
             .await
             .map_err(From::from)
     }};
+
+    ($conn:expr, $table:expr, $table_ty:ty; @order_by: $order_by:expr) => {{
+        $table
+            .select(<$table_ty as diesel::Table>::all_columns())
+            .order_by($order_by)
+            .get_results($conn)
+            .await
+            .map_err(From::from)
+    }};
 }
 
 pub(crate) use repo_find_all;
-pub(crate) use repo_get_by_id;
+pub(crate) use repo_find_by;
+pub(crate) use repo_find_by_first;
+pub(crate) use repo_get;
 pub(crate) use repo_insert;
 pub(crate) use repo_remove;
 pub(crate) use repo_update;
