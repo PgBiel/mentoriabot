@@ -3,5 +3,7 @@
 .fleet
 .env
 .vscode
+*/target
+*/Cargo.lock
 *.iml
 config.json
