@@ -13,6 +13,8 @@ diesel::table! {
         teacher_id -> Varchar,
         name -> Varchar,
         description -> Text,
+        student_limit -> Int4,
+        notified -> Bool,
         start_at -> Timestamptz,
         end_at -> Timestamptz,
     }

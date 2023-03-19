@@ -13,6 +13,8 @@ pub struct Lecture {
     pub teacher_id: DiscordId,
     pub name: String,
     pub description: String,
+    pub student_limit: i32,
+    pub notified: bool,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -24,6 +26,8 @@ pub struct NewLecture {
     pub teacher_id: DiscordId,
     pub name: String,
     pub description: String,
+    pub student_limit: i32,
+    pub notified: bool,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
