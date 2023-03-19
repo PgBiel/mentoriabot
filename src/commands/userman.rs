@@ -30,42 +30,37 @@ pub async fn userman(ctx: ApplicationContext<'_>) -> Result<()> {
 }
 
 /// Adds a User to the database.
-#[poise::command(slash_command, ephemeral)]
+#[poise::command(slash_command, ephemeral, owners_only)]
 pub async fn add(
     ctx: ApplicationContext<'_>,
     #[description = "Whom to add as User"] user: serenity::User,
 ) -> Result<()> {
-    if !ctx.data.admin_userids.contains(ctx.author().id.as_u64()) {
-        ctx.send(|b| b.content("Error: Not an admin user.").ephemeral(true))
-            .await?;
-    } else {
-        let data = UserModal::execute(ctx).await?;
-        if let Some(modal_data) = data {
-            let new_user = NewUser {
-                discord_id: user.id.into(),
-                name: modal_data.name,
-                bio: modal_data.bio,
-            };
-            let inserted_user = ctx.data.db.user_repository().upsert(new_user).await?;
-            let response = format!(
-                "Successfully added Mr. {}. to the database (with{} a bio).",
-                inserted_user.name,
-                if inserted_user.bio.is_none() {
-                    "out"
-                } else {
-                    ""
-                }
-            );
-            ctx.send(|f| f.content(response).ephemeral(true)).await?;
-        }
-        //    ctx.say(response).await?;
+    let data = UserModal::execute(ctx).await?;
+    if let Some(modal_data) = data {
+        let new_user = NewUser {
+            discord_id: user.id.into(),
+            name: modal_data.name,
+            bio: modal_data.bio,
+        };
+        let inserted_user = ctx.data.db.user_repository().upsert(new_user).await?;
+        let response = format!(
+            "Successfully added Mr. {}. to the database (with{} a bio).",
+            inserted_user.name,
+            if inserted_user.bio.is_none() {
+                "out"
+            } else {
+                ""
+            }
+        );
+        ctx.send(|f| f.content(response).ephemeral(true)).await?;
     }
+    //    ctx.say(response).await?;
 
     Ok(())
 }
 
 /// Gets a User from the database
-#[poise::command(slash_command, ephemeral)]
+#[poise::command(slash_command, ephemeral, owners_only)]
 pub async fn get(
     ctx: ApplicationContext<'_>,
     #[description = "Whose User info to get"] user: serenity::User,
@@ -109,49 +104,39 @@ pub async fn get(
 }
 
 /// Removes a User from the database
-#[poise::command(slash_command, ephemeral)]
+#[poise::command(slash_command, ephemeral, owners_only)]
 pub async fn remove(
     ctx: ApplicationContext<'_>,
     #[description = "Whose User info to remove"] user: serenity::User,
 ) -> Result<()> {
-    if !ctx.data.admin_userids.contains(ctx.author().id.as_u64()) {
-        ctx.send(|b| b.content("Error: Not an admin user.").ephemeral(true))
-            .await?;
-    } else {
-        let found_user = ctx.data().db.user_repository().get(user.id.into()).await?;
-        if let Some(found_user) = found_user {
-            let removed_msg = format!(
-                "Successfully removed {} from the database.",
-                found_user.name
-            );
-            ctx.data().db.user_repository().remove(&found_user).await?;
+    let found_user = ctx.data().db.user_repository().get(user.id.into()).await?;
+    if let Some(found_user) = found_user {
+        let removed_msg = format!(
+            "Successfully removed {} from the database.",
+            found_user.name
+        );
+        ctx.data().db.user_repository().remove(&found_user).await?;
 
-            ctx.send(|b| b.content(removed_msg).ephemeral(true)).await?;
-        } else {
-            ctx.send(|b| {
-                b.content("User not registered, so cannot be removed.")
-                    .ephemeral(true)
-            })
-            .await?;
-        }
+        ctx.send(|b| b.content(removed_msg).ephemeral(true)).await?;
+    } else {
+        ctx.send(|b| {
+            b.content("User not registered, so cannot be removed.")
+                .ephemeral(true)
+        })
+        .await?;
     }
 
     Ok(())
 }
 
-#[poise::command(slash_command, ephemeral)]
+#[poise::command(slash_command, ephemeral, owners_only)]
 pub async fn all(ctx: ApplicationContext<'_>) -> Result<()> {
-    if !ctx.data.admin_userids.contains(ctx.author().id.as_u64()) {
-        ctx.send(|b| b.content("Error: Not an admin user.").ephemeral(true))
-            .await?;
-    } else {
-        let users = ctx.data().db.user_repository().find_all().await?;
-        let mut text = String::from("Users:");
-        for user in users {
-            text.push_str(&format!("\n- {:?}", user));
-        }
-        ctx.send(|b| b.content(text).ephemeral(true)).await?;
+    let users = ctx.data().db.user_repository().find_all().await?;
+    let mut text = String::from("Users:");
+    for user in users {
+        text.push_str(&format!("\n- {:?}", user));
     }
+    ctx.send(|b| b.content(text).ephemeral(true)).await?;
 
     Ok(())
 }
