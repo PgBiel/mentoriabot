@@ -41,6 +41,11 @@ pub enum Error {
     /// [`PoolError`]: deadpool::PoolError
     DeadpoolPool(deadpool::PoolError),
 
+    /// Indicates a [`HumanParseableDateTime`] failed to parse.
+    ///
+    /// [`HumanParseableDateTime`]: crate::util::HumanParseableDateTime
+    DateTimeParse,
+
     /// If a command check failed (e.g. check
     /// if the user has a certain role).
     CommandCheck(&'static str),
@@ -83,6 +88,7 @@ impl Display for Error {
             Self::DieselConnection(inner) => Display::fmt(&inner, f),
             Self::DeadpoolBuild(inner) => Display::fmt(&inner, f),
             Self::DeadpoolPool(inner) => Display::fmt(&inner, f),
+            Self::DateTimeParse => write!(f, "Failed to parse the given date expression"),
             Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
             Self::Other(message) => write!(f, "{}", message),
