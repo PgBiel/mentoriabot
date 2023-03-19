@@ -15,6 +15,7 @@ use crate::{
 };
 
 /// Manages User instances.
+#[derive(Clone)]
 pub struct UserRepository {
     pool: Arc<Pool<AsyncPgConnection>>,
 }

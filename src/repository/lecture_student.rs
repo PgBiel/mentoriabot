@@ -13,6 +13,7 @@ use crate::{
 
 /// Manages LectureStudent instances, which are basically associations
 /// that determine that a given User is a student in a given Lecture.
+#[derive(Clone)]
 pub struct LectureStudentRepository {
     pool: Arc<Pool<AsyncPgConnection>>,
 }

@@ -12,6 +12,7 @@ use crate::{
 
 /// Manages database Connection and Repository objects, using a
 /// connection [`Pool`].
+#[derive(Clone)]
 pub struct DatabaseManager {
     pool: Arc<Pool<AsyncPgConnection>>,
     user_repository: UserRepository,

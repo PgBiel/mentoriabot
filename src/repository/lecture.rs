@@ -15,6 +15,7 @@ use crate::{
 };
 
 /// Manages Lecture instances.
+#[derive(Clone)]
 pub struct LectureRepository {
     pool: Arc<Pool<AsyncPgConnection>>,
 }

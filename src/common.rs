@@ -1,6 +1,7 @@
 use crate::{connection::DatabaseManager, error::Error};
 
 /// Global command data, which is stored and accessible in all command invocations
+#[derive(Clone)]
 pub struct Data {
     pub db: DatabaseManager,
     pub admin_userids: Vec<u64>,
