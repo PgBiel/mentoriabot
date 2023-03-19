@@ -29,6 +29,16 @@ impl UserRepository {
         }
     }
 
+    /// Gets a User from the database by their Discord ID,
+    /// or inserts them instead.
+    pub async fn get_or_insert(&self, user: &NewUser) -> Result<User> {
+        if let Some(found_user) = self.get(user.discord_id).await? {
+            Ok(found_user)
+        } else {
+            self.insert(user).await
+        }
+    }
+
     /// Searches for all Users that are Students of
     /// a particular Lecture.
     pub async fn find_by_lecture(&self, lecture: &Lecture) -> Result<Vec<User>> {
@@ -66,7 +76,7 @@ impl Repository for UserRepository {
         repo_get!(self, users::table; discord_id)
     }
 
-    async fn insert(&self, user: NewUser) -> Result<User> {
+    async fn insert(&self, user: &NewUser) -> Result<User> {
         repo_insert!(self, users::table; user)
     }
 
@@ -83,8 +93,8 @@ impl Repository for UserRepository {
 impl UpdatableRepository for UserRepository {
     type PartialEntity = PartialUser;
 
-    async fn upsert(&self, user: NewUser) -> Result<User> {
-        repo_upsert!(self, users::table; /*conflict_columns=*/users::discord_id; &user)
+    async fn upsert(&self, user: &NewUser) -> Result<User> {
+        repo_upsert!(self, users::table; /*conflict_columns=*/users::discord_id; user)
     }
 
     async fn update(

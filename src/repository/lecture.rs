@@ -99,7 +99,7 @@ impl Repository for LectureRepository {
         repo_get!(self, lectures::table; id)
     }
 
-    async fn insert(&self, lecture: NewLecture) -> Result<Lecture> {
+    async fn insert(&self, lecture: &NewLecture) -> Result<Lecture> {
         repo_insert!(self, lectures::table; lecture)
     }
 
@@ -116,8 +116,8 @@ impl Repository for LectureRepository {
 impl UpdatableRepository for LectureRepository {
     type PartialEntity = PartialLecture;
 
-    async fn upsert(&self, lecture: NewLecture) -> Result<Lecture> {
-        repo_upsert!(self, lectures::table; /*conflict_columns=*/lectures::id; &lecture)
+    async fn upsert(&self, lecture: &NewLecture) -> Result<Lecture> {
+        repo_upsert!(self, lectures::table; /*conflict_columns=*/lectures::id; lecture)
     }
 
     async fn update(

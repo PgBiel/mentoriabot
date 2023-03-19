@@ -36,7 +36,7 @@ impl LectureStudentRepository {
     ) -> Result<LectureStudent> {
         Self::insert(
             self,
-            NewLectureStudent {
+            &NewLectureStudent {
                 lecture_id: lecture.id,
                 user_id: user.discord_id,
             },
@@ -88,7 +88,7 @@ impl Repository for LectureStudentRepository {
         repo_get!(self, lecture_students::table; pk)
     }
 
-    async fn insert(&self, lecture: NewLectureStudent) -> Result<LectureStudent> {
+    async fn insert(&self, lecture: &NewLectureStudent) -> Result<LectureStudent> {
         repo_insert!(self, lecture_students::table; lecture)
     }
 

@@ -53,7 +53,7 @@ pub trait Repository {
     async fn get(&self, pk: Self::PrimaryKey) -> Result<Option<Self::Entity>>;
 
     /// Insert a new Entity to the database.
-    async fn insert(&self, new_entity: Self::NewEntity) -> Result<Self::Entity>;
+    async fn insert(&self, new_entity: &Self::NewEntity) -> Result<Self::Entity>;
 
     /// Remove an Entity from the database.
     async fn remove(&self, entity: &Self::Entity) -> Result<usize>;
@@ -71,7 +71,7 @@ pub trait UpdatableRepository: Repository {
     type PartialEntity: diesel::AsChangeset<Target=Self::Table> + Send + Sync;
 
     /// Insert a new Entity to the database, or update if it already exists.
-    async fn upsert(&self, new_entity: Self::NewEntity) -> Result<Self::Entity>;
+    async fn upsert(&self, new_entity: &Self::NewEntity) -> Result<Self::Entity>;
 
     /// Update an existing Entity with new data.
     async fn update(
