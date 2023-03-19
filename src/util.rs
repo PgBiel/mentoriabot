@@ -94,7 +94,8 @@ pub struct HumanParseableDateTime(pub chrono::DateTime<chrono::Utc>);
 
 const HOUR: i32 = 3600;
 
-fn brazil_timezone() -> Option<chrono::FixedOffset> {
+/// Obtains the UTC-3 timezone (the typical Brazilian timezone).
+pub fn brazil_timezone() -> Option<chrono::FixedOffset> {
     // -3 UTC
     chrono::FixedOffset::west_opt(3 * HOUR)
 }
@@ -181,7 +182,14 @@ impl FromStr for HumanParseableDateTime {
             .or_else(|| try_date_parse(string_with_year, "%Y; %d/%m %H:%M:%S"))
             .or_else(|| try_date_parse(string_with_year, "%Y; %d/%m %H:%M"))
             .or_else(|| try_date_parse(string_with_today, "%Y-%m-%d %H:%M:%S"))
-            .or_else(|| try_date_parse(string_with_today, "%Y-%m-%d %H:%M"));
+            .or_else(|| try_date_parse(string_with_today, "%Y-%m-%d %H:%M"))
+            // inverted (time then date)
+            .or_else(|| try_date_parse(s, "%H:%M:%S %Y-%m-%d"))
+            .or_else(|| try_date_parse(s, "%H:%M %Y-%m-%d"))
+            .or_else(|| try_date_parse(s, "%H:%M:%S %d/%m/%Y"))
+            .or_else(|| try_date_parse(s, "%H:%M %d/%m/%Y"))
+            .or_else(|| try_date_parse(string_with_year, "%Y; %H:%M:%S %d/%m"))
+            .or_else(|| try_date_parse(string_with_year, "%Y; %H:%M %d/%m"));
 
         result.ok_or(Error::DateTimeParse)
     }
@@ -288,6 +296,72 @@ mod tests {
             let year = chrono::Utc::now().year();
 
             let parsed: HumanParseableDateTime = "19/03 11:29".parse().unwrap();
+
+            assert_eq!(
+                chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 0).unwrap(),
+                parsed.0
+            )
+        }
+
+        // -- inverted tests --
+
+        #[test]
+        fn parses_hh_mm_ss_yyyy_mm_dd_correctly() {
+            let parsed: HumanParseableDateTime = "11:29:30 2023-03-19".parse().unwrap();
+
+            assert_eq!(
+                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                parsed.0
+            )
+        }
+
+        #[test]
+        fn parses_hh_mm_yyyy_mm_dd_with_zero_seconds() {
+            let parsed: HumanParseableDateTime = "11:29 2023-03-19".parse().unwrap();
+
+            assert_eq!(
+                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).unwrap(),
+                parsed.0
+            )
+        }
+
+        #[test]
+        fn parses_hh_mm_ss_dd_mm_yyyy_correctly() {
+            let parsed: HumanParseableDateTime = "11:29:30 19/03/2023".parse().unwrap();
+
+            assert_eq!(
+                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                parsed.0
+            )
+        }
+
+        #[test]
+        fn parses_hh_mm_dd_mm_yyyy_with_zero_seconds() {
+            let parsed: HumanParseableDateTime = "11:29 19/03/2023".parse().unwrap();
+
+            assert_eq!(
+                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).unwrap(),
+                parsed.0
+            )
+        }
+
+        #[test]
+        fn parses_hh_mm_ss_dd_mm_with_current_year() {
+            let year = chrono::Utc::now().year();
+
+            let parsed: HumanParseableDateTime = "11:29:30 19/03".parse().unwrap();
+
+            assert_eq!(
+                chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 30).unwrap(),
+                parsed.0
+            )
+        }
+
+        #[test]
+        fn parses_hh_mm_dd_mm_with_current_year_and_zero_seconds() {
+            let year = chrono::Utc::now().year();
+
+            let parsed: HumanParseableDateTime = "11:29 19/03".parse().unwrap();
 
             assert_eq!(
                 chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 0).unwrap(),
