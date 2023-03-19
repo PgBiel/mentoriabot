@@ -6,7 +6,7 @@ use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQuer
 
 use super::{
     repo_find_all, repo_find_by_first, repo_get, repo_insert, repo_remove, repo_update,
-    repo_upsert, BasicRepository, Repository,
+    repo_upsert, Repository, UpdatableRepository,
 };
 use crate::{
     error::Result,
@@ -46,7 +46,7 @@ impl UserRepository {
 }
 
 #[async_trait]
-impl BasicRepository for UserRepository {
+impl Repository for UserRepository {
     type Table = users::table;
 
     type Entity = User;
@@ -80,12 +80,14 @@ impl BasicRepository for UserRepository {
 }
 
 #[async_trait]
-impl Repository for UserRepository {
+impl UpdatableRepository for UserRepository {
     async fn upsert(&self, user: NewUser) -> Result<User> {
         repo_upsert!(self, users::table; /*conflict_columns=*/users::discord_id; &user)
     }
 
-    async fn update(&self, old_user: &User, new_user: NewUser) -> Result<User> {
+    async fn update(
+        &self, old_user: &User, new_user: impl diesel::AsChangeset<Target=Self::Table>
+    ) -> Result<User> {
         repo_update!(self; old_user => new_user)
     }
 }

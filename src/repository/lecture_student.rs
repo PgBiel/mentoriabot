@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
-use super::{repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, BasicRepository};
+use super::{repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, Repository};
 use crate::{
     error::Result,
     model::{DiscordId, Lecture, LectureStudent, NewLectureStudent, User},
@@ -69,7 +69,7 @@ impl LectureStudentRepository {
 }
 
 #[async_trait]
-impl BasicRepository for LectureStudentRepository {
+impl Repository for LectureStudentRepository {
     type Table = lecture_students::table;
 
     type Entity = LectureStudent;

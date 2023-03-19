@@ -24,7 +24,7 @@ pub(crate) use macros::{
 
 /// Trait for a generic entity Repository with insert/remove.
 #[async_trait]
-pub trait BasicRepository {
+pub trait Repository {
     /// The table with the data this repository this will use
     type Table: diesel::Table + diesel::query_dsl::methods::FindDsl<Self::PrimaryKey> + Send + Sync;
 
@@ -64,7 +64,7 @@ pub trait BasicRepository {
 
 /// Trait for a full-fledged repository which can also update.
 #[async_trait]
-pub trait Repository: BasicRepository {
+pub trait UpdatableRepository: Repository {
     /// Insert a new Entity to the database, or update if it already exists.
     async fn upsert(&self, new_entity: Self::NewEntity) -> Result<Self::Entity>;
 
@@ -72,6 +72,6 @@ pub trait Repository: BasicRepository {
     async fn update(
         &self,
         old_entity: &Self::Entity,
-        new_entity: Self::NewEntity,
+        new_entity: impl diesel::AsChangeset<Target=Self::Table>,
     ) -> Result<Self::Entity>;
 }
