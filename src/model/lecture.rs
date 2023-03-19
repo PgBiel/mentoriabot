@@ -11,6 +11,8 @@ use crate::schema::*;
 pub struct Lecture {
     pub id: i64,
     pub teacher_id: DiscordId,
+    pub name: String,
+    pub description: String,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -20,6 +22,8 @@ pub struct Lecture {
 #[diesel(table_name = lectures)]
 pub struct NewLecture {
     pub teacher_id: DiscordId,
+    pub name: String,
+    pub description: String,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }

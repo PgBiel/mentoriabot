@@ -11,6 +11,8 @@ diesel::table! {
     lectures (id) {
         id -> Int8,
         teacher_id -> Varchar,
+        name -> Varchar,
+        description -> Text,
         start_at -> Timestamptz,
         end_at -> Timestamptz,
     }
@@ -28,4 +30,8 @@ diesel::joinable!(lecture_students -> lectures (lecture_id));
 diesel::joinable!(lecture_students -> users (user_id));
 diesel::joinable!(lectures -> users (teacher_id));
 
-diesel::allow_tables_to_appear_in_same_query!(lecture_students, lectures, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    lecture_students,
+    lectures,
+    users,
+);
