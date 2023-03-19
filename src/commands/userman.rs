@@ -4,7 +4,7 @@ use crate::{
     common::ApplicationContext,
     error::Result,
     model::NewUser,
-    repository::{BasicRepository, Repository},
+    repository::{Repository, UpdatableRepository},
 };
 
 #[derive(Default, Modal)]
@@ -42,7 +42,7 @@ pub async fn add(
             name: modal_data.name,
             bio: modal_data.bio,
         };
-        let inserted_user = ctx.data.db.user_repository().upsert(new_user).await?;
+        let inserted_user = ctx.data.db.user_repository().upsert(&new_user).await?;
         let response = format!(
             "Successfully added Mr. {}. to the database (with{} a bio).",
             inserted_user.name,
