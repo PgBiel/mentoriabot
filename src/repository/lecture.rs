@@ -13,6 +13,9 @@ use crate::{
     model::{DiscordId, Lecture, NewLecture, PartialLecture},
     schema::lectures,
 };
+use crate::model::User;
+use crate::repository::UserRepository;
+use crate::schema::users;
 
 /// Manages Lecture instances.
 #[derive(Clone)]
@@ -26,6 +29,21 @@ impl LectureRepository {
     pub fn new(pool: &Arc<Pool<AsyncPgConnection>>) -> Self {
         Self {
             pool: Arc::clone(pool),
+        }
+    }
+
+    /// Finds a Lecture and retrieves the associated teacher's User object.
+    pub async fn get_with_teacher(&self, lecture_id: i64) -> Result<Option<(Lecture, User)>> {
+        let lecture = self.get(lecture_id).await?;
+        if let Some(lecture) = lecture {
+            let user_repository = UserRepository::new(&self.pool);
+
+            user_repository.get(lecture.teacher_id).await
+                .map(|maybe_teacher| {
+                    maybe_teacher.map(|teacher| (lecture, teacher))
+                })
+        } else {
+            Ok(None)
         }
     }
 

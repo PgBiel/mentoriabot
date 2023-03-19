@@ -39,6 +39,17 @@ impl UserRepository {
         }
     }
 
+    /// Attempts to insert a User; does nothing if such a User is already registered.
+    /// Returns the inserted row count (1 if a new User was inserted or 0 otherwise).
+    pub async fn insert_if_not_exists(&self, user: &NewUser) -> Result<usize> {
+        diesel::insert_into(users::table)
+            .values(user)
+            .on_conflict_do_nothing()
+            .execute(&mut self.lock_connection().await?)
+            .await
+            .map_err(From::from)
+    }
+
     /// Searches for all Users that are Students of
     /// a particular Lecture.
     pub async fn find_by_lecture(&self, lecture: &Lecture) -> Result<Vec<User>> {
