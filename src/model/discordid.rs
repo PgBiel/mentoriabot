@@ -41,6 +41,24 @@ macro_rules! impl_from_u64_id {
 #[diesel(sql_type = VarChar)]
 pub struct DiscordId(u64);
 
+impl DiscordId {
+    /// Represents this Discord ID as a User mention.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use crate::model::DiscordId;
+    /// let id = DiscordId(1234567u64);
+    ///
+    /// let mention = id.as_user_mention();
+    ///
+    /// assert_eq!("<@1234567>", mention);
+    /// ```
+    pub fn as_user_mention(self) -> String {
+        format!("<@{}>", self.0)
+    }
+}
+
 impl Into<u64> for DiscordId {
     /// Converts this DiscordId to its underlying u64 value.
     fn into(self) -> u64 {
