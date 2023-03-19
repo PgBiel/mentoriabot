@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, Lecture, LectureStudent, NewUser, User},
+    model::{DiscordId, Lecture, LectureStudent, NewUser, User, PartialUser},
     schema::{lecture_students, lectures, users},
 };
 
@@ -81,12 +81,14 @@ impl Repository for UserRepository {
 
 #[async_trait]
 impl UpdatableRepository for UserRepository {
+    type PartialEntity = PartialUser;
+
     async fn upsert(&self, user: NewUser) -> Result<User> {
         repo_upsert!(self, users::table; /*conflict_columns=*/users::discord_id; &user)
     }
 
     async fn update(
-        &self, old_user: &User, new_user: impl diesel::AsChangeset<Target=Self::Table>
+        &self, old_user: &User, new_user: PartialUser
     ) -> Result<User> {
         repo_update!(self; old_user => new_user)
     }
