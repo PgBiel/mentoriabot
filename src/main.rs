@@ -33,6 +33,15 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 error: Some(Error::CommandCheck(message)),
                 ..
             } => message.to_string(),
+            FrameworkError::ArgumentParse {
+                input,
+                ..
+            } => {
+                format!(
+                    "One of the given parameters had an invalid format{}.",
+                    input.as_ref().map(|s| format!(": '{s}'")).unwrap_or_default()
+                )
+            }
             FrameworkError::MissingBotPermissions {
                 missing_permissions,
                 ..
@@ -83,7 +92,25 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 }
             }
             FrameworkError::UnknownInteraction { .. } => {
-                "I do not recognize that command.".to_string()
+                "I do not recognize that command you're trying to run.".to_string()
+            }
+            FrameworkError::Setup { error, .. } => {
+                eprintln!("Failed to run bot setup: {error}");
+                "Bot setup failed.".to_string()
+            }
+            FrameworkError::Command {
+                error: Error::Diesel(error),
+                ..
+            } => {
+                eprintln!("Diesel database error: {error}");
+                "An internal database error occurred. Sorry!".to_string()
+            }
+            FrameworkError::Command {
+                error: error @ (Error::DieselConnection(_) | Error::DeadpoolPool(_)),
+                ..
+            } => {
+                eprintln!("Database connection error: {error}");
+                "An internal database connection error occurred. Sorry!".to_string()
             }
             _ => {
                 eprintln!("Unexpected bot error: {}", framework_error);
@@ -142,6 +169,7 @@ config.example.json structure.",
                     GuildId(guild_id),
                 )
                 .await?;
+                println!("Registered");
                 Ok(Data::new(db, admin_userids))
             })
         });
