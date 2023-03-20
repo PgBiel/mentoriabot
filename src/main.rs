@@ -1,5 +1,6 @@
 use poise::serenity_prelude as serenity;
 use serenity::GuildId;
+use tracing::{error, info, warn};
 
 mod commands;
 mod common;
@@ -95,25 +96,25 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 "I do not recognize that command you're trying to run.".to_string()
             }
             FrameworkError::Setup { error, .. } => {
-                eprintln!("Failed to run bot setup: {error}");
+                error!("Failed to run bot setup: {error}");
                 "Bot setup failed.".to_string()
             }
             FrameworkError::Command {
                 error: Error::Diesel(error),
                 ..
             } => {
-                eprintln!("Diesel database error: {error}");
+                error!("Diesel database error: {error}");
                 "An internal database error occurred. Sorry!".to_string()
             }
             FrameworkError::Command {
                 error: error @ (Error::DieselConnection(_) | Error::DeadpoolPool(_)),
                 ..
             } => {
-                eprintln!("Database connection error: {error}");
+                error!("Database connection error: {error}");
                 "An internal database connection error occurred. Sorry!".to_string()
             }
             _ => {
-                eprintln!("Unexpected bot error: {}", framework_error);
+                error!("Unexpected bot error: {}", framework_error);
                 "Unexpected error occurred.".to_string()
             }
         };
@@ -122,7 +123,7 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
             ctx.send(|b| b.content(format!("**Error:** {response}")))
                 .await
                 .err()
-                .map(|err| eprintln!("Failed to reply with error message: {err}"))
+                .map(|err| warn!("Failed to reply with error message: {err}"))
                 .unwrap_or_default()
         }
     })
@@ -143,7 +144,15 @@ config.example.json structure.",
         token,
         guild_id,
         admin_userids,
+        default_logging_level,
     } = parsed_config;
+
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .with_max_level(Into::<tracing::Level>::into(default_logging_level))
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("Setting default logging level failed.");
 
     let db = connection::DatabaseManager::new(&database_url)
         .expect("Failed to connect to the bot's database.");
@@ -169,7 +178,7 @@ config.example.json structure.",
                     GuildId(guild_id),
                 )
                 .await?;
-                println!("Registered");
+                info!("Registered");
                 Ok(Data::new(db, admin_userids))
             })
         });

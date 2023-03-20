@@ -218,7 +218,6 @@ fn create_select_option_specs(
             #( #specs ),*
         ]
     };
-    println!("Res = {res}");
     res
 }
 

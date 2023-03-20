@@ -2,5 +2,6 @@
     "token": "InsertTokenHere",
     "guild_id": "12345",
     "database_url": "postgres://username:password@localhost/minirustbot_test",
-    "admin_userids": [1234, 5678]
+    "admin_userids": [1234, 5678],
+    "default_logging_level": "info"
 }
