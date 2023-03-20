@@ -1,25 +1,7 @@
 use poise::Modal;
 
 use crate::{common::ApplicationContext, error::Error};
-
-#[derive(Default, Modal)]
-#[name = "Modal title"]
-struct TestModal {
-    #[name = "Name"]
-    #[placeholder = "Joseph"]
-    #[min_length = 3]
-    #[max_length = 20]
-    name: String,
-
-    #[name = "age"]
-    #[max_length = 3]
-    age: Option<String>,
-
-    #[name = "More"]
-    #[max_length = 500]
-    #[paragraph]
-    more: Option<String>,
-}
+use super::modals::modal::TestModal;
 
 /// Modal command.
 #[poise::command(slash_command)]

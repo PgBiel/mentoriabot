@@ -6,6 +6,7 @@ mod testform;
 mod userman;
 mod userup;
 mod lectures;
+mod modals;
 
 pub use modal::modal;
 pub use ping::ping;

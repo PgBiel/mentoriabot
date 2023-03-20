@@ -2,62 +2,11 @@ use std::ops::Add;
 use poise::Modal;
 use poise::serenity_prelude as serenity;
 use crate::{common::{ApplicationContext, Context}, error::Result, util};
+use crate::commands::modals::lectures::LectureCreateModals;
 use crate::error::Error;
 use crate::model::{Lecture, NewLecture, NewUser, User};
 use crate::repository::Repository;
 use crate::util::{brazil_timezone, HumanParseableDateTime};
-
-#[derive(Modal, Debug, Clone)]
-#[name = "Create Lecture"]
-struct LectureCreateModal {
-    #[name = "Lecture Topic"]
-    #[placeholder = "Creating a Class in C++"]
-    #[min_length = 1]
-    #[max_length = 100]
-    name: String,
-
-    #[name = "Starting At (DD/MM, hh:mm)"]
-    #[placeholder = "19/03, 19:30"]
-    #[min_length = 5]
-    #[max_length = 25]
-    starts_at: String,
-
-    #[name = "Lecture Description"]
-    #[placeholder = "This lecture will teach you how to create a class in C++, from scratch."]
-    #[paragraph]
-    #[min_length = 1]
-    #[max_length = 200]
-    description: String,
-}
-
-#[derive(Modal, Debug, Clone)]
-#[name = "Criar Aula"]
-struct LectureCreatePortugueseModal {
-    #[name = "Tópico da Aula"]
-    #[placeholder = "Criando uma Classe em C++"]
-    #[min_length = 1]
-    #[max_length = 100]
-    name: String,
-
-    #[name = "Começando em (DIA/MÊS, hora:minuto)"]
-    #[placeholder = "19/03, 19:30"]
-    #[min_length = 5]
-    #[max_length = 25]
-    starts_at: String,
-
-    #[name = "Descrição da Aula"]
-    #[placeholder = "Esta aula irá te ensinar a criar uma classe em C++, do zero."]
-    #[paragraph]
-    #[min_length = 1]
-    #[max_length = 200]
-    description: String,
-}
-
-#[derive(Debug, Clone)]
-enum LectureCreateModals {
-    Regular(LectureCreateModal),
-    Portuguese(LectureCreatePortugueseModal)
-}
 
 /// Manages lectures.
 #[poise::command(
@@ -116,102 +65,68 @@ async fn create(
     #[max = 12]
     hours: i64,
 ) -> Result<()> {
-    let name: String;
-    let description: String;
-    let starts_at: chrono::DateTime<chrono::Utc>;
+    let modal = LectureCreateModals::execute_based_on_locale(ctx).await?;
 
-    let modal_res: Option<LectureCreateModals> = if ctx.locale() == Some("pt-BR") {
-        LectureCreatePortugueseModal::execute(ctx).await?.map(|modal| {
-            LectureCreateModals::Portuguese(modal)
-        })
-    } else {
-        LectureCreateModal::execute(ctx).await?.map(|modal| {
-            LectureCreateModals::Regular(modal)
-        })
+    let Some(modal) = modal else {
+        ctx.send(|b| b
+            .content(
+                "Failed to receive your response to the modal form; \
+                please try running this command again."
+            )
+            .ephemeral(true)
+        ).await?;
+        return Ok(());
     };
 
-    let unparsed_starts_at: String;
-
-    match modal_res {
-        Some(LectureCreateModals::Portuguese(LectureCreatePortugueseModal {
-            name: given_name,
-            description: given_description,
-            starts_at: given_starts_at,
-        })) => {
-            name = given_name;
-            description = given_description;
-            unparsed_starts_at = given_starts_at;
-        }
-        Some(LectureCreateModals::Regular(LectureCreateModal {
-            name: given_name,
-            description: given_description,
-            starts_at: given_starts_at,
-        })) => {
-            name = given_name;
-            description = given_description;
-            unparsed_starts_at = given_starts_at;
-        }
-        None => return {
-            ctx.send(|b| {
-                b.content("Could not receive your response to the modal, sorry.")
-            }).await?;
-            Ok(())
-        }
-    };
-
-    match unparsed_starts_at.parse::<HumanParseableDateTime>() {
-        Ok(HumanParseableDateTime(date_time)) => starts_at = date_time,
-        Err(_) => return {
-            ctx.send(|b| {
-                b
-                    .content(format!(
-                        "Sorry, I could not parse the date '{}'. Please use the format \
+    let Some(start_at) = modal.parsed_starts_at() else {
+        ctx.send(|b| {
+            b
+                .content(format!(
+                    "Sorry, I could not parse the date '{}'. Please use the format \
                         `DD/MM/YYYY HH:MM`.",
-                        unparsed_starts_at
-                    ))
-                    .ephemeral(true)
-            }).await?;
-
-            Ok(())
-        }
+                    modal.starts_at()
+                ))
+                .ephemeral(true)
+        }).await?;
+        return Ok(());
     };
 
-    if starts_at <= chrono::Utc::now().add(chrono::Duration::seconds(1)) {
+    if start_at <= chrono::Utc::now().add(chrono::Duration::seconds(1)) {
         ctx.send(
-            |b| b.content("Please provide a future timestamp for 'starts_at'."))
+            |b| b
+                .content("Please provide a future timestamp for when the lecture will start."))
             .await?;
         return Ok(());
     }
+
+    let name = modal.name().clone();
+    let description = modal.description().clone();
+    let end_at = start_at.add(chrono::Duration::hours(hours));
+
     let author = ctx.author();
     let author_id = author.id.into();
 
     ctx.defer_ephemeral().await?;
-    let res = ctx.data().db.user_repository().insert_if_not_exists(&NewUser {
+
+    ctx.data().db.user_repository().insert_if_not_exists(&NewUser {
         discord_id: author_id,
         name: author.name.clone(),
         bio: None
     }).await?;
-    println!("Default insert: {res}");
 
     let res = ctx.data().db.lecture_repository().insert(&NewLecture {
-        name: name.clone(),
-        description: description.clone(),
+        name,
+        description,
         teacher_id: author_id,
         student_limit,
         notified: false,
-        start_at: starts_at.clone().into(),
-        end_at: starts_at.add(chrono::Duration::hours(hours))
+        start_at,
+        end_at,
     }).await?;
 
     let Lecture {
         id: inserted_id,
         name: inserted_name,
-        // description: inserted_description,
-        // teacher_id: inserted_teacher_id,
-        // student_limit: inserted_student_limit,
-        // notified,
-        // start_at: inserted_start_at,
-        // end_at: inserted_end_at,
         ..
     } = res;
 
