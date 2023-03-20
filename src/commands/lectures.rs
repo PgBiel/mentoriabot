@@ -206,23 +206,31 @@ async fn create(
     let Lecture {
         id: inserted_id,
         name: inserted_name,
-        description: inserted_description,
-        teacher_id: inserted_teacher_id,
-        student_limit: inserted_student_limit,
-        notified,
-        start_at: inserted_start_at,
-        end_at: inserted_end_at,
+        // description: inserted_description,
+        // teacher_id: inserted_teacher_id,
+        // student_limit: inserted_student_limit,
+        // notified,
+        // start_at: inserted_start_at,
+        // end_at: inserted_end_at,
         ..
     } = res;
 
     ctx.send(|b| b.content(
-        format!(
-            "Got: name={name} | desc={description} | starts_at={starts_at} | {hours} hours \
-            | {student_limit} students \n\
-            Inserted: id={inserted_id} | name={inserted_name} | description={inserted_description} \
-            | teacher_id={inserted_teacher_id} | student_limit={inserted_student_limit} \
-            | notified={notified} | start_at={inserted_start_at} | end_at={inserted_end_at}"
-        )
+        if ctx.locale() == Some("pt-BR") {
+            format!(
+                "Aula '{}' criada com sucesso. \
+                (Veja mais informações usando '/aulas obter {}'.) 👍",
+                inserted_name,
+                inserted_id,
+            )
+        } else {
+            format!(
+                "Lecture '{}' created successfully. \
+                (View more info with '/lectures get {}'.) 👍",
+                inserted_name,
+                inserted_id,
+            )
+        }
     )).await?;
     Ok(())
 }
