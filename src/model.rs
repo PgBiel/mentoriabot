@@ -6,4 +6,4 @@ mod user;
 pub use discordid::DiscordId;
 pub use lecture::{Lecture, NewLecture, PartialLecture};
 pub use lecture_student::{LectureStudent, NewLectureStudent};
-pub use user::{NewUser, User, PartialUser};
+pub use user::{NewUser, PartialUser, User};

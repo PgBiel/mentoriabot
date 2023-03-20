@@ -1,6 +1,6 @@
 use poise::Modal;
-use crate::{common::ApplicationContext, error::Result};
-use crate::util::HumanParseableDateTime;
+
+use crate::{common::ApplicationContext, error::Result, util::HumanParseableDateTime};
 
 /// Represents a Lecture creation modal,
 /// asking for its text data.
@@ -55,26 +55,18 @@ pub struct LectureCreatePortugueseModal {
 #[derive(Debug, Clone)]
 pub enum LectureCreateModals {
     Regular(LectureCreateModal),
-    Portuguese(LectureCreatePortugueseModal)
+    Portuguese(LectureCreatePortugueseModal),
 }
 
 impl LectureCreateModals {
     /// Executes either the English version of the Modal or
     /// the Portuguese one, based on the current context locale.
-    pub async fn execute_based_on_locale(
-        ctx: ApplicationContext<'_>
-    ) -> Result<Option<Self>> {
+    pub async fn execute_based_on_locale(ctx: ApplicationContext<'_>) -> Result<Option<Self>> {
         Ok(match ctx.locale() {
-            Some("pt-BR") => {
-                LectureCreatePortugueseModal::execute(ctx)
-                    .await?
-                    .map(Self::Portuguese)
-            },
-            _ => {
-                LectureCreateModal::execute(ctx)
-                    .await?
-                    .map(Self::Regular)
-            },
+            Some("pt-BR") => LectureCreatePortugueseModal::execute(ctx)
+                .await?
+                .map(Self::Portuguese),
+            _ => LectureCreateModal::execute(ctx).await?.map(Self::Regular),
         })
     }
 
@@ -104,14 +96,16 @@ impl LectureCreateModals {
 
     /// Attempts to parse the given Lecture 'starts_at' timestamp string
     /// as a [`chrono::DateTime`] with the [`chrono::Utc`] timezone.
-    /// 
+    ///
     /// # See also
-    /// 
+    ///
     /// [`HumanParseableDateTime`]
     pub fn parsed_starts_at(&self) -> Option<chrono::DateTime<chrono::Utc>> {
         let starts_at = self.starts_at();
 
-        starts_at.parse::<HumanParseableDateTime>().ok()
+        starts_at
+            .parse::<HumanParseableDateTime>()
+            .ok()
             .map(Into::into)
     }
 }

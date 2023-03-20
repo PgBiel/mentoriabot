@@ -33,13 +33,13 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 error: Some(Error::CommandCheck(message)),
                 ..
             } => message.to_string(),
-            FrameworkError::ArgumentParse {
-                input,
-                ..
-            } => {
+            FrameworkError::ArgumentParse { input, .. } => {
                 format!(
                     "One of the given parameters had an invalid format{}.",
-                    input.as_ref().map(|s| format!(": '{s}'")).unwrap_or_default()
+                    input
+                        .as_ref()
+                        .map(|s| format!(": '{s}'"))
+                        .unwrap_or_default()
                 )
             }
             FrameworkError::MissingBotPermissions {

@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, Lecture, LectureStudent, NewUser, User, PartialUser},
+    model::{DiscordId, Lecture, LectureStudent, NewUser, PartialUser, User},
     schema::{lecture_students, lectures, users},
 };
 
@@ -108,9 +108,7 @@ impl UpdatableRepository for UserRepository {
         repo_upsert!(self, users::table; /*conflict_columns=*/users::discord_id; user)
     }
 
-    async fn update(
-        &self, old_user: &User, new_user: PartialUser
-    ) -> Result<User> {
+    async fn update(&self, old_user: &User, new_user: PartialUser) -> Result<User> {
         repo_update!(self; old_user => new_user)
     }
 }

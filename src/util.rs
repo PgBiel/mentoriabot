@@ -1,7 +1,11 @@
-use std::fmt::{Display, Formatter};
-use std::ops::{Deref, DerefMut};
-use std::str::FromStr;
+use std::{
+    fmt::{Display, Formatter},
+    ops::{Deref, DerefMut},
+    str::FromStr,
+};
+
 use chrono::Datelike;
+
 use crate::error::{Error, Result};
 
 /// Converts a certain duration to a human-readable String.
@@ -102,9 +106,8 @@ pub fn brazil_timezone() -> Option<chrono::FixedOffset> {
 
 fn try_date_parse(s: &str, fmt: &str) -> Option<HumanParseableDateTime> {
     let date_time = chrono::NaiveDateTime::parse_from_str(s, fmt).ok()?;
-    let date_time = date_time.and_local_timezone(
-            brazil_timezone().expect("Brazil timezone was invalid.")
-        )
+    let date_time = date_time
+        .and_local_timezone(brazil_timezone().expect("Brazil timezone was invalid."))
         .single()?;
     let date_time = date_time.with_timezone(&chrono::Utc);
     Some(HumanParseableDateTime(date_time))
@@ -130,16 +133,22 @@ impl FromStr for HumanParseableDateTime {
     /// # use crate::util::HumanParseableDateTime;
     /// # use chrono::TimeZone;
     /// let today = chrono::Utc::now();
-    /// let expected_date1 =
-    ///     today.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).single().unwrap();
-    /// let expected_date2 =
-    ///     today.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).single().unwrap();
-    /// let expected_date3 =
-    ///     today.with_ymd_and_hms(today.year(), today.month(), today.day(), 14, 29, 30)
-    ///     .single().unwrap();
-    /// let expected_date4 =
-    ///     today.with_ymd_and_hms(today.year(), today.month(), today.day(), 14, 29, 0)
-    ///     .single().unwrap();
+    /// let expected_date1 = today
+    ///     .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+    ///     .single()
+    ///     .unwrap();
+    /// let expected_date2 = today
+    ///     .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+    ///     .single()
+    ///     .unwrap();
+    /// let expected_date3 = today
+    ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 14, 29, 30)
+    ///     .single()
+    ///     .unwrap();
+    /// let expected_date4 = today
+    ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 14, 29, 0)
+    ///     .single()
+    ///     .unwrap();
     ///
     /// let parsed1: HumanParseableDateTime = "2023-03-19 11:29:30".parse().unwrap();
     /// let parsed2: HumanParseableDateTime = "2023-03-19 11:29".parse().unwrap();
@@ -156,8 +165,9 @@ impl FromStr for HumanParseableDateTime {
     /// assert_eq!(parsed6.0, expected_date4);
     /// ```
     fn from_str(s: &str) -> Result<Self> {
-        let s = &s.trim()
-            .replace(", ", "")  // some common little mistakes/changes
+        let s = &s
+            .trim()
+            .replace(", ", "") // some common little mistakes/changes
             .replace("; ", "")
             .replace("   ", " ")
             .replace("  ", " ")
@@ -167,8 +177,12 @@ impl FromStr for HumanParseableDateTime {
         let curr_date = chrono::Utc::now()
             .with_timezone(&brazil_timezone().expect("Brazil timezone was invalid."));
 
-        let today =
-            format!("{}-{}-{}", curr_date.year(), curr_date.month(), curr_date.day());
+        let today = format!(
+            "{}-{}-{}",
+            curr_date.year(),
+            curr_date.month(),
+            curr_date.day()
+        );
 
         // in case date wasn't specified => default to today
         let string_with_today: &str = &format!("{today} {s}");
@@ -236,15 +250,18 @@ impl DerefMut for HumanParseableDateTime {
 mod tests {
     use super::*;
     mod date_time {
-        use super::*;
         use chrono::TimeZone;
+
+        use super::*;
 
         #[test]
         fn parses_yyyy_mm_dd_hh_mm_ss_correctly() {
             let parsed: HumanParseableDateTime = "2023-03-19 11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -254,7 +271,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "2023-03-19 11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -264,7 +283,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "19/03/2023 11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -274,7 +295,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "19/03/2023 11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -286,7 +309,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "19/03 11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(year, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -298,7 +323,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "19/03 11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(year, 03, 19, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -310,7 +337,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29:30 2023-03-19".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -320,7 +349,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29 2023-03-19".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -330,7 +361,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29:30 19/03/2023".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -340,7 +373,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29 19/03/2023".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -352,7 +387,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29:30 19/03".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(year, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -364,7 +401,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29 19/03".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(year, 03, 19, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(year, 03, 19, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -377,7 +416,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(year, month, day, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(year, month, day, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -390,7 +431,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(year, month, day, 14, 29, 0).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(year, month, day, 14, 29, 0)
+                    .unwrap(),
                 parsed.0
             )
         }
@@ -400,7 +443,9 @@ mod tests {
             let parsed: HumanParseableDateTime = "2023-03-19,,;;;  11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc.with_ymd_and_hms(2023, 03, 19, 14, 29, 30).unwrap(),
+                chrono::Utc
+                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .unwrap(),
                 parsed.0
             )
         }

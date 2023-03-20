@@ -68,7 +68,7 @@ pub trait UpdatableRepository: Repository {
     /// A type that represents the data that will be changed in an existing entity.
     /// It is usually composed exclusively of optional (Option) fields, such that
     /// certain fields (specified as None) will remain unchanged after the update.
-    type PartialEntity: diesel::AsChangeset<Target=Self::Table> + Send + Sync;
+    type PartialEntity: diesel::AsChangeset<Target = Self::Table> + Send + Sync;
 
     /// Insert a new Entity to the database, or update if it already exists.
     async fn upsert(&self, new_entity: &Self::NewEntity) -> Result<Self::Entity>;

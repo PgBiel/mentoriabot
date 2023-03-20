@@ -1,12 +1,16 @@
 use std::ops::Add;
-use poise::Modal;
-use poise::serenity_prelude as serenity;
-use crate::{common::{ApplicationContext, Context}, error::Result, util};
-use crate::commands::modals::lectures::LectureCreateModals;
-use crate::error::Error;
-use crate::model::{Lecture, NewLecture, NewUser, User};
-use crate::repository::Repository;
-use crate::util::{brazil_timezone, HumanParseableDateTime};
+
+use poise::{serenity_prelude as serenity, Modal};
+
+use crate::{
+    commands::modals::lectures::LectureCreateModals,
+    common::{ApplicationContext, Context},
+    error::{Error, Result},
+    model::{Lecture, NewLecture, NewUser, User},
+    repository::Repository,
+    util,
+    util::{brazil_timezone, HumanParseableDateTime},
+};
 
 /// Manages lectures.
 #[poise::command(
@@ -42,7 +46,6 @@ async fn create(
     // #[description_localized("pt-BR", "Uma curta descrição para esta aula")]
     // #[description = "A brief summary of this lecture"]
     // description: String,
-
     #[name_localized("pt-BR", "vagas")]
     #[description_localized("pt-BR", "Número máximo de alunos na aula")]
     #[description = "Max amount of students which can take the class"]
@@ -57,7 +60,6 @@ async fn create(
     // )]
     // #[description = "When this lecture is planned to start"]
     // starts_at: HumanParseableDateTime,
-
     #[name_localized("pt-BR", "horas")]
     #[description_localized("pt-BR", "A duração desta aula, em horas")]
     #[description = "The duration of this lecture, in hours"]
@@ -92,10 +94,10 @@ async fn create(
     };
 
     if start_at <= chrono::Utc::now().add(chrono::Duration::seconds(1)) {
-        ctx.send(
-            |b| b
-                .content("Please provide a future timestamp for when the lecture will start."))
-            .await?;
+        ctx.send(|b| {
+            b.content("Please provide a future timestamp for when the lecture will start.")
+        })
+        .await?;
         return Ok(());
     }
 
@@ -108,21 +110,30 @@ async fn create(
 
     ctx.defer_ephemeral().await?;
 
-    ctx.data().db.user_repository().insert_if_not_exists(&NewUser {
-        discord_id: author_id,
-        name: author.name.clone(),
-        bio: None
-    }).await?;
+    ctx.data()
+        .db
+        .user_repository()
+        .insert_if_not_exists(&NewUser {
+            discord_id: author_id,
+            name: author.name.clone(),
+            bio: None,
+        })
+        .await?;
 
-    let res = ctx.data().db.lecture_repository().insert(&NewLecture {
-        name,
-        description,
-        teacher_id: author_id,
-        student_limit,
-        notified: false,
-        start_at,
-        end_at,
-    }).await?;
+    let res = ctx
+        .data()
+        .db
+        .lecture_repository()
+        .insert(&NewLecture {
+            name,
+            description,
+            teacher_id: author_id,
+            student_limit,
+            notified: false,
+            start_at,
+            end_at,
+        })
+        .await?;
 
     let Lecture {
         id: inserted_id,
@@ -130,23 +141,22 @@ async fn create(
         ..
     } = res;
 
-    ctx.send(|b| b.content(
-        if ctx.locale() == Some("pt-BR") {
+    ctx.send(|b| {
+        b.content(if ctx.locale() == Some("pt-BR") {
             format!(
                 "Aula '{}' criada com sucesso. \
                 (Veja mais informações usando '/aulas obter {}'.) 👍",
-                inserted_name,
-                inserted_id,
+                inserted_name, inserted_id,
             )
         } else {
             format!(
                 "Lecture '{}' created successfully. \
                 (View more info with '/lectures get {}'.) 👍",
-                inserted_name,
-                inserted_id,
+                inserted_name, inserted_id,
             )
-        }
-    )).await?;
+        })
+    })
+    .await?;
     Ok(())
 }
 
@@ -165,7 +175,12 @@ pub async fn get(
     #[description_localized("pt-BR", "Identificador da aula a obter.")]
     id: i64,
 ) -> Result<()> {
-    let lecture_and_teacher = ctx.data.db.lecture_repository().get_with_teacher(id).await?;
+    let lecture_and_teacher = ctx
+        .data
+        .db
+        .lecture_repository()
+        .get_with_teacher(id)
+        .await?;
     if let Some((lecture, teacher)) = lecture_and_teacher {
         let Lecture {
             name,
@@ -177,7 +192,9 @@ pub async fn get(
             ..
         } = lecture;
 
-        let User { name: teacher_name, .. } = teacher;
+        let User {
+            name: teacher_name, ..
+        } = teacher;
         let teacher_mention = teacher_id.as_user_mention();
 
         let timezone = brazil_timezone()
@@ -191,7 +208,11 @@ pub async fn get(
                 if ctx.locale() == Some("pt-BR") {
                     let duration = util::convert_chrono_duration_to_brazilian_string(duration);
                     f.title(format!("Aula '{}'", name))
-                        .field("Professor", format!("{teacher_name} ({teacher_mention})"), true)
+                        .field(
+                            "Professor",
+                            format!("{teacher_name} ({teacher_mention})"),
+                            true,
+                        )
                         .field("Começa em", format!("{start_at}"), false)
                         .field("Vagas", format!("{student_limit}"), true)
                         .field("Duração", format!("{duration}"), true)
@@ -200,7 +221,11 @@ pub async fn get(
                 } else {
                     let duration = util::convert_chrono_duration_to_string(duration);
                     f.title(format!("Lecture '{}'", name))
-                        .field("Teacher", format!("{teacher_name} ({teacher_mention})"), true)
+                        .field(
+                            "Teacher",
+                            format!("{teacher_name} ({teacher_mention})"),
+                            true,
+                        )
                         .field("Starts at", format!("{start_at}"), false)
                         .field("Max Students", format!("{student_limit}"), true)
                         .field("Duration", format!("{duration}"), true)
@@ -209,7 +234,7 @@ pub async fn get(
                 }
             })
         })
-            .await?;
+        .await?;
     } else {
         ctx.send(|b| b.content("Lecture not found.").ephemeral(true))
             .await?;
@@ -247,7 +272,7 @@ pub async fn remove(
             b.content("Unknown lecture (maybe it was already deleted).")
                 .ephemeral(true)
         })
-            .await?;
+        .await?;
     }
 
     Ok(())

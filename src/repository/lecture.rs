@@ -10,12 +10,10 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, Lecture, NewLecture, PartialLecture},
-    schema::lectures,
+    model::{DiscordId, Lecture, NewLecture, PartialLecture, User},
+    repository::UserRepository,
+    schema::{lectures, users},
 };
-use crate::model::User;
-use crate::repository::UserRepository;
-use crate::schema::users;
 
 /// Manages Lecture instances.
 #[derive(Clone)]
@@ -38,10 +36,10 @@ impl LectureRepository {
         if let Some(lecture) = lecture {
             let user_repository = UserRepository::new(&self.pool);
 
-            user_repository.get(lecture.teacher_id).await
-                .map(|maybe_teacher| {
-                    maybe_teacher.map(|teacher| (lecture, teacher))
-                })
+            user_repository
+                .get(lecture.teacher_id)
+                .await
+                .map(|maybe_teacher| maybe_teacher.map(|teacher| (lecture, teacher)))
         } else {
             Ok(None)
         }
@@ -138,9 +136,7 @@ impl UpdatableRepository for LectureRepository {
         repo_upsert!(self, lectures::table; /*conflict_columns=*/lectures::id; lecture)
     }
 
-    async fn update(
-        &self, old_lecture: &Lecture, new_lecture: PartialLecture
-    ) -> Result<Lecture> {
+    async fn update(&self, old_lecture: &Lecture, new_lecture: PartialLecture) -> Result<Lecture> {
         repo_update!(self; old_lecture => new_lecture)
     }
 }
