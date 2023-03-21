@@ -1,0 +1,35 @@
+main_on_error:
+  error_message: "**Erro:** %{message}"
+  command_check:
+    default: Você não pode utilizar este comando por motivos desconhecidos.
+  argument_parse:
+    default: Um dos parâmetros dados está em um formato invalido.
+    with_message: "Um dos parâmetros dados está em um formato invalido: %{message}."
+  missing_bot_permissions:
+    default: "O bot precisa da seguinte permissão: %{permission}"
+    plural: "O bot precisa das seguintes permissões: %{permissions}"
+  missing_user_permissions:
+    default: Você tem permissões insuficientes para usar esse comando.
+    with_singular: "Você precisa da seguinte permissão: %{permission}"
+    with_plural: "Você precisa das seguintes permissões: %{permissions}"
+  dm_only:
+    default: Esse comando só pode ser executado em Mensagens Diretas (DMs).
+  guild_only:
+    default: Esse comando só pode ser executado em um servidor do Discord.
+  nsfw_only:
+    default: Esse comando só pode ser executado em um canal marcado como "NSFW".
+  owners_only:
+    default: Você não é um administrador do bot.
+  cooldown_hit:
+    default: Por favor, tente executar esse comando novamente.
+    with_duration: Por favor espere %{duration} antes de usar esse comando novamente.
+  unknown_interaction:
+    default: Eu não reconheço esse comando que você está tentando usar.
+  setup:
+    default: Não foi possível realizar a configuração inicial do bot.
+  database:
+    default: Ocorreu um erro interno no banco de dados. Foi mal!
+  database_connection:
+    default: Ocorreu um erro interno na conexão ao banco de dados. Foi mal!
+  unexpected:
+    default: Um erro inesperado ocorreu.

@@ -21,6 +21,19 @@ pub fn convert_duration_to_string(duration: std::time::Duration) -> String {
     }
 }
 
+/// Converts a certain duration to a human-readable String in Portuguese.
+///
+/// Displays, at most, the amount of days. Otherwise, uses smaller units (the largest possible).
+pub fn convert_duration_to_brazilian_string(duration: std::time::Duration) -> String {
+    let dur = chrono::Duration::from_std(duration);
+    if let Ok(dur) = dur {
+        convert_chrono_duration_to_brazilian_string(dur)
+    } else {
+        let seconds = duration.as_secs();
+        format!("{} segundo{}", seconds, if seconds != 1 { "s" } else { "" })
+    }
+}
+
 /// Converts a Chrono duration to a string.
 pub fn convert_chrono_duration_to_string(duration: chrono::Duration) -> String {
     if duration.num_minutes() < 1 {
@@ -81,6 +94,20 @@ pub fn convert_chrono_duration_to_brazilian_string(duration: chrono::Duration) -
         let days = duration.num_days();
         format!("{} dia{}", days, if days != 1 { "s" } else { "" })
     }
+}
+
+/// Returns a [`poise::Context`]'s locale, or "en" if it was not found.
+pub fn get_defaulted_locale<D, E>(ctx: poise::Context<'_, D, E>) -> &str {
+    ctx.locale()
+        .map(|loc| if loc != "pt-BR" { "en" } else { loc })
+        .unwrap_or("pt-BR")
+}
+
+/// Returns a [`poise::ApplicationContext`]'s locale, or "en" if it was not found.
+pub fn get_defaulted_app_ctx_locale<D, E>(ctx: poise::ApplicationContext<'_, D, E>) -> &str {
+    ctx.locale()
+        .map(|loc| if loc != "pt-BR" { "en" } else { loc })
+        .unwrap_or("pt-BR")
 }
 
 /// Represents a DateTime which can be parsed in a semi-human format.

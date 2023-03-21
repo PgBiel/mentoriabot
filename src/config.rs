@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
 
 /// The bot's parsed config file.

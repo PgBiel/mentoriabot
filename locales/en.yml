@@ -1,0 +1,35 @@
+main_on_error:
+  error_message: "**Error:** %{message}"
+  command_check:
+    default: You cannot use this command for unknown reasons.
+  argument_parse:
+    default: One of the given parameters had an invalid format.
+    with_message: "One of the given parameters had an invalid format: %{message}."
+  missing_bot_permissions:
+    default: "The bot is missing the following permission: %{permission}"
+    plural: "The bot is missing the following permissions: %{permissions}"
+  missing_user_permissions:
+    default: You are missing certain permissions to run this command.
+    with_singular: "You are missing the following permission: %{permission}"
+    with_plural: "You are missing the following permissions: %{permissions}"
+  dm_only:
+    default: This command is exclusive to Direct Messages (DMs).
+  guild_only:
+    default: This command is exclusive to guilds.
+  nsfw_only:
+    default: This command is exclusive to NSFW channels.
+  owners_only:
+    default: You're not a bot administrator.
+  cooldown_hit:
+    default: Please try running this command again.
+    with_duration: Please wait %{duration} before using this command again.
+  unknown_interaction:
+    default: I do not recognize that command you're trying to run.
+  setup:
+    default: Bot setup failed.
+  database:
+    default: An internal database error occurred. Sorry!
+  database_connection:
+    default: An internal database connection error occurred. Sorry!
+  unexpected:
+    default: Unexpected error occurred.
