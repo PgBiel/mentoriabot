@@ -30,7 +30,7 @@ pub use component::{
 };
 pub use error::FormError;
 pub use form::InteractionForm;
-pub use interaction::{CustomId, SelectValue};
+pub use interaction::{CustomId, HasCustomId, SelectValue};
 
 pub mod macros {
     pub use minirustbot_macros::*;

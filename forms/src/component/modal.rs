@@ -11,16 +11,16 @@ use crate::error::{FormError, Result};
 pub trait ModalFormComponent<
     ContextData: Send + Sync,
     ContextError: Send + Sync,
-    Data: Send + Sync = (),
+    FormData: Send + Sync = (),
 >: Send + Sync
 {
     type Modal: poise::Modal + Send + Sync;
 
-    async fn on_response(modal: Self::Modal, data: &mut Data) -> Result<Box<Self>>;
+    async fn on_response(modal: Self::Modal, data: &mut FormData) -> Result<Box<Self>>;
 
     async fn run(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &mut Data,
+        data: &mut FormData,
     ) -> Result<Box<Self>> {
         let response: Option<Self::Modal> = Self::Modal::execute(context).await?;
 

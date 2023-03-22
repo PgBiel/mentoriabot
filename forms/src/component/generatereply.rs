@@ -10,11 +10,11 @@ use crate::error::Result;
 ///
 /// [`ReplySpec`]: super::subcomponent::ReplySpec
 #[async_trait]
-pub trait GenerateReply<ContextData, ContextError, Data = ()> {
+pub trait GenerateReply<ContextData, ContextError, FormData = ()> {
     type ReplyBuilder: for<'a> Buildable<poise::CreateReply<'a>>;
 
     async fn create_reply<'a, 'b>(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &Data,
+        data: &FormData,
     ) -> Result<Self::ReplyBuilder>;
 }

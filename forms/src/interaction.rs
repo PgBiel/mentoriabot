@@ -16,7 +16,7 @@ pub async fn wait_for_message_interaction<ContextData, ContextError>(
     ctx: ApplicationContext<'_, ContextData, ContextError>,
     custom_id: impl ToString,
 ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
-    wait_for_message_interactions(ctx, vec![custom_id]).await
+    wait_for_message_interactions(ctx, &vec![custom_id]).await
 }
 
 /// Wait for the first response in a set of expected interaction responses.
@@ -29,7 +29,7 @@ pub async fn wait_for_message_interaction<ContextData, ContextError>(
 /// if an interaction was received with the response.
 pub async fn wait_for_message_interactions<ContextData, ContextError>(
     ctx: ApplicationContext<'_, ContextData, ContextError>,
-    custom_ids: Vec<impl ToString>,
+    custom_ids: &Vec<impl ToString>,
 ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>, serenity::Error> {
     if custom_ids.is_empty() {
         return Ok(None);

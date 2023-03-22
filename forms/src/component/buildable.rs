@@ -31,6 +31,7 @@ implement_buildable_for_lambda_with_type!(serenity::CreateEmbed);
 implement_buildable_for_lambda_with_type!(serenity::CreateActionRow);
 implement_buildable_for_lambda_with_type!(serenity::CreateButton);
 implement_buildable_for_lambda_with_type!(serenity::CreateSelectMenu);
+implement_buildable_for_lambda_with_type!(serenity::CreateSelectMenuOption);
 
 /// Union of the [`Buildable`] and [`HasCustomId`] traits.
 /// (Automatically implemented for any trait that implements both of those traits.)

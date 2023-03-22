@@ -45,6 +45,16 @@ impl Default for CustomId {
 pub trait HasCustomId {
     /// Get this instance's Custom ID, if present.
     fn get_custom_id(&self) -> Option<&CustomId>;
+
+    /// Returns a reference to self, while simultaneously
+    /// pushing the custom ID to a vector.
+    fn get_self_and_push_custom_id(&self, custom_ids: &mut Vec<CustomId>) -> &Self {
+        if let Some(id) = self.get_custom_id() {
+            custom_ids.push(id.clone());
+        }
+
+        self
+    }
 }
 
 impl HasCustomId for CustomId {
