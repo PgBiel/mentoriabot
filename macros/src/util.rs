@@ -142,7 +142,7 @@ pub(crate) mod macros {
     }
 
     macro_rules! take_attribute_or_its_function_optional {
-        ($attrs:expr; $attr_name:ident, $func_name:ident) => {
+        ($attrs:expr; $attr_name:ident, $func_name:ident) => {{
             if let Some($func_name) = $attrs.$func_name.as_ref() {
                 quote! { #$func_name(context, data).await?.into() }
             } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
@@ -150,7 +150,17 @@ pub(crate) mod macros {
             } else {
                 quote! { Default::default() }
             }
-        };
+        }};
+
+        ($attrs:expr; $attr_name:ident, $func_name:ident; $or:expr) => {{
+            if let Some($func_name) = $attrs.$func_name.as_ref() {
+                quote! { #$func_name(context, data).await?.into() }
+            } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
+                quote! { #$attr_name.into() }
+            } else {
+                quote! { $or }
+            }
+        }};
     }
 
     pub(crate) use take_attribute_optional;

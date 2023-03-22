@@ -108,23 +108,17 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             type BuilderType = ::poise::serenity_prelude::CreateButton;
             type ReturnedBuildable = ::minirustbot_forms::ButtonSpec;
             async fn generate_buildables(
-                context: ApplicationContext<'_, ContextData, ContextError>,
-                data: &FormData,
-            ) -> Result<Vec<Self::ReturnedBuildable>> {
+                context: ::poise::ApplicationContext<'_, ContextData, ContextError>,
+                data: &mut #data_type,
+            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<Self::ReturnedBuildable>> {
                 Ok(::std::vec![ #button_spec ])
             }
 
-
-
-            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
-                ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
-            }
-        }
-
-        impl #impl_generics TryFrom<::poise::serenity_prelude::MessageComponentInteraction> for #struct_ident #ty_generics #where_clause {
-            type Error = ::minirustbot_forms::error::FormError;
-
-            fn try_from(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::minirustbot_forms::error::Result<Self> {
+            async fn build_from_interaction(
+                context: ::poise::ApplicationContext<'_, ContextData, ContextError>,
+                interaction: Arc<serenity::MessageComponentInteraction>,
+                data: &mut #data_type,
+            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
@@ -139,17 +133,18 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
 
                 let mut __custom_ids = vec![];
+                let buildables = <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data);
+                // ...
+                todo!();
                 context.send(|f|
                     <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(f, context, data)
                         .components(|f| f
-                            .create_action_row(|f| f
-                                .create_button(|f| {
-                                    let (builder, custom_id) = <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::on_build(f, context, &data);
-                                    if let Some(custom_id) = custom_id {
-                                        __custom_ids.push(custom_id);
-                                    }
-                                    builder
-                                })))).await?;
+                            .create_action_row(|mut f| {
+                                for buildable in buildables {
+                                    f = buildable.on_build(f);
+                                }
+                                f
+                            }))).await?;
 
                 Ok(__custom_ids)
             }
@@ -159,7 +154,8 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
             ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
-                <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::create_with_interaction((*interaction).clone())
+                <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction((*interaction).clone())
+                    .await
             }
         }
     }.into())

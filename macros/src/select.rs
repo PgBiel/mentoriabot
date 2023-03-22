@@ -42,76 +42,34 @@ struct SelectAttributes {
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
-struct SelectOptionAttributes {
-    /// The option's literal label (please specify this, or a `label_function`)
-    label: Option<String>,
-
-    /// A function (accepting context and &Data)
-    /// that returns the option's label as a String (specify this or `label`).
-    label_function: Option<syn::Path>,
-
-    /// This option's unique value key.
-    /// By default, this is set to the name of the enum variant
-    /// this is applied to.
-    value_key: Option<String>,
-
-    /// The option's description (small explanation text), optional.
-    description: Option<String>,
-
-    /// Function that takes context and &Data
-    /// and returns the option's description (optional).
-    description_function: Option<syn::Path>,
-
-    /// An optional single emoji to display near the label
-    emoji: Option<char>,
-
-    /// Function that returns the emoji to display near the button label
-    /// (takes context and &Data, returns ReactionType)
-    emoji_function: Option<syn::Path>,
-
-    /// If this is the default selection option.
-    is_default: bool,
-}
-
-#[derive(Debug, Clone, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
-struct InteractionAttr {
+struct SelectFieldAttributes {
+    /// Marks a field as receiving the response interaction object.
     interaction: Option<()>,
 
-    default: Option<syn::Expr>,
+    /// Marks a field as receiving the selected option by the user.
+    /// Also specifies the options that will be presented.
+    selected_option: Option<()>,
+
+    /// The initializer of any extra fields. Defaults to "Default::default()".
+    initializer: Option<syn::Expr>,
 }
 
 // TODO: This macro should be for enum that implements Select Options;
 // we will need a struct that holds all the selected values, as a Vec.
 pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let variants = match &input.data {
-        syn::Data::Enum(syn::DataEnum { variants, .. }) => variants,
+    let fields = match &input.data {
+        syn::Data::Struct(syn::DataStruct {
+            fields: syn::Fields::Named(fields),
+            ..
+        }) => &fields.named,
         _ => {
             return Err(syn::Error::new(
                 input.ident.span(),
-                "Can only derive SelectComponent for enums.",
+                "Only structs with named fields can be used for deriving a Select.",
             )
-            .into())
+            .into());
         }
     };
-
-    let variants_and_attrs = variants.iter().map(|variant| {
-        (
-            variant,
-            util::get_darling_attrs::<SelectOptionAttributes>(&variant.attrs),
-        )
-    });
-
-    let mut variants_and_options = Vec::new();
-
-    for (variant, attrs) in variants_and_attrs {
-        let mut attrs = attrs?;
-        if attrs.value_key.is_none() {
-            attrs.value_key = Some(variant.ident.to_string()); // default value key is the variant's
-                                                               // name
-        }
-        variants_and_options.push((variant, attrs));
-    }
 
     let select_attrs: SelectAttributes = util::get_darling_attrs(&input.attrs)?;
 
@@ -126,23 +84,57 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let ctx_data = &select_attrs.ctx_data;
     let ctx_error = &select_attrs.ctx_error;
 
-    let button_spec = create_select_spec(&select_attrs, &data_type);
-    let create_with_interaction = create_variant_with_interaction(&variants_and_options)?;
+    let selected_fields = fields
+        .iter()
+        .map(|f| {
+            (
+                f,
+                util::get_darling_attrs::<SelectFieldAttributes>(&f.attrs),
+            )
+        })
+        .flat_map(|(f, attrs)| attrs.map(|a| vec![(f, a)]).unwrap_or(vec![]))
+        .filter(|(f, attrs)| attrs.selected_option.is_some())
+        .collect::<Vec<(&syn::Field, SelectFieldAttributes)>>();
+
+    if selected_fields.is_empty() {
+        return Err(syn::Error::new(
+            input.ident.span(),
+            "One field must be marked as #[selected_option], which provides all options.",
+        )
+        .into());
+    }
+
+    if selected_fields.len() > 1 {
+        return Err(syn::Error::new(
+            selected_fields[1].0.span(),
+            "Must not mark more than one field as #[selected_option].",
+        )
+        .into());
+    }
+
+    let selected_field = selected_fields[0].0;
+
+    let select_spec = create_select_spec(&select_attrs, selected_field, &data_type);
+    let create_with_interaction = create_build_with_interaction(fields)?;
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics ::minirustbot_forms::SelectComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
-            fn on_build<'button_macro>(
-                builder: &'button_macro mut ::poise::serenity_prelude::CreateButton,
+        #[::async_trait::async_trait]
+        impl #impl_generics ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+            async fn generate_buildables(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &#data_type
-            ) -> (&'button_macro mut ::poise::serenity_prelude::CreateButton, ::core::option::Option<::minirustbot_forms::interaction::CustomId>) {
-                #button_spec.on_build(builder, context, data)
+                data: &mut #data_type,
+            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<Self::ReturnedBuildable>> {
+                Ok(::std::vec![ #select_spec ])
             }
 
-            fn create_with_interaction(interaction: ::poise::serenity_prelude::MessageComponentInteraction) -> ::std::boxed::Box<Self> {
-                ::std::boxed::Box::new(#create_with_interaction)
+            async fn build_from_interaction(
+                context: ApplicationContext<'_, #ctx_data, #ctx_error>,
+                interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
+                data: &mut #data_type,
+            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+                ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
 
@@ -158,7 +150,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                     <Self as ::minirustbot_forms::GenerateReply<#data_type>>::create_reply(f, context, data)
                         .components(|f| f
                             .create_action_row(|f| f
-                                .create_button(|f| {
+                                .create_select(|f| {
                                     let (builder, custom_id) = <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::on_build(f, context, &data);
                                     if let Some(custom_id) = custom_id {
                                         __custom_ids.push(custom_id);
@@ -196,179 +188,38 @@ fn validate_select_attrs(
     Ok(())
 }
 
-fn validate_option_attrs(
-    option_attrs: &SelectOptionAttributes,
-    input: &syn::DeriveInput,
-) -> Result<(), darling::Error> {
-    if option_attrs.label.is_some() && option_attrs.label_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[label] and #[label_function] at the same time.",
-        )
-        .into());
-    }
-
-    if option_attrs.label.is_none() && option_attrs.label_function.is_none() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Must specify either a #[label] or a #[label_function], so that the button may have a label."
-        ).into());
-    }
-
-    if option_attrs.emoji.is_some() && option_attrs.emoji_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[emoji] and #[emoji_function] at the same time.",
-        )
-        .into());
-    }
-
-    if option_attrs.description.is_some() && option_attrs.description_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[description] and #[description_function] at the same time.",
-        )
-        .into());
-    }
-
-    Ok(())
-}
-
-fn create_variant_with_interaction(
-    variants_and_options: &Vec<(&syn::Variant, SelectOptionAttributes)>,
+fn create_build_with_interaction(
+    fields: &syn::punctuated::Punctuated<syn::Field, syn::Token![,]>,
 ) -> Result<TokenStream2, darling::Error> {
-    let mut variant_match_arms = Vec::new();
-
-    for (variant, options) in variants_and_options {
-        let variant_name = &variant.ident;
-        let value_key = options
-            .value_key
-            .as_ref()
-            .expect(&*format!("Missing value key for variant '{variant_name}'"));
-        let mut is_named = false;
-        let fields = match &variant.fields {
-            syn::Fields::Named(fields) => {
-                is_named = true;
-                &fields.named
-            }
-            syn::Fields::Unnamed(fields) => &fields.unnamed,
-            syn::Fields::Unit => {
-                variant_match_arms.push(quote! { #value_key => Self::#variant_name });
-                continue;
-            }
-        };
-
-        let mut field_initializers = Vec::new();
-        let mut interaction_seen = false;
-        let mut non_default_field = None;
-        for field in fields {
-            let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-            if attrs.interaction.is_some() {
-                if interaction_seen {
-                    return Err(syn::Error::new(
-                        field
-                            .ident
-                            .as_ref()
-                            .map(|i| i.span())
-                            .unwrap_or_else(|| field.span()),
-                        "Cannot have more than one field in the same variant with #[interaction].",
-                    )
-                    .into());
-                }
-
-                interaction_seen = true;
-
-                if non_default_field.is_some() {
-                    break; // see below
-                }
-
-                if is_named {
-                    let field_name = field.ident.as_ref().expect("Expected named field");
-                    field_initializers.push(quote! { #field_name: interaction.into() });
-                } else {
-                    field_initializers.push(quote! { interaction.into() });
-                }
-                break;
-            } else if let Some(initializer) = attrs.default {
-                if is_named {
-                    let field_name = field.ident.as_ref().expect("Expected named field");
-                    field_initializers.push(quote! { #field_name: #initializer });
-                } else {
-                    field_initializers.push(quote! { #initializer });
-                }
-            } else {
-                non_default_field = Some(field);
-                if interaction_seen {
-                    break; // cannot mix #[interaction] with non-#[default] fields
-                }
-            };
-        }
-
-        if interaction_seen {
-            if let Some(non_default_field) = non_default_field {
-                return Err(syn::Error::new(
-                    non_default_field.ident.as_ref().map(|i| i.span()).unwrap_or_else(|| non_default_field.span()),
-                    "Cannot specify #[interaction] for a field and not specify #[default = \"expr\"] on the others."
-                ).into());
-            }
-        }
-
-        variant_match_arms.push(if is_named {
-            quote! { #value_key => Self::#variant_name {
-                #( #field_initializers ),*
-            } }
-        } else {
-            quote! { #value_key => Self::#variant_name( #( #field_initializers ),* ) }
-        });
-    }
-
-    Ok(quote! {
-        match __value {
-            #( #variant_match_arms ),*
-        }
-    })
+    todo!()
 }
 
-fn create_select_spec(_button_attrs: &SelectAttributes, _data: &syn::Type) -> TokenStream2 {
-    unimplemented!()
-    // let label = util::wrap_option_into(&button_attrs.label);
-    // let label_function = util::wrap_option_box(&button_attrs.label_function);
-    // let custom_id = util::wrap_option_into(&button_attrs.custom_id);
-    // let link = util::wrap_option_into(&button_attrs.link);
-    // let link_function = util::wrap_option_box(&button_attrs.link_function);
-    // let emoji = util::wrap_option_into(&button_attrs.emoji);
-    // let emoji_function = util::wrap_option_box(&button_attrs.emoji_function);
-    // let disabled = button_attrs.disabled.is_some();
-    // let disabled_function = util::wrap_option_box(&button_attrs.disabled_function);
+fn create_select_spec(
+    select_attrs: &SelectAttributes,
+    selected_field: &syn::Field,
+    data: &syn::Type,
+) -> TokenStream2 {
+    let custom_id = util::wrap_option_into(&select_attrs.custom_id);
+    let min_values = util::wrap_option_into(&select_attrs.min_values);
+    let max_values = util::wrap_option_into(&select_attrs.max_values);
 
-    // let style = if button_attrs.primary.is_some() {
-    //     Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
-    // } else if button_attrs.secondary.is_some() {
-    //     Some(quote! { ::poise::serenity_prelude::ButtonStyle::Secondary })
-    // } else if button_attrs.danger.is_some() {
-    //     Some(quote! { ::poise::serenity_prelude::ButtonStyle::Danger })
-    // } else if button_attrs.success.is_some() {
-    //     Some(quote! { ::poise::serenity_prelude::ButtonStyle::Success })
-    // } else if button_attrs.link.is_some() {
-    //     Some(quote! { ::poise::serenity_prelude::ButtonStyle::Link })
-    // } else {
-    //     None
-    // };
+    let selected_field_type = &selected_field.ty;
+    let options = quote! { #selected_field_type::generate_options(context, data) };
 
-    // let style = util::wrap_option_into(&style);
+    let disabled = if let Some(disabled_function) = select_attrs.disabled_function.as_ref() {
+        quote! { #disabled_function(context, data).await?.into() }
+    } else {
+        let disabled = select_attrs.disabled.is_some();
+        quote! { #disabled }
+    };
 
-    // quote! {
-    //     ::minirustbot_forms::ButtonSpec::<#data> {
-    //         label: #label,
-    //         label_function: #label_function,
-    //         custom_id: #custom_id,
-    //         style: #style,
-    //         link: #link,
-    //         link_function: #link_function,
-    //         emoji: #emoji,
-    //         emoji_function: #emoji_function,
-    //         disabled: #disabled,
-    //         disabled_function: #disabled_function,
-    //     }
-    // }
+    quote! {
+        ::minirustbot_forms::SelectMenuSpec {
+            custom_id: #custom_id,
+            options: #options,
+            min_values: #min_values,
+            max_values: #max_values,
+            disabled: #disabled,
+        }
+    }
 }

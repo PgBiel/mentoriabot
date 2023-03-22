@@ -106,18 +106,21 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics ::minirustbot_forms::SelectOption<#ctx_data, #ctx_error, #data_type> for #enum_ident #ty_generics #where_clause {
-            fn get_specs() -> ::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec<#ctx_data, #ctx_error, #data_type>> {
-                #option_specs
-            }
-        }
-
         #[::async_trait::async_trait]
-        impl #impl_generics ::core::convert::TryFrom<::minirustbot_forms::interaction::SelectValue> for #enum_ident #ty_generics #where_clause {
-            type Error = ::minirustbot_forms::error::FormError;
+        impl #impl_generics ::minirustbot_forms::SelectOption<#ctx_data, #ctx_error, #data_type> for #enum_ident #ty_generics #where_clause {
+            /// Generates the specs(/buildables) of all possible options, based on the context
+            /// and data.
+            async fn generate_options(
+                context: ::poise::ApplicationContext<'_, ContextData, ContextError>,
+                data: &mut #data_type
+            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec<#ctx_data, #ctx_error, #data_type>>> {
+                Ok(#option_specs)
+            }
 
-            fn try_from(
-                value: ::minirustbot_forms::interaction::SelectValue
+            async fn build_from_selected_value(
+                value: ::minirustbot_forms::interaction::SelectValue,
+                context: ::poise::ApplicationContext<'_, ContextData, ContextError>,
+                data: &mut #data_type
             ) -> ::minirustbot_forms::error::Result<Self> {
                 #from_select_value
             }
@@ -221,12 +224,15 @@ fn create_select_option_specs(
     res
 }
 
+/// Generates 'match' code that maps each expected value
+/// to its corresponding enum variant.
 fn from_select_value(
     variants_with_options: &Vec<(&syn::Variant, SelectOptionAttributes)>,
     _data_type: &syn::Type,
 ) -> Result<TokenStream2, darling::Error> {
     let mut variant_match_arms = Vec::new();
 
+    // Map each value key to the corresponding variant
     for (variant, options) in variants_with_options {
         let variant_name = &variant.ident;
         let value_key = options
@@ -247,21 +253,17 @@ fn from_select_value(
         };
 
         let mut field_initializers = Vec::new();
+
+        // By default, initialize fields to Default::default()
+        let default_expr: syn::Expr = syn::parse_quote! { ::core::default::Default::default() };
         for field in fields {
             let attrs: FieldAttributes = util::get_darling_attrs(&field.attrs)?;
-            if let Some(initializer) = attrs.initializer.as_ref() {
-                if is_named {
-                    let field_name = field.ident.as_ref().expect("Expected named field");
-                    field_initializers.push(quote! { #field_name: #initializer });
-                } else {
-                    field_initializers.push(quote! { #initializer });
-                }
-            } else if is_named {
+            let initializer = attrs.initializer.as_ref().unwrap_or(&default_expr);
+            if is_named {
                 let field_name = field.ident.as_ref().expect("Expected named field");
-                field_initializers
-                    .push(quote! { #field_name: ::core::default::Default::default() });
+                field_initializers.push(quote! { #field_name: #initializer });
             } else {
-                field_initializers.push(quote! { ::core::default::Default::default() });
+                field_initializers.push(quote! { #initializer });
             }
         }
 
