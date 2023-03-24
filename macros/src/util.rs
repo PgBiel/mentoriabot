@@ -132,7 +132,7 @@ pub(crate) mod macros {
     macro_rules! take_attribute_or_its_function_required {
         ($attrs:expr; $attr_name:ident, $func_name:ident) => {
             if let Some($func_name) = $attrs.$func_name.as_ref() {
-                quote! { #$func_name(context, data).await?.into() }
+                quote! { #$func_name(context, data).into() }
             } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
                 quote! { #$attr_name.into() }
             } else {
@@ -144,7 +144,7 @@ pub(crate) mod macros {
     macro_rules! take_attribute_or_its_function_optional {
         ($attrs:expr; $attr_name:ident, $func_name:ident) => {{
             if let Some($func_name) = $attrs.$func_name.as_ref() {
-                quote! { #$func_name(context, data).await?.into() }
+                quote! { #$func_name(context, data).into() }
             } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
                 quote! { #$attr_name.into() }
             } else {
@@ -154,7 +154,7 @@ pub(crate) mod macros {
 
         ($attrs:expr; $attr_name:ident, $func_name:ident; $or:expr) => {{
             if let Some($func_name) = $attrs.$func_name.as_ref() {
-                quote! { #$func_name(context, data).await?.into() }
+                quote! { #$func_name(context, data).into() }
             } else if let Some($attr_name) = $attrs.$attr_name.as_ref() {
                 quote! { #$attr_name.into() }
             } else {

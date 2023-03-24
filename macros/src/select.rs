@@ -46,9 +46,9 @@ struct SelectFieldAttributes {
     /// Marks a field as receiving the response interaction object.
     interaction: Option<()>,
 
-    /// Marks a field as receiving the selected option by the user.
-    /// Also specifies the options that will be presented.
-    selected_option: Option<()>,
+    /// Marks a field as receiving the selected option(s) by the user.
+    /// Its type also specifies the options that will be presented.
+    selected_options: Option<()>,
 
     /// The initializer of any extra fields. Defaults to "Default::default()".
     initializer: Option<syn::Expr>,
@@ -84,7 +84,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let ctx_data = &select_attrs.ctx_data;
     let ctx_error = &select_attrs.ctx_error;
 
-    let selected_fields = fields
+    let fields_with_attrs = fields
         .iter()
         .map(|f| {
             (
@@ -92,30 +92,36 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 util::get_darling_attrs::<SelectFieldAttributes>(&f.attrs),
             )
         })
-        .flat_map(|(f, attrs)| attrs.map(|a| vec![(f, a)]).unwrap_or(vec![]))
-        .filter(|(f, attrs)| attrs.selected_option.is_some())
+        .flat_map(|(f, attrs)| {
+            attrs
+                .map(|a| vec![(f, a)])
+                .unwrap_or(vec![])  // remove empty optional attrs
+        })
         .collect::<Vec<(&syn::Field, SelectFieldAttributes)>>();
 
-    if selected_fields.is_empty() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "One field must be marked as #[selected_option], which provides all options.",
-        )
-        .into());
-    }
+    let selected_fields = fields_with_attrs
+        .iter()
+        .filter(|(_, attrs)| attrs.selected_options.is_some())
+        .collect::<Vec<&(&syn::Field, SelectFieldAttributes)>>();
 
     if selected_fields.len() > 1 {
         return Err(syn::Error::new(
             selected_fields[1].0.span(),
             "Must not mark more than one field as #[selected_option].",
         )
-        .into());
+            .into());
     }
 
-    let selected_field = selected_fields[0].0;
+    let Some((selected_field, _)) = selected_fields.iter().next() else {
+        return Err(syn::Error::new(
+            input.ident.span(),
+            "One field must be marked as #[selected_option], which provides all options.",
+        )
+        .into());
+    };
 
     let select_spec = create_select_spec(&select_attrs, selected_field, &data_type);
-    let create_with_interaction = create_build_with_interaction(fields)?;
+    let create_with_interaction = create_build_with_interaction(&fields_with_attrs)?;
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
@@ -144,30 +150,30 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type,
             ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
-
-                let mut __custom_ids = vec![];
+                let __buildables = <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
+                let __custom_ids = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&__buildables);
+                let __reply = <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(context, data).await?;
                 context.send(|f|
-                    <Self as ::minirustbot_forms::GenerateReply<#data_type>>::create_reply(f, context, data)
+                    <::minirustbot_forms::ReplySpec as ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
                         .components(|f| f
-                            .create_action_row(|f| f
-                                .create_select(|f| {
-                                    let (builder, custom_id) = <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::on_build(f, context, &data);
-                                    if let Some(custom_id) = custom_id {
-                                        __custom_ids.push(custom_id);
-                                    }
-                                    builder
-                                })))).await?;
+                            .create_action_row(|mut f| {
+                                for buildable in &__buildables {
+                                    f = f.create_select(|b| ::minirustbot_forms::Buildable::<::poise::serenity_prelude::CreateSelectMenu>::on_build(buildable, b));
+                                }
+                                f
+                            }))).await?;
 
-                Ok(__custom_ids)
+                Ok(__custom_ids.into_iter().map(::core::clone::Clone::clone).collect())
             }
 
             async fn on_response(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
-                ::std::result::Result::Ok(
-                    <Self as ::minirustbot_forms::ButtonComponent<#ctx_data, #ctx_error, #data_type>>::create_with_interaction((*interaction).clone()))
+            ) -> ::minirustbot_forms::error::Result<::core::option::Option<::std::boxed::Box<Self>>> {
+                ::core::result::Result::Ok(::core::option::Option::Some(
+                    <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(interaction).await?
+                ))
             }
         }
     }.into())
@@ -189,9 +195,39 @@ fn validate_select_attrs(
 }
 
 fn create_build_with_interaction(
-    fields: &syn::punctuated::Punctuated<syn::Field, syn::Token![,]>,
+    fields_with_attrs: &Vec<(&syn::Field, SelectFieldAttributes)>,
 ) -> Result<TokenStream2, darling::Error> {
-    todo!()
+    let mut field_initializers = vec![];
+    let mut any_field_non_initialized = false;
+    for (field, attrs) in fields_with_attrs {
+        let field_ident = field.ident.as_ref().expect("Expected named field");
+
+        if attrs.interaction.is_some() {
+            field_initializers.push(quote! { #field_ident: interaction.into(), });
+        } else if attrs.selected_options.is_some() {
+            field_initializers.push(
+                quote! {
+                    #field_ident: interaction.data.values.into_iter().map(From::from).collect().into(),
+                })
+        } else if let Some(init_expr) = attrs.initializer.as_ref() {
+            field_initializers.push(quote! { #field_ident: #init_expr, })
+        } else if !any_field_non_initialized {
+            any_field_non_initialized = true;  // this one wasn't
+        }
+    }
+
+    let default_for_other_fields = if any_field_non_initialized {
+        Some(quote! { ..Default::default() })
+    } else {
+        None
+    };
+
+    Ok(quote! {
+        Self {
+            #(#field_initializers)*
+            #default_for_other_fields
+        }
+    })
 }
 
 fn create_select_spec(
@@ -204,7 +240,10 @@ fn create_select_spec(
     let max_values = util::wrap_option_into(&select_attrs.max_values);
 
     let selected_field_type = &selected_field.ty;
-    let options = quote! { #selected_field_type::generate_options(context, data) };
+    let options = quote! {
+        <#selected_field_type as ::minirustbot_forms::SelectMenuOptionSpec>::generate_options(
+            context, data)
+    };
 
     let disabled = if let Some(disabled_function) = select_attrs.disabled_function.as_ref() {
         quote! { #disabled_function(context, data).await?.into() }

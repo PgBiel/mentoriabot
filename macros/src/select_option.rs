@@ -111,15 +111,15 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
             /// Generates the specs(/buildables) of all possible options, based on the context
             /// and data.
             async fn generate_options(
-                context: ::poise::ApplicationContext<'_, ContextData, ContextError>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type
-            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec<#ctx_data, #ctx_error, #data_type>>> {
+            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec>> {
                 Ok(#option_specs)
             }
 
             async fn build_from_selected_value(
                 value: ::minirustbot_forms::interaction::SelectValue,
-                context: ::poise::ApplicationContext<'_, ContextData, ContextError>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type
             ) -> ::minirustbot_forms::error::Result<Self> {
                 #from_select_value
@@ -196,7 +196,7 @@ fn create_select_option_specs(
         let value_key = value_key.as_ref().expect("Missing value key");
 
         specs.push(quote! {
-            ::minirustbot_forms::SelectMenuOptionSpec::<#ctx_data, #ctx_error, #data_type> {
+            ::minirustbot_forms::SelectMenuOptionSpec {
                 label: #label,
 
                 label_function: #label_function,

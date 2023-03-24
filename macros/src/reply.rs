@@ -5,6 +5,7 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
 use crate::util;
+use crate::util::macros::{take_attribute_or_its_function_optional, take_attribute_or_its_function_required};
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -74,41 +75,41 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     Ok(quote! {
+        #[::async_trait::async_trait]
         impl #impl_generics ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
-            fn create_reply<'a, 'b>(
-                builder: &'a mut poise::CreateReply<'b>,
+            type ReplyBuilder = ::minirustbot_forms::ReplySpec;
+
+            async fn create_reply<'a, 'b>(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &#data_type,
-            ) -> &'a mut poise::CreateReply<'b> {
-                #reply_spec.create_reply(builder, context, data)
+            ) -> ::minirustbot_forms::error::Result<Self::ReplyBuilder> {
+                Ok(#reply_spec)
             }
         }
     }.into())
 }
 
 fn create_reply_spec(attrs: &ReplyAttrs, data: &syn::Type) -> TokenStream2 {
-    let content = util::wrap_option_into(&attrs.message_content);
-    let content_function = util::wrap_option_box(&attrs.message_content_function);
+    let content = take_attribute_or_its_function_required!(&attrs; message_content, message_content_function);
     let attachment_function = util::wrap_option_box(&attrs.message_attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.message_allowed_mentions_function);
     let embed_function = util::wrap_option_box(&attrs.message_embed_function);
     let is_reply = attrs.message_is_reply.is_some();
-    let ephemeral = attrs.message_ephemeral.is_some();
-    let ephemeral_function = util::wrap_option_box(&attrs.message_ephemeral_function);
-
-    let ctx_data = &attrs.ctx_data;
-    let ctx_error = &attrs.ctx_error;
+    let ephemeral = attrs.message_ephemeral.map(|_| quote! { true })
+        .or_else(|| {
+            attrs.message_ephemeral_function.as_ref()
+                .map(|func| quote! { #func(context, data).await?.into() })
+        })
+        .unwrap_or_else(|| quote! { false });
 
     quote! {
-        ::minirustbot_forms::ReplySpec::<#ctx_data, #ctx_error, #data> {
+        ::minirustbot_forms::ReplySpec {
             content: #content,
-            content_function: #content_function,
             attachment_function: #attachment_function,
             allowed_mentions_function: #allowed_mentions_function,
             embed_function: #embed_function,
             is_reply: #is_reply,
             ephemeral: #ephemeral,
-            ephemeral_function: #ephemeral_function,
         }
     }
 }
