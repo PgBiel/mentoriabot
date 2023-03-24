@@ -29,9 +29,7 @@ use crate::component::Buildable;
 ///
 /// [`MessageComponentInteraction`]: serenity::MessageComponentInteraction
 #[async_trait]
-pub trait Subcomponent<ContextData, ContextError, FormData = ()>:
-    TryFrom<serenity::MessageComponentInteraction, Error = FormError>
-{
+pub trait Subcomponent<ContextData, ContextError, FormData = ()> {
     type BuilderType: Send + Sync;
     type ReturnedBuildable: BuildableWithId<Self::BuilderType> + Send + Sync;
 

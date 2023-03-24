@@ -17,17 +17,17 @@ pub struct ReplySpec {
             ) -> (
                 &'a mut poise::CreateReply<'b>,
                 Vec<serenity::AttachmentType<'b>>,
-            ),
+            ) + Send + Sync,
         >,
     >,
 
     /// A function that takes a `&mut CreateAllowedMentions`, and returns
     /// `&mut CreateAllowedMentions`.
-    pub allowed_mentions_function: Option<Box<dyn Buildable<serenity::CreateAllowedMentions>>>,
+    pub allowed_mentions_function: Option<Box<dyn Buildable<serenity::CreateAllowedMentions> + Send + Sync>>,
 
     /// A function that takes a `&mut CreateEmbed`, the context and a `&Data` and returns `&mut
     /// CreateEmbed`.
-    pub embed_function: Option<Box<dyn Buildable<serenity::CreateEmbed>>>,
+    pub embed_function: Option<Box<dyn Buildable<serenity::CreateEmbed> + Send + Sync>>,
 
     /// True if this message should display as a reply.
     pub is_reply: bool,

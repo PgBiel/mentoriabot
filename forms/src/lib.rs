@@ -19,7 +19,7 @@ pub mod component;
 pub mod error;
 mod form;
 pub mod interaction;
-mod util;
+pub mod util;
 
 #[cfg(test)]
 mod tests;
@@ -27,6 +27,7 @@ mod tests;
 pub use component::{
     ButtonSpec, GenerateReply, MessageFormComponent, ModalFormComponent, ReplySpec,
     SelectMenuOptionSpec, SelectMenuSpec, SelectOption, Subcomponent,
+    Buildable, BuildableWithId,
 };
 pub use error::FormError;
 pub use form::InteractionForm;
