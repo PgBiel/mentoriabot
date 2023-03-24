@@ -5,8 +5,8 @@ use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
-    repo_find_all, repo_get, repo_insert, repo_remove, repo_update,
-    repo_upsert, Repository, UpdatableRepository,
+    repo_find_all, repo_get, repo_insert, repo_remove, repo_update, repo_upsert, Repository,
+    UpdatableRepository,
 };
 use crate::{
     error::Result,

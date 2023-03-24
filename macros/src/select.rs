@@ -93,9 +93,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             )
         })
         .flat_map(|(f, attrs)| {
-            attrs
-                .map(|a| vec![(f, a)])
-                .unwrap_or(vec![])  // remove empty optional attrs
+            attrs.map(|a| vec![(f, a)]).unwrap_or(vec![]) // remove empty optional attrs
         })
         .collect::<Vec<(&syn::Field, SelectFieldAttributes)>>();
 
@@ -109,7 +107,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             selected_fields[1].0.span(),
             "Must not mark more than one field as #[selected_option].",
         )
-            .into());
+        .into());
     }
 
     let Some((selected_field, _)) = selected_fields.first() else {
@@ -205,14 +203,13 @@ fn create_build_with_interaction(
         if attrs.interaction.is_some() {
             field_initializers.push(quote! { #field_ident: interaction.into(), });
         } else if attrs.selected_options.is_some() {
-            field_initializers.push(
-                quote! {
-                    #field_ident: interaction.data.values.into_iter().map(From::from).collect().into(),
-                })
+            field_initializers.push(quote! {
+                #field_ident: interaction.data.values.into_iter().map(From::from).collect().into(),
+            })
         } else if let Some(init_expr) = attrs.initializer.as_ref() {
             field_initializers.push(quote! { #field_ident: #init_expr, })
         } else if !any_field_non_initialized {
-            any_field_non_initialized = true;  // this one wasn't
+            any_field_non_initialized = true; // this one wasn't
         }
     }
 

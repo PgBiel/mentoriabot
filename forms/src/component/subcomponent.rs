@@ -5,10 +5,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
-use crate::{
-    error::Result,
-    interaction::SelectValue,
-};
+use crate::{error::Result, interaction::SelectValue};
 
 pub mod button;
 pub mod reply;
@@ -19,7 +16,6 @@ pub use reply::ReplySpec;
 pub use selectmenu::{SelectMenuOptionSpec, SelectMenuSpec};
 
 use super::BuildableWithId;
-
 
 /// Subcomponents hold common logic for predefined interaction types,
 /// such as buttons and select menus.

@@ -4,8 +4,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
-use crate::util;
-use crate::util::macros::take_attribute_or_its_function_required;
+use crate::{util, util::macros::take_attribute_or_its_function_required};
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -90,14 +89,19 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 }
 
 fn create_reply_spec(attrs: &ReplyAttrs, data: &syn::Type) -> TokenStream2 {
-    let content = take_attribute_or_its_function_required!(attrs; message_content, message_content_function);
+    let content =
+        take_attribute_or_its_function_required!(attrs; message_content, message_content_function);
     let attachment_function = util::wrap_option_box(&attrs.message_attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.message_allowed_mentions_function);
     let embed_function = util::wrap_option_box(&attrs.message_embed_function);
     let is_reply = attrs.message_is_reply.is_some();
-    let ephemeral = attrs.message_ephemeral.map(|_| quote! { true })
+    let ephemeral = attrs
+        .message_ephemeral
+        .map(|_| quote! { true })
         .or_else(|| {
-            attrs.message_ephemeral_function.as_ref()
+            attrs
+                .message_ephemeral_function
+                .as_ref()
                 .map(|func| quote! { #func(context, data).await?.into() })
         })
         .unwrap_or_else(|| quote! { false });

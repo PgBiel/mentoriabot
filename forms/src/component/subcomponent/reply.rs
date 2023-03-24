@@ -8,11 +8,12 @@ use crate::component::Buildable;
 /// of [`serenity::AttachmentType`].
 pub type AttachmentFunction = Box<
     dyn for<'a, 'b> Fn(
-        &'a mut poise::CreateReply<'b>,
-    ) -> (
-        &'a mut poise::CreateReply<'b>,
-        Vec<serenity::AttachmentType<'b>>,
-    ) + Send + Sync,
+            &'a mut poise::CreateReply<'b>,
+        ) -> (
+            &'a mut poise::CreateReply<'b>,
+            Vec<serenity::AttachmentType<'b>>,
+        ) + Send
+        + Sync,
 >;
 
 /// Holds all data necessary to display a component's reply message.
@@ -27,7 +28,8 @@ pub struct ReplySpec {
 
     /// A function that takes a `&mut CreateAllowedMentions`, and returns
     /// `&mut CreateAllowedMentions`.
-    pub allowed_mentions_function: Option<Box<dyn Buildable<serenity::CreateAllowedMentions> + Send + Sync>>,
+    pub allowed_mentions_function:
+        Option<Box<dyn Buildable<serenity::CreateAllowedMentions> + Send + Sync>>,
 
     /// A function that takes a `&mut CreateEmbed`, the context and a `&Data` and returns `&mut
     /// CreateEmbed`.

@@ -1,4 +1,5 @@
 use std::time;
+
 use crate::{CustomId, HasCustomId};
 
 /// Generates a Custom ID for Interactions,
@@ -17,11 +18,11 @@ pub fn id_vec_from_has_custom_ids(vec: &[impl HasCustomId]) -> Vec<&CustomId> {
     vec.iter()
         .map(HasCustomId::get_custom_id)
         .flat_map(|maybe_id| {
-          if let Some(id) = maybe_id {
-              vec![id]
-          } else {
-              Vec::new()
-          }
+            if let Some(id) = maybe_id {
+                vec![id]
+            } else {
+                Vec::new()
+            }
         })
         .collect()
 }
