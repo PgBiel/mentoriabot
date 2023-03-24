@@ -161,11 +161,11 @@ impl FromStr for HumanParseableDateTime {
     /// # use chrono::TimeZone;
     /// let today = chrono::Utc::now();
     /// let expected_date1 = today
-    ///     .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+    ///     .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
     ///     .single()
     ///     .unwrap();
     /// let expected_date2 = today
-    ///     .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+    ///     .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
     ///     .single()
     ///     .unwrap();
     /// let expected_date3 = today
@@ -198,8 +198,7 @@ impl FromStr for HumanParseableDateTime {
             .replace("; ", "")
             .replace("   ", " ")
             .replace("  ", " ")
-            .replace(",", "")
-            .replace(";", "");
+            .replace([',', ';'], "");
 
         let curr_date = chrono::Utc::now()
             .with_timezone(&brazil_timezone().expect("Brazil timezone was invalid."));
@@ -244,9 +243,9 @@ impl<Tz: chrono::TimeZone> From<chrono::DateTime<Tz>> for HumanParseableDateTime
     }
 }
 
-impl Into<chrono::DateTime<chrono::Utc>> for HumanParseableDateTime {
-    fn into(self) -> chrono::DateTime<chrono::Utc> {
-        self.0
+impl From<HumanParseableDateTime> for chrono::DateTime<chrono::Utc> {
+    fn from(value: HumanParseableDateTime) -> Self {
+        value.0
     }
 }
 
@@ -287,7 +286,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -299,7 +298,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -311,7 +310,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -323,7 +322,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -337,7 +336,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(year, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(year, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -351,7 +350,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(year, 03, 19, 14, 29, 0)
+                    .with_ymd_and_hms(year, 3, 19, 14, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -365,7 +364,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -377,7 +376,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -389,7 +388,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -401,7 +400,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 0)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -415,7 +414,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(year, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(year, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -429,7 +428,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(year, 03, 19, 14, 29, 0)
+                    .with_ymd_and_hms(year, 3, 19, 14, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -471,7 +470,7 @@ mod tests {
 
             assert_eq!(
                 chrono::Utc
-                    .with_ymd_and_hms(2023, 03, 19, 14, 29, 30)
+                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
                     .unwrap(),
                 parsed.0
             )

@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
 use crate::{
-    error::{FormError, Result},
+    error::Result,
     interaction::SelectValue,
 };
 
@@ -19,7 +19,7 @@ pub use reply::ReplySpec;
 pub use selectmenu::{SelectMenuOptionSpec, SelectMenuSpec};
 
 use super::BuildableWithId;
-use crate::component::Buildable;
+
 
 /// Subcomponents hold common logic for predefined interaction types,
 /// such as buttons and select menus.

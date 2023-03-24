@@ -11,7 +11,6 @@ use super::{
 use crate::{
     error::Result,
     model::{DiscordId, Lecture, NewLecture, PartialLecture, User},
-    repository::UserRepository,
     schema::{lectures, users},
 };
 

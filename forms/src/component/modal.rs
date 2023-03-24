@@ -26,7 +26,7 @@ pub trait ModalFormComponent<
 
         match response {
             Some(modal) => Self::on_response(modal, data).await,
-            None => Err(FormError::NoResponse.into()),
+            None => Err(FormError::NoResponse),
         }
     }
 }

@@ -50,7 +50,7 @@ where
         builder: &'a mut serenity::CreateComponents,
     ) -> &'a mut serenity::CreateComponents {
         builder.create_action_row(|builder| {
-            <Self as Buildable<serenity::CreateActionRow>>::on_build(&self, builder)
+            <Self as Buildable<serenity::CreateActionRow>>::on_build(self, builder)
         })
     }
 }

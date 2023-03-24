@@ -130,9 +130,9 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                         locale = locale,
                         "duration" => {
                             if locale == "pt-BR" {
-                                util::convert_duration_to_brazilian_string(remaining_cooldown.clone())
+                                util::convert_duration_to_brazilian_string(*remaining_cooldown)
                             } else {
-                                util::convert_duration_to_string(remaining_cooldown.clone())
+                                util::convert_duration_to_string(*remaining_cooldown)
                             }
                         }
                     )
@@ -216,7 +216,7 @@ config.example.json structure.",
             on_error,
             owners: admin_userids
                 .iter()
-                .map(|id| serenity::UserId(id.clone()))
+                .map(|id| serenity::UserId(*id))
                 .collect(),
             ..Default::default()
         })

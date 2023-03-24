@@ -76,7 +76,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let mut modal_creation: Option<TokenStream2> = None;
 
     for field in fields {
-        let field_name: &syn::Ident = &field.ident.as_ref().expect("Unnamed field");
+        let field_name: &syn::Ident = field.ident.as_ref().expect("Unnamed field");
         // Extract data from syn::Field
         let field_attrs: FieldAttributes = util::get_darling_attrs(&field.attrs)?;
 
@@ -92,8 +92,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 field_type,
                 field_inner_type,
                 &data_type,
-                &ctx_data,
-                &ctx_error,
+                ctx_data,
+                ctx_error,
             ));
             create_fields.push(quote! { #field_name });
         } else if field_attrs.modal.is_some() {
@@ -110,8 +110,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 /* modal_type: */ field_type,
                 /* modal_inner_type: */ field_inner_type,
                 &data_type,
-                &ctx_data,
-                &ctx_error,
+                ctx_data,
+                ctx_error,
             ));
             create_fields.push(quote! { #field_name });
         } else {
@@ -175,13 +175,9 @@ fn generate_modal_creation(
 }
 
 fn parse_on_finish(struct_attrs: &StructAttributes) -> Option<TokenStream2> {
-    if let Some(on_finish) = &struct_attrs.on_finish {
-        Some(quote! {
+    struct_attrs.on_finish.as_ref().map(|on_finish| quote! {
             async fn on_finish(self, context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
                 #on_finish(context).into()
             }
         })
-    } else {
-        None
-    }
 }

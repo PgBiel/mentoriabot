@@ -361,10 +361,10 @@ fn single_button_create_with_interaction_code(
 }
 
 fn create_button_spec(button_attrs: &ButtonAttributes, _data: &syn::Type) -> TokenStream2 {
-    let label = take_attribute_or_its_function_required!(&button_attrs; label, label_function);
-    let custom_id = take_attribute_optional!(&button_attrs; custom_id);
-    let link = take_attribute_or_its_function_optional!(&button_attrs; link, link_function);
-    let emoji = take_attribute_or_its_function_optional!(&button_attrs; emoji, emoji_function);
+    let label = take_attribute_or_its_function_required!(button_attrs; label, label_function);
+    let custom_id = take_attribute_optional!(button_attrs; custom_id);
+    let link = take_attribute_or_its_function_optional!(button_attrs; link, link_function);
+    let emoji = take_attribute_or_its_function_optional!(button_attrs; emoji, emoji_function);
 
     let disabled = if let Some(disabled_function) = &button_attrs.disabled_function {
         quote! { #disabled_function(context, data).into() }

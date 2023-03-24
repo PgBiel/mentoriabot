@@ -27,7 +27,7 @@ pub struct TestFormModal {
 }
 
 fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
-    format!("I am {}", ctx.author().name).into()
+    format!("I am {}", ctx.author().name)
 }
 
 #[derive(ButtonComponent, GenerateReply, Clone, Debug)]

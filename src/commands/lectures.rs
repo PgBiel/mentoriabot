@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use poise::{serenity_prelude as serenity, Modal};
+use poise::serenity_prelude as serenity;
 
 use crate::{
     commands::modals::lectures::LectureCreateModals,
@@ -9,7 +9,7 @@ use crate::{
     model::{Lecture, NewLecture, NewUser, User},
     repository::Repository,
     util,
-    util::{brazil_timezone, HumanParseableDateTime},
+    util::brazil_timezone,
 };
 
 /// Manages lectures.
@@ -213,9 +213,9 @@ pub async fn get(
                             format!("{teacher_name} ({teacher_mention})"),
                             true,
                         )
-                        .field("Começa em", format!("{start_at}"), false)
-                        .field("Vagas", format!("{student_limit}"), true)
-                        .field("Duração", format!("{duration}"), true)
+                        .field("Começa em", start_at.to_string(), false)
+                        .field("Vagas", student_limit.to_string(), true)
+                        .field("Duração", duration, true)
                         .description(format!("\"{}\"", description))
                         .color(serenity::Colour::BLITZ_BLUE)
                 } else {
@@ -226,9 +226,9 @@ pub async fn get(
                             format!("{teacher_name} ({teacher_mention})"),
                             true,
                         )
-                        .field("Starts at", format!("{start_at}"), false)
-                        .field("Max Students", format!("{student_limit}"), true)
-                        .field("Duration", format!("{duration}"), true)
+                        .field("Starts at", start_at.to_string(), false)
+                        .field("Max Students", student_limit.to_string(), true)
+                        .field("Duration", duration, true)
                         .description(format!("\"{}\"", description))
                         .color(serenity::Colour::BLITZ_BLUE)
                 }

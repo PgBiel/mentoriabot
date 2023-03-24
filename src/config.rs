@@ -1,5 +1,3 @@
-use std::fmt::{Display, Formatter};
-
 use serde::{Deserialize, Serialize};
 
 /// The bot's parsed config file.
@@ -44,14 +42,14 @@ pub(crate) enum LoggingLevels {
     Error,
 }
 
-impl Into<tracing::Level> for LoggingLevels {
-    fn into(self) -> tracing::Level {
-        match self {
-            Self::Trace => tracing::Level::TRACE,
-            Self::Debug => tracing::Level::DEBUG,
-            Self::Info => tracing::Level::INFO,
-            Self::Warn => tracing::Level::WARN,
-            Self::Error => tracing::Level::ERROR,
+impl From<LoggingLevels> for tracing::Level {
+    fn from(value: LoggingLevels) -> Self {
+        match value {
+            LoggingLevels::Trace => Self::TRACE,
+            LoggingLevels::Debug => Self::DEBUG,
+            LoggingLevels::Info => Self::INFO,
+            LoggingLevels::Warn => Self::WARN,
+            LoggingLevels::Error => Self::ERROR,
         }
     }
 }

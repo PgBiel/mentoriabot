@@ -37,9 +37,9 @@ impl From<&str> for SelectValue {
     }
 }
 
-impl Into<String> for SelectValue {
+impl From<SelectValue> for String {
     /// Unwraps the String value held within.
-    fn into(self) -> String {
-        self.0
+    fn from(value: SelectValue) -> Self {
+        value.0
     }
 }

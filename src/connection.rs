@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use diesel_async::{
     pooled_connection::{deadpool::Pool, AsyncDieselConnectionManager},
-    AsyncConnection, AsyncPgConnection,
+    AsyncPgConnection,
 };
 
 use crate::{

@@ -112,7 +112,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             .into());
     }
 
-    let Some((selected_field, _)) = selected_fields.iter().next() else {
+    let Some((selected_field, _)) = selected_fields.first() else {
         return Err(syn::Error::new(
             input.ident.span(),
             "One field must be marked as #[selected_option], which provides all options.",

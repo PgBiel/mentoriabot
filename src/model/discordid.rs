@@ -59,10 +59,10 @@ impl DiscordId {
     }
 }
 
-impl Into<u64> for DiscordId {
+impl From<DiscordId> for u64 {
     /// Converts this DiscordId to its underlying u64 value.
-    fn into(self) -> u64 {
-        self.0
+    fn from(value: DiscordId) -> Self {
+        value.0
     }
 }
 

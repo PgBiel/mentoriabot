@@ -6,7 +6,7 @@ pub fn empty_tuple_type() -> syn::Type {
 }
 
 pub fn get_darling_attrs<T: darling::FromMeta>(
-    attrs: &Vec<syn::Attribute>,
+    attrs: &[syn::Attribute],
 ) -> Result<T, darling::Error> {
     let mapped_attrs = attrs
         .iter()
@@ -98,7 +98,7 @@ impl<T: darling::FromMeta> darling::FromMeta for Tuple2<T> {
             [a, b] => Self(T::from_nested_meta(a)?, T::from_nested_meta(b)?),
             _ => {
                 return Err(syn::Error::new(
-                    proc_macro2::Span::call_site().into(),
+                    proc_macro2::Span::call_site(),
                     "expected two items `(\"a\", \"b\")`",
                 )
                 .into())

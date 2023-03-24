@@ -87,7 +87,7 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
             attrs.value_key = Some(variant.ident.to_string()); // default value key is the variant's
                                                                // name
         }
-        validate_option_attrs(&attrs, &variant)?;
+        validate_option_attrs(&attrs, variant)?;
         variants_and_options.push((variant, attrs));
     }
 
@@ -100,7 +100,7 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
     let ctx_error = &enum_attrs.ctx_error;
 
     let option_specs =
-        create_select_option_specs(&variants_and_options, &data_type, &ctx_data, &ctx_error);
+        create_select_option_specs(&variants_and_options, &data_type, ctx_data, ctx_error);
     let from_select_value = from_select_value(&variants_and_options, &data_type)?;
     let enum_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -238,7 +238,7 @@ fn from_select_value(
         let value_key = options
             .value_key
             .as_ref()
-            .expect(&*format!("Missing value key for variant '{variant_name}'"));
+            .unwrap_or_else(|| panic!("Missing value key for variant '{variant_name}'"));
         let mut is_named = false;
         let fields = match &variant.fields {
             syn::Fields::Named(fields) => {

@@ -74,7 +74,7 @@ where
                     }
                     // otherwise keep waiting for a response
                 }
-                None => return Err(FormError::NoResponse.into()),
+                None => return Err(FormError::NoResponse),
             }
         }
     }

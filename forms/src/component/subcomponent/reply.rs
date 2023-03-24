@@ -2,6 +2,19 @@ use poise::serenity_prelude as serenity;
 
 use crate::component::Buildable;
 
+/// Type for the attachment function property
+/// of [`ReplySpec`]. Takes a CreateReply
+/// and returns it, together with a vector
+/// of [`serenity::AttachmentType`].
+pub type AttachmentFunction = Box<
+    dyn for<'a, 'b> Fn(
+        &'a mut poise::CreateReply<'b>,
+    ) -> (
+        &'a mut poise::CreateReply<'b>,
+        Vec<serenity::AttachmentType<'b>>,
+    ) + Send + Sync,
+>;
+
 /// Holds all data necessary to display a component's reply message.
 #[derive(Default)]
 pub struct ReplySpec {
@@ -10,16 +23,7 @@ pub struct ReplySpec {
 
     /// A function that takes the `CreateReply` builder,
     /// and returns attachments.
-    pub attachment_function: Option<
-        Box<
-            dyn for<'a, 'b> Fn(
-                &'a mut poise::CreateReply<'b>,
-            ) -> (
-                &'a mut poise::CreateReply<'b>,
-                Vec<serenity::AttachmentType<'b>>,
-            ) + Send + Sync,
-        >,
-    >,
+    pub attachment_function: Option<AttachmentFunction>,
 
     /// A function that takes a `&mut CreateAllowedMentions`, and returns
     /// `&mut CreateAllowedMentions`.

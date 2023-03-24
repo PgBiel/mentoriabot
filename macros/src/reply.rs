@@ -5,7 +5,7 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
 use crate::util;
-use crate::util::macros::{take_attribute_or_its_function_optional, take_attribute_or_its_function_required};
+use crate::util::macros::take_attribute_or_its_function_required;
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -90,7 +90,7 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 }
 
 fn create_reply_spec(attrs: &ReplyAttrs, data: &syn::Type) -> TokenStream2 {
-    let content = take_attribute_or_its_function_required!(&attrs; message_content, message_content_function);
+    let content = take_attribute_or_its_function_required!(attrs; message_content, message_content_function);
     let attachment_function = util::wrap_option_box(&attrs.message_attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.message_allowed_mentions_function);
     let embed_function = util::wrap_option_box(&attrs.message_embed_function);
@@ -119,15 +119,14 @@ fn validate_attrs(attrs: &ReplyAttrs, input: &syn::DeriveInput) -> Result<(), sy
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[message_content] and #[message_content_function] at the same time.",
-        )
-        .into());
+        ));
     }
 
     if attrs.message_ephemeral.is_some() && attrs.message_ephemeral_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[message_ephemeral] and #[message_ephemeral_function] at the same time."
-        ).into());
+        ));
     }
 
     Ok(())

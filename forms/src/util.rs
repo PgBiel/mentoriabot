@@ -13,7 +13,7 @@ pub fn generate_custom_id() -> String {
 
 /// Extracts Custom IDs from a Vec
 /// of types that implement [`HasCustomId`].
-pub fn id_vec_from_has_custom_ids(vec: &Vec<impl HasCustomId>) -> Vec<&CustomId> {
+pub fn id_vec_from_has_custom_ids(vec: &[impl HasCustomId]) -> Vec<&CustomId> {
     vec.iter()
         .map(HasCustomId::get_custom_id)
         .flat_map(|maybe_id| {
