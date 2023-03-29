@@ -1,5 +1,4 @@
 use poise::serenity_prelude as serenity;
-use rust_i18n::t;
 use serenity::GuildId;
 use tracing::{error, info, warn};
 
@@ -18,6 +17,7 @@ use common::Data;
 use config::MiniRustBotConfig as Config;
 
 use crate::{common::FrameworkError, error::Error};
+use crate::util::tr;
 
 pub mod forms {
     pub use minirustbot_forms::*;
@@ -36,7 +36,7 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
 
         let response = match &framework_error {
             FrameworkError::CommandCheckFailed { error: None, .. } => {
-                t!("main_on_error.command_check.default", locale = locale)
+                tr!("main_on_error.command_check.default", locale = locale)
             }
             FrameworkError::CommandCheckFailed {
                 error: Some(Error::CommandCheck(message)),
@@ -44,13 +44,13 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
             } => message.to_string(),
             FrameworkError::ArgumentParse { input, .. } => {
                 if let Some(invalid_format) = input.as_ref() {
-                    t!(
+                    tr!(
                         "main_on_error.argument_parse.with_message",
                         locale = locale,
                         "message" => invalid_format
                     )
                 } else {
-                    t!("main_on_error.argument_parse.default", locale = locale)
+                    tr!("main_on_error.argument_parse.default", locale = locale)
                 }
             }
             FrameworkError::MissingBotPermissions {
@@ -58,7 +58,7 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 ..
             } => {
                 if missing_permissions.get_permission_names().len() != 1 {
-                    t!(
+                    tr!(
                         "main_on_error.missing_bot_permissions.plural",
                         locale = locale,
                         "permissions" => {
@@ -71,7 +71,7 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                         }
                     )
                 } else {
-                    t!(
+                    tr!(
                         "main_on_error.missing_bot_permissions.singular",
                         locale = locale
                     )
@@ -81,13 +81,13 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 missing_permissions,
                 ..
             } => match missing_permissions {
-                None => t!(
+                None => tr!(
                     "main_on_error.missing_user_permissions.default",
                     locale = locale
                 ),
                 Some(missing_permissions) => {
                     if missing_permissions.get_permission_names().len() != 1 {
-                        t!(
+                        tr!(
                             "main_on_error.missing_user_permissions.plural",
                             locale = locale,
                             "permissions" => {
@@ -100,7 +100,7 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                             }
                         )
                     } else {
-                        t!(
+                        tr!(
                             "main_on_error.missing_user_permissions.singular",
                             locale = locale
                         )
@@ -108,24 +108,24 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 }
             },
             FrameworkError::DmOnly { .. } => {
-                t!("main_on_error.dm_only.default", locale = locale)
+                tr!("main_on_error.dm_only.default", locale = locale)
             }
             FrameworkError::GuildOnly { .. } => {
-                t!("main_on_error.guild_only.default", locale = locale)
+                tr!("main_on_error.guild_only.default", locale = locale)
             }
             FrameworkError::NsfwOnly { .. } => {
-                t!("main_on_error.nsfw_only.default", locale = locale)
+                tr!("main_on_error.nsfw_only.default", locale = locale)
             }
             FrameworkError::NotAnOwner { .. } => {
-                t!("main_on_error.owners_only.default", locale = locale)
+                tr!("main_on_error.owners_only.default", locale = locale)
             }
             FrameworkError::CooldownHit {
                 remaining_cooldown, ..
             } => {
                 if remaining_cooldown.as_secs() < 1 {
-                    t!("main_on_error.cooldown_hit.default", locale = locale)
+                    tr!("main_on_error.cooldown_hit.default", locale = locale)
                 } else {
-                    t!(
+                    tr!(
                         "main_on_error.cooldown_hit.with_duration",
                         locale = locale,
                         "duration" => {
@@ -139,35 +139,35 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 }
             }
             FrameworkError::UnknownInteraction { .. } => {
-                t!("main_on_error.unknown_interaction.default", locale = locale)
+                tr!("main_on_error.unknown_interaction.default", locale = locale)
             }
             FrameworkError::Setup { error, .. } => {
                 error!("Failed to run bot setup: {error}");
-                t!("main_on_error.setup.default", locale = locale)
+                tr!("main_on_error.setup.default", locale = locale)
             }
             FrameworkError::Command {
                 error: Error::Diesel(error),
                 ..
             } => {
                 error!("Diesel database error: {error}");
-                t!("main_on_error.database.default", locale = locale)
+                tr!("main_on_error.database.default", locale = locale)
             }
             FrameworkError::Command {
                 error: error @ (Error::DieselConnection(_) | Error::DeadpoolPool(_)),
                 ..
             } => {
                 error!("Database connection error: {error}");
-                t!("main_on_error.database_connection.default", locale = locale)
+                tr!("main_on_error.database_connection.default", locale = locale)
             }
             _ => {
                 error!("Unexpected bot error: {}", framework_error);
-                t!("main_on_error.unexpected.default", locale = locale)
+                tr!("main_on_error.unexpected.default", locale = locale)
             }
         };
 
         if let Some(ctx) = framework_error.ctx() {
             ctx.send(|b| {
-                b.content(t!(
+                b.content(tr!(
                     "main_on_error.error_message",
                     locale = locale,
                     "message" => response

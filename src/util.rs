@@ -1,3 +1,7 @@
+pub mod macros;
+
+pub use macros::tr;
+
 use std::{
     fmt::{Display, Formatter},
     ops::{Deref, DerefMut},
@@ -108,6 +112,14 @@ pub fn get_defaulted_app_ctx_locale<D, E>(ctx: poise::ApplicationContext<'_, D, 
     ctx.locale()
         .map(|loc| if loc != "pt-BR" { "en" } else { loc })
         .unwrap_or("pt-BR")
+}
+
+/// Filters unknown locales, restricting them to returning "en".
+pub fn default_locale(locale: &str) -> &'static str {
+    match locale {
+        "pt-BR" => "pt-BR",
+        _ => "en"
+    }
 }
 
 /// Represents a DateTime which can be parsed in a semi-human format.
