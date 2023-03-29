@@ -1,6 +1,6 @@
 pub mod macros;
 
-pub use macros::tr;
+pub(crate) use macros::tr;
 
 use std::{
     fmt::{Display, Formatter},
