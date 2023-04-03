@@ -7,19 +7,19 @@ use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQuer
 use super::{repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, Repository};
 use crate::{
     error::Result,
-    model::{DiscordId, Lecture, LectureStudent, NewLectureStudent, User},
-    schema::lecture_students,
+    model::{DiscordId, NewSessionStudent, Session, SessionStudent, User},
+    schema::session_students,
 };
 
-/// Manages LectureStudent instances, which are basically associations
-/// that determine that a given User is a student in a given Lecture.
+/// Manages SessionStudent instances, which are basically associations
+/// that determine that a given User is a student in a given Session.
 #[derive(Clone)]
-pub struct LectureStudentRepository {
+pub struct SessionStudentRepository {
     pool: Arc<Pool<AsyncPgConnection>>,
 }
 
-impl LectureStudentRepository {
-    /// Creates a new LectureStudentRepository operating with the given
+impl SessionStudentRepository {
+    /// Creates a new SessionStudentRepository operating with the given
     /// connection pool.
     pub fn new(pool: &Arc<Pool<AsyncPgConnection>>) -> Self {
         Self {
@@ -27,41 +27,41 @@ impl LectureStudentRepository {
         }
     }
 
-    /// Inserts a LectureStudent for the given User and Lecture,
-    /// thus marking that User as a student of that Lecture.
-    pub async fn insert_for_user_and_lecture(
+    /// Inserts a SessionStudent for the given User and Session,
+    /// thus marking that User as a student of that Session.
+    pub async fn insert_for_user_and_session(
         &self,
         user: &User,
-        lecture: &Lecture,
-    ) -> Result<LectureStudent> {
+        session: &Session,
+    ) -> Result<SessionStudent> {
         Self::insert(
             self,
-            &NewLectureStudent {
-                lecture_id: lecture.id,
+            &NewSessionStudent {
+                session_id: session.id,
                 user_id: user.discord_id,
             },
         )
         .await
     }
 
-    /// Finds a LectureStudent instance related to a User and a Lecture.
-    pub async fn find_by_user_and_lecture(
+    /// Finds a SessionStudent instance related to a User and a Session.
+    pub async fn find_by_user_and_session(
         &self,
         user: &User,
-        lecture: &Lecture,
-    ) -> Result<Option<LectureStudent>> {
-        Self::get(self, (user.discord_id, lecture.id)).await
+        session: &Session,
+    ) -> Result<Option<SessionStudent>> {
+        Self::get(self, (user.discord_id, session.id)).await
     }
 
-    /// Gets all LectureStudents belonging to a certain Lecture.
-    pub async fn find_by_lecture(&self, lecture_id: i64) -> Result<Vec<LectureStudent>> {
-        repo_find_by!(self, lecture_students::table; lecture_students::lecture_id.eq(lecture_id))
+    /// Gets all SessionStudents belonging to a certain Session.
+    pub async fn find_by_session(&self, session_id: i64) -> Result<Vec<SessionStudent>> {
+        repo_find_by!(self, session_students::table; session_students::session_id.eq(session_id))
     }
 
-    /// Searches for all instances of LectureStudent for a certain User.
-    pub async fn find_by_user(&self, user_id: DiscordId) -> Result<Vec<LectureStudent>> {
-        lecture_students::table
-            .filter(lecture_students::user_id.eq(user_id))
+    /// Searches for all instances of SessionStudent for a certain User.
+    pub async fn find_by_user(&self, user_id: DiscordId) -> Result<Vec<SessionStudent>> {
+        session_students::table
+            .filter(session_students::user_id.eq(user_id))
             .get_results(&mut self.lock_connection().await?)
             .await
             .map_err(From::from)
@@ -69,34 +69,34 @@ impl LectureStudentRepository {
 }
 
 #[async_trait]
-impl Repository for LectureStudentRepository {
-    type Table = lecture_students::table;
+impl Repository for SessionStudentRepository {
+    type Table = session_students::table;
 
-    type Entity = LectureStudent;
+    type Entity = SessionStudent;
 
-    type NewEntity = NewLectureStudent;
+    type NewEntity = NewSessionStudent;
 
     type PrimaryKey = (DiscordId, i64);
 
-    const TABLE: Self::Table = lecture_students::table;
+    const TABLE: Self::Table = session_students::table;
 
     fn get_connection_pool(&self) -> Arc<Pool<AsyncPgConnection>> {
         Arc::clone(&self.pool)
     }
 
-    async fn get(&self, pk: Self::PrimaryKey) -> Result<Option<LectureStudent>> {
-        repo_get!(self, lecture_students::table; pk)
+    async fn get(&self, pk: Self::PrimaryKey) -> Result<Option<SessionStudent>> {
+        repo_get!(self, session_students::table; pk)
     }
 
-    async fn insert(&self, lecture: &NewLectureStudent) -> Result<LectureStudent> {
-        repo_insert!(self, lecture_students::table; lecture)
+    async fn insert(&self, session: &NewSessionStudent) -> Result<SessionStudent> {
+        repo_insert!(self, session_students::table; session)
     }
 
-    async fn remove(&self, lecture: &LectureStudent) -> Result<usize> {
-        repo_remove!(self; lecture)
+    async fn remove(&self, session: &SessionStudent) -> Result<usize> {
+        repo_remove!(self; session)
     }
 
-    async fn find_all(&self) -> Result<Vec<LectureStudent>> {
-        repo_find_all!(self, lecture_students::table, lecture_students::table)
+    async fn find_all(&self) -> Result<Vec<SessionStudent>> {
+        repo_find_all!(self, session_students::table, session_students::table)
     }
 }

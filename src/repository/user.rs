@@ -10,8 +10,8 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, Lecture, LectureStudent, NewUser, PartialUser, User},
-    schema::{lecture_students, users},
+    model::{DiscordId, SessionStudent, NewUser, PartialUser, Session, User},
+    schema::{session_students, users},
 };
 
 /// Manages User instances.
@@ -51,15 +51,15 @@ impl UserRepository {
     }
 
     /// Searches for all Users that are Students of
-    /// a particular Lecture.
-    pub async fn find_by_lecture(&self, lecture: &Lecture) -> Result<Vec<User>> {
+    /// a particular Session.
+    pub async fn find_by_session(&self, session: &Session) -> Result<Vec<User>> {
         users::table
-            .inner_join(lecture_students::table)
-            .filter(lecture_students::lecture_id.eq(lecture.id))
+            .inner_join(session_students::table)
+            .filter(session_students::session_id.eq(session.id))
             .get_results(&mut self.lock_connection().await?)
             .await
-            .map(|v: Vec<(User, LectureStudent)>| {
-                // get just the User (we don't need the LectureStudent).
+            .map(|v: Vec<(User, SessionStudent)>| {
+                // get just the User (we don't need the SessionStudent).
                 v.into_iter().map(|x| x.0).collect()
             })
             .map_err(From::from)

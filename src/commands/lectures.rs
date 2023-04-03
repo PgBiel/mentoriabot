@@ -6,7 +6,7 @@ use crate::{
     commands::modals::lectures::LectureCreateModals,
     common::{ApplicationContext, Context},
     error::{Error, Result},
-    model::{Lecture, NewLecture, NewUser, User},
+    model::{NewSession, NewUser, Session, User},
     repository::Repository,
     util,
     util::brazil_timezone,
@@ -37,29 +37,6 @@ pub async fn lectures(ctx: Context<'_>) -> Result<()> {
 async fn create(
     ctx: ApplicationContext<'_>,
 
-    // #[name_localized("pt-BR", "nome")]
-    // #[description_localized("pt-BR", "O tópico desta aula")]
-    // #[description = "This lecture's topic"]
-    // name: String,
-    //
-    // #[name_localized("pt-BR", "descrição")]
-    // #[description_localized("pt-BR", "Uma curta descrição para esta aula")]
-    // #[description = "A brief summary of this lecture"]
-    // description: String,
-    #[name_localized("pt-BR", "vagas")]
-    #[description_localized("pt-BR", "Número máximo de alunos na aula")]
-    #[description = "Max amount of students which can take the class"]
-    #[min = 1]
-    #[max = 256]
-    student_limit: i32,
-
-    // #[name_localized("pt-BR", "começa_em")]
-    // #[description_localized(
-    //     "pt-BR",
-    //     "Quando esta aula irá começar, no formato: [DD/MM/YYYY] HH:MM[:SS]"
-    // )]
-    // #[description = "When this lecture is planned to start"]
-    // starts_at: HumanParseableDateTime,
     #[name_localized("pt-BR", "horas")]
     #[description_localized("pt-BR", "A duração desta aula, em horas")]
     #[description = "The duration of this lecture, in hours"]
@@ -124,18 +101,18 @@ async fn create(
         .data()
         .db
         .lecture_repository()
-        .insert(&NewLecture {
+        .insert(&NewSession {
             name,
             description,
+            availability_id: None, // TODO
             teacher_id: author_id,
-            student_limit,
             notified: false,
             start_at,
             end_at,
         })
         .await?;
 
-    let Lecture {
+    let Session {
         id: inserted_id,
         name: inserted_name,
         ..
@@ -182,11 +159,10 @@ pub async fn get(
         .get_with_teacher(id)
         .await?;
     if let Some((lecture, teacher)) = lecture_and_teacher {
-        let Lecture {
+        let Session {
             name,
             description,
             teacher_id,
-            student_limit,
             start_at,
             end_at,
             ..
@@ -214,7 +190,6 @@ pub async fn get(
                             true,
                         )
                         .field("Começa em", start_at.to_string(), false)
-                        .field("Vagas", student_limit.to_string(), true)
                         .field("Duração", duration, true)
                         .description(format!("\"{}\"", description))
                         .color(serenity::Colour::BLITZ_BLUE)
@@ -227,7 +202,6 @@ pub async fn get(
                             true,
                         )
                         .field("Starts at", start_at.to_string(), false)
-                        .field("Max Students", student_limit.to_string(), true)
                         .field("Duration", duration, true)
                         .description(format!("\"{}\"", description))
                         .color(serenity::Colour::BLITZ_BLUE)

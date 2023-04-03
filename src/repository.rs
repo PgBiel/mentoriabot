@@ -9,11 +9,11 @@ use crate::error::Result;
 mod user;
 pub use user::UserRepository;
 
-mod lecture;
-pub use lecture::LectureRepository;
+mod session;
+pub use session::SessionRepository;
 
-mod lecture_student;
-pub use lecture_student::LectureStudentRepository;
+mod session_student;
+pub use session_student::SessionStudentRepository;
 
 pub mod macros;
 

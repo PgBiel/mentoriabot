@@ -7,7 +7,7 @@ use diesel_async::{
 
 use crate::{
     error::Result,
-    repository::{LectureRepository, LectureStudentRepository, UserRepository},
+    repository::{SessionRepository, SessionStudentRepository, UserRepository},
 };
 
 /// Manages database Connection and Repository objects, using a
@@ -16,8 +16,8 @@ use crate::{
 pub struct DatabaseManager {
     pool: Arc<Pool<AsyncPgConnection>>,
     user_repository: UserRepository,
-    lecture_repository: LectureRepository,
-    lecture_student_repository: LectureStudentRepository,
+    lecture_repository: SessionRepository,
+    lecture_student_repository: SessionStudentRepository,
 }
 
 /// General function for creating a connection pool to the database.
@@ -35,8 +35,8 @@ impl DatabaseManager {
         let pool = Arc::new(pool);
 
         let user_repository = UserRepository::new(&pool);
-        let lecture_repository = LectureRepository::new(&pool);
-        let lecture_student_repository = LectureStudentRepository::new(&pool);
+        let lecture_repository = SessionRepository::new(&pool);
+        let lecture_student_repository = SessionStudentRepository::new(&pool);
 
         Ok(Self {
             pool,
@@ -56,13 +56,13 @@ impl DatabaseManager {
         &self.user_repository
     }
 
-    /// Returns a [`LectureRepository`] object using the current connection pool.
-    pub fn lecture_repository(&self) -> &LectureRepository {
+    /// Returns a [`SessionRepository`] object using the current connection pool.
+    pub fn lecture_repository(&self) -> &SessionRepository {
         &self.lecture_repository
     }
 
-    /// Returns a [`LectureStudentRepository`] object using the current connection pool.
-    pub fn lecture_student_repository(&self) -> &LectureStudentRepository {
+    /// Returns a [`SessionStudentRepository`] object using the current connection pool.
+    pub fn lecture_student_repository(&self) -> &SessionStudentRepository {
         &self.lecture_student_repository
     }
 }
