@@ -16,8 +16,7 @@ mod util;
 use common::Data;
 use config::MiniRustBotConfig as Config;
 
-use crate::{common::FrameworkError, error::Error};
-use crate::util::tr;
+use crate::{common::FrameworkError, error::Error, util::tr};
 
 pub mod forms {
     pub use minirustbot_forms::*;

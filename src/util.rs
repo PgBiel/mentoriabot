@@ -1,7 +1,5 @@
 pub mod macros;
 
-pub(crate) use macros::tr;
-
 use std::{
     fmt::{Display, Formatter},
     ops::{Deref, DerefMut},
@@ -9,6 +7,7 @@ use std::{
 };
 
 use chrono::Datelike;
+pub(crate) use macros::tr;
 
 use crate::error::{Error, Result};
 
@@ -118,7 +117,7 @@ pub fn get_defaulted_app_ctx_locale<D, E>(ctx: poise::ApplicationContext<'_, D, 
 pub fn default_locale(locale: &str) -> &'static str {
     match locale {
         "pt-BR" => "pt-BR",
-        _ => "en"
+        _ => "en",
     }
 }
 

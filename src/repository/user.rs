@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, SessionStudent, NewUser, PartialUser, Session, User},
+    model::{DiscordId, NewUser, PartialUser, Session, SessionStudent, User},
     schema::{session_students, users},
 };
 
