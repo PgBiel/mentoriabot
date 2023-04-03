@@ -11,19 +11,20 @@ diesel::table! {
 }
 
 diesel::table! {
-    lecture_students (user_id, lecture_id) {
-        lecture_id -> Int8,
+    session_students (user_id, session_id) {
+        session_id -> Int8,
         user_id -> Varchar,
     }
 }
 
 diesel::table! {
-    lectures (id) {
+    sessions (id) {
         id -> Int8,
         teacher_id -> Varchar,
         name -> Varchar,
         description -> Text,
         notified -> Bool,
+        availability_id -> Nullable<Int8>,
         start_at -> Timestamptz,
         end_at -> Timestamptz,
     }
@@ -46,15 +47,16 @@ diesel::table! {
 }
 
 diesel::joinable!(availability -> teachers (teacher_id));
-diesel::joinable!(lecture_students -> lectures (lecture_id));
-diesel::joinable!(lecture_students -> users (user_id));
-diesel::joinable!(lectures -> users (teacher_id));
+diesel::joinable!(session_students -> sessions (session_id));
+diesel::joinable!(session_students -> users (user_id));
+diesel::joinable!(sessions -> availability (availability_id));
+diesel::joinable!(sessions -> users (teacher_id));
 diesel::joinable!(teachers -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     availability,
-    lecture_students,
-    lectures,
+    session_students,
+    sessions,
     teachers,
     users,
 );
