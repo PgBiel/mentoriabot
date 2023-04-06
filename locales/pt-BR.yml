@@ -33,3 +33,11 @@ main_on_error:
     default: Ocorreu um erro interno na conexão ao banco de dados. Foi mal!
   unexpected:
     default: Um erro inesperado ocorreu.
+
+commands:
+  general:
+    specify_subcommand: Por favor, especifique um subcomando.
+    no_modal_response: Não foi possível receber sua resposta ao formulário que acaba de ser apresentado; tente repetir esse comando novamente.
+  sessions:
+    name: sessões
+    description: Gerencia sessões de mentoria.

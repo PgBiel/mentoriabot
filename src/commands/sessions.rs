@@ -8,38 +8,41 @@ use crate::{
     error::{Error, Result},
     model::{NewSession, NewUser, Session, User},
     repository::Repository,
-    util,
-    util::brazil_timezone,
+    util::{self, brazil_timezone, tr},
 };
 
-/// Manages lectures.
+/// Manages sessions with mentors.
 #[poise::command(
     slash_command,
     ephemeral,
-    name_localized("pt-BR", "aulas"),
-    description_localized("pt-BR", "Gerencia aulas."),
+    name_localized("pt-BR", "sessões"),
+    description_localized("pt-BR", "Gerencia sessões de mentoria."),
     subcommands("create", "get", "remove", "all")
 )]
 pub async fn sessions(ctx: Context<'_>) -> Result<()> {
-    ctx.send(|reply| reply.content("Please specify a subcommand").ephemeral(true))
-        .await?;
+    ctx.send(|reply| {
+        reply
+            .content(tr!("commands.general.specify_subcommand", ctx = ctx))
+            .ephemeral(true)
+    })
+    .await?;
     Ok(())
 }
 
-/// Creates a lecture at a certain date.
+/// Creates a mentorship session, at a certain date.
 #[poise::command(
     slash_command,
     ephemeral,
     owners_only,
     name_localized("pt-BR", "criar"),
-    description_localized("pt-BR", "Cria uma aula.")
+    description_localized("pt-BR", "Cria uma sessão de mentoria.")
 )]
 async fn create(
     ctx: ApplicationContext<'_>,
 
     #[name_localized("pt-BR", "horas")]
-    #[description_localized("pt-BR", "A duração desta aula, em horas")]
-    #[description = "The duration of this lecture, in hours"]
+    #[description_localized("pt-BR", "A duração estimada desta sessão, em horas")]
+    #[description = "The estimated duration of this session, in hours"]
     #[min = 0]
     #[max = 12]
     hours: i64,
@@ -48,10 +51,7 @@ async fn create(
 
     let Some(modal) = modal else {
         ctx.send(|b| b
-            .content(
-                "Failed to receive your response to the modal form; \
-                please try running this command again."
-            )
+            .content(tr!("commands.general.no_modal_response", ctx = ctx))
             .ephemeral(true)
         ).await?;
         return Ok(());
@@ -72,7 +72,7 @@ async fn create(
 
     if start_at <= chrono::Utc::now().add(chrono::Duration::seconds(1)) {
         ctx.send(|b| {
-            b.content("Please provide a future timestamp for when the lecture will start.")
+            b.content("Please provide a future timestamp for when the session will start.")
         })
         .await?;
         return Ok(());

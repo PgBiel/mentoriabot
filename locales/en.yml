@@ -33,3 +33,11 @@ main_on_error:
     default: An internal database connection error occurred. Sorry!
   unexpected:
     default: Unexpected error occurred.
+
+commands:
+  general:
+    specify_subcommand: Please specify a subcommand.
+    no_modal_response: Failed to receive your response to the modal form; please try running this command again.
+  sessions:
+    name: sessions
+    description: Manages lectures.
