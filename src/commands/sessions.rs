@@ -20,7 +20,7 @@ use crate::{
     description_localized("pt-BR", "Gerencia aulas."),
     subcommands("create", "get", "remove", "all")
 )]
-pub async fn lectures(ctx: Context<'_>) -> Result<()> {
+pub async fn sessions(ctx: Context<'_>) -> Result<()> {
     ctx.send(|reply| reply.content("Please specify a subcommand").ephemeral(true))
         .await?;
     Ok(())
