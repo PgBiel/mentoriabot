@@ -10,8 +10,8 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, NewSession, PartialSession, Session, User},
-    schema::{sessions, users},
+    model::{DiscordId, NewSession, PartialSession, Session, Teacher},
+    schema::{sessions, teachers},
 };
 
 /// Manages Session instances.
@@ -29,10 +29,10 @@ impl SessionRepository {
         }
     }
 
-    /// Finds a Session and retrieves the associated teacher's User object.
-    pub async fn get_with_teacher(&self, session_id: i64) -> Result<Option<(Session, User)>> {
+    /// Finds a Session and retrieves the associated teacher's Teacher object.
+    pub async fn get_with_teacher(&self, session_id: i64) -> Result<Option<(Session, Teacher)>> {
         sessions::table
-            .inner_join(users::table)
+            .inner_join(teachers::table)
             .filter(sessions::id.eq(session_id))
             .get_results(&mut self.lock_connection().await?)
             .await

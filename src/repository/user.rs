@@ -10,9 +10,10 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, NewUser, PartialUser, Session, SessionStudent, User},
-    schema::{session_students, users},
+    model::{DiscordId, NewUser, PartialUser, Session, SessionStudent, Teacher, User},
+    schema::{session_students, teachers, users},
 };
+use crate::error::Error;
 
 /// Manages User instances.
 #[derive(Clone)]
@@ -48,6 +49,13 @@ impl UserRepository {
             .execute(&mut self.lock_connection().await?)
             .await
             .map_err(From::from)
+    }
+
+    /// Searches for a Teacher's User instance.
+    pub async fn find_by_teacher(&self, teacher: &Teacher) -> Result<User> {
+        self.get(teacher.user_id)
+            .await?
+            .ok_or_else(|| Error::Other("Could not find User for a certain teacher!"))
     }
 
     /// Searches for all Users that are Students of

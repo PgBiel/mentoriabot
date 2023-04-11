@@ -50,7 +50,7 @@ diesel::joinable!(availability -> teachers (teacher_id));
 diesel::joinable!(session_students -> sessions (session_id));
 diesel::joinable!(session_students -> users (user_id));
 diesel::joinable!(sessions -> availability (availability_id));
-diesel::joinable!(sessions -> users (teacher_id));
+diesel::joinable!(sessions -> teachers (teacher_id));
 diesel::joinable!(teachers -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(

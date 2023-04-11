@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS lecture;
 CREATE TABLE sessions (
   id BIGSERIAL PRIMARY KEY,
-  teacher_id VARCHAR NOT NULL REFERENCES users (discord_id),
+  teacher_id VARCHAR NOT NULL REFERENCES teachers (user_id),
   name VARCHAR NOT NULL,
   description TEXT NOT NULL,
   notified BOOLEAN NOT NULL,

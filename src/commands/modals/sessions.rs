@@ -2,12 +2,12 @@ use poise::Modal;
 
 use crate::{common::ApplicationContext, error::Result, util::HumanParseableDateTime};
 
-/// Represents a Lecture creation modal,
+/// Represents a Session creation modal,
 /// asking for its text data.
 #[derive(Modal, Debug, Clone)]
-#[name = "Create Lecture"]
-pub struct LectureCreateModal {
-    #[name = "Lecture Topic"]
+#[name = "Create Session"]
+pub struct SessionCreateModal {
+    #[name = "Session Topic"]
     #[placeholder = "Creating a Class in C++"]
     #[min_length = 1]
     #[max_length = 100]
@@ -19,7 +19,7 @@ pub struct LectureCreateModal {
     #[max_length = 25]
     pub starts_at: String,
 
-    #[name = "Lecture Description"]
+    #[name = "Session Description"]
     #[placeholder = "This lecture will teach you how to create a class in C++, from scratch."]
     #[paragraph]
     #[min_length = 1]
@@ -27,10 +27,10 @@ pub struct LectureCreateModal {
     pub description: String,
 }
 
-/// Same as [`LectureCreateModal`], but in portuguese.
+/// Same as [`SessionCreateModal`], but in portuguese.
 #[derive(Modal, Debug, Clone)]
 #[name = "Criar Aula"]
-pub struct LectureCreatePortugueseModal {
+pub struct SessionCreatePortugueseModal {
     #[name = "Tópico da Aula"]
     #[placeholder = "Criando uma Classe em C++"]
     #[min_length = 1]
@@ -53,48 +53,48 @@ pub struct LectureCreatePortugueseModal {
 
 /// Groups together the two modals.
 #[derive(Debug, Clone)]
-pub enum LectureCreateModals {
-    Regular(LectureCreateModal),
-    Portuguese(LectureCreatePortugueseModal),
+pub enum SessionCreateModals {
+    Regular(SessionCreateModal),
+    Portuguese(SessionCreatePortugueseModal),
 }
 
-impl LectureCreateModals {
+impl SessionCreateModals {
     /// Executes either the English version of the Modal or
     /// the Portuguese one, based on the current context locale.
     pub async fn execute_based_on_locale(ctx: ApplicationContext<'_>) -> Result<Option<Self>> {
         Ok(match ctx.locale() {
-            Some("pt-BR") => LectureCreatePortugueseModal::execute(ctx)
+            Some("pt-BR") => SessionCreatePortugueseModal::execute(ctx)
                 .await?
                 .map(Self::Portuguese),
-            _ => LectureCreateModal::execute(ctx).await?.map(Self::Regular),
+            _ => SessionCreateModal::execute(ctx).await?.map(Self::Regular),
         })
     }
 
-    /// Gets the user's given Lecture name.
+    /// Gets the user's given Session name.
     pub fn name(&self) -> &String {
         match self {
-            Self::Regular(LectureCreateModal { name, .. }) => name,
-            Self::Portuguese(LectureCreatePortugueseModal { name, .. }) => name,
+            Self::Regular(SessionCreateModal { name, .. }) => name,
+            Self::Portuguese(SessionCreatePortugueseModal { name, .. }) => name,
         }
     }
 
-    /// Gets the user's given Lecture 'starts_at' timestamp string.
+    /// Gets the user's given Session 'starts_at' timestamp string.
     pub fn starts_at(&self) -> &String {
         match self {
-            Self::Regular(LectureCreateModal { starts_at, .. }) => starts_at,
-            Self::Portuguese(LectureCreatePortugueseModal { starts_at, .. }) => starts_at,
+            Self::Regular(SessionCreateModal { starts_at, .. }) => starts_at,
+            Self::Portuguese(SessionCreatePortugueseModal { starts_at, .. }) => starts_at,
         }
     }
 
-    /// Gets the user's given Lecture description.
+    /// Gets the user's given Session description.
     pub fn description(&self) -> &String {
         match self {
-            Self::Regular(LectureCreateModal { description, .. }) => description,
-            Self::Portuguese(LectureCreatePortugueseModal { description, .. }) => description,
+            Self::Regular(SessionCreateModal { description, .. }) => description,
+            Self::Portuguese(SessionCreatePortugueseModal { description, .. }) => description,
         }
     }
 
-    /// Attempts to parse the given Lecture 'starts_at' timestamp string
+    /// Attempts to parse the given Session 'starts_at' timestamp string
     /// as a [`chrono::DateTime`] with the [`chrono::Utc`] timezone.
     ///
     /// # See also

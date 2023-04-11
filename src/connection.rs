@@ -16,8 +16,8 @@ use crate::{
 pub struct DatabaseManager {
     pool: Arc<Pool<AsyncPgConnection>>,
     user_repository: UserRepository,
-    lecture_repository: SessionRepository,
-    lecture_student_repository: SessionStudentRepository,
+    session_repository: SessionRepository,
+    session_student_repository: SessionStudentRepository,
 }
 
 /// General function for creating a connection pool to the database.
@@ -35,14 +35,14 @@ impl DatabaseManager {
         let pool = Arc::new(pool);
 
         let user_repository = UserRepository::new(&pool);
-        let lecture_repository = SessionRepository::new(&pool);
-        let lecture_student_repository = SessionStudentRepository::new(&pool);
+        let session_repository = SessionRepository::new(&pool);
+        let session_student_repository = SessionStudentRepository::new(&pool);
 
         Ok(Self {
             pool,
             user_repository,
-            lecture_repository,
-            lecture_student_repository,
+            session_repository,
+            session_student_repository,
         })
     }
 
@@ -57,12 +57,12 @@ impl DatabaseManager {
     }
 
     /// Returns a [`SessionRepository`] object using the current connection pool.
-    pub fn lecture_repository(&self) -> &SessionRepository {
-        &self.lecture_repository
+    pub fn session_repository(&self) -> &SessionRepository {
+        &self.session_repository
     }
 
     /// Returns a [`SessionStudentRepository`] object using the current connection pool.
-    pub fn lecture_student_repository(&self) -> &SessionStudentRepository {
-        &self.lecture_student_repository
+    pub fn session_student_repository(&self) -> &SessionStudentRepository {
+        &self.session_student_repository
     }
 }

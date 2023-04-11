@@ -15,6 +15,11 @@ pub use session::SessionRepository;
 mod session_student;
 pub use session_student::SessionStudentRepository;
 
+mod availability;
+pub use availability::AvailabilityRepository;
+
+mod teacher;
+
 pub mod macros;
 
 pub(crate) use macros::{

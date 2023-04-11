@@ -18,7 +18,7 @@ pub struct Availability {
     pub time_end: chrono::NaiveTime,
 }
 
-#[derive(AsChangeset, Debug, Clone, PartialEq, Eq)]
+#[derive(Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
 #[diesel(table_name = availability)]
 pub struct NewAvailability {
     pub teacher_id: DiscordId,

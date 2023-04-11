@@ -3,7 +3,7 @@ use std::ops::Add;
 use poise::serenity_prelude as serenity;
 
 use crate::{
-    commands::modals::lectures::LectureCreateModals,
+    commands::modals::sessions::SessionCreateModals,
     common::{ApplicationContext, Context},
     error::{Error, Result},
     model::{NewSession, NewUser, Session, User},
@@ -47,7 +47,7 @@ async fn create(
     #[max = 12]
     hours: i64,
 ) -> Result<()> {
-    let modal = LectureCreateModals::execute_based_on_locale(ctx).await?;
+    let modal = SessionCreateModals::execute_based_on_locale(ctx).await?;
 
     let Some(modal) = modal else {
         ctx.send(|b| b
@@ -100,7 +100,7 @@ async fn create(
     let res = ctx
         .data()
         .db
-        .lecture_repository()
+        .session_repository()
         .insert(&NewSession {
             name,
             description,
@@ -127,8 +127,8 @@ async fn create(
             )
         } else {
             format!(
-                "Lecture '{}' created successfully. \
-                (View more info with '/lectures get {}'.) 👍",
+                "Session '{}' created successfully. \
+                (View more info with '/sessions get {}'.) 👍",
                 inserted_name, inserted_id,
             )
         })
@@ -137,7 +137,7 @@ async fn create(
     Ok(())
 }
 
-/// Gets a lecture from the database
+/// Gets a session from the database
 #[poise::command(
     slash_command,
     ephemeral,
@@ -148,17 +148,13 @@ async fn create(
 pub async fn get(
     ctx: ApplicationContext<'_>,
 
-    #[description = "ID of the Lecture to get"]
+    #[description = "ID of the Session to get"]
     #[description_localized("pt-BR", "Identificador da aula a obter.")]
     id: i64,
 ) -> Result<()> {
-    let lecture_and_teacher = ctx
-        .data
-        .db
-        .lecture_repository()
-        .get_with_teacher(id)
-        .await?;
-    if let Some((lecture, teacher)) = lecture_and_teacher {
+    let db = &ctx.data.db;
+    let session_and_teacher = db.session_repository().get_with_teacher(id).await?;
+    if let Some((session, teacher)) = session_and_teacher {
         let Session {
             name,
             description,
@@ -166,11 +162,11 @@ pub async fn get(
             start_at,
             end_at,
             ..
-        } = lecture;
+        } = session;
 
         let User {
             name: teacher_name, ..
-        } = teacher;
+        } = db.user_repository().find_by_teacher(&teacher).await?;
         let teacher_mention = teacher_id.as_user_mention();
 
         let timezone = brazil_timezone()
@@ -183,9 +179,9 @@ pub async fn get(
             f.ephemeral(true).embed(|f| {
                 if ctx.locale() == Some("pt-BR") {
                     let duration = util::convert_chrono_duration_to_brazilian_string(duration);
-                    f.title(format!("Aula '{}'", name))
+                    f.title(format!("Sessão '{}'", name))
                         .field(
-                            "Professor",
+                            "Mentor",
                             format!("{teacher_name} ({teacher_mention})"),
                             true,
                         )
@@ -195,9 +191,9 @@ pub async fn get(
                         .color(serenity::Colour::BLITZ_BLUE)
                 } else {
                     let duration = util::convert_chrono_duration_to_string(duration);
-                    f.title(format!("Lecture '{}'", name))
+                    f.title(format!("Session '{}'", name))
                         .field(
-                            "Teacher",
+                            "Mentor",
                             format!("{teacher_name} ({teacher_mention})"),
                             true,
                         )
@@ -210,40 +206,40 @@ pub async fn get(
         })
         .await?;
     } else {
-        ctx.send(|b| b.content("Lecture not found.").ephemeral(true))
+        ctx.send(|b| b.content("Session not found.").ephemeral(true))
             .await?;
     }
 
     Ok(())
 }
 
-/// Removes a lecture from the database
+/// Removes a session from the database
 #[poise::command(
     slash_command,
     ephemeral,
     owners_only,
     name_localized("pt-BR", "remover"),
-    description_localized("pt-BR", "Remove uma aula permanentemente do banco de dados.")
+    description_localized("pt-BR", "Remove uma sessão permanentemente do banco de dados.")
 )]
 pub async fn remove(
     ctx: ApplicationContext<'_>,
 
-    #[description = "ID of the lecture to remove"]
-    #[description_localized("pt-BR", "Identificador da aula a ser removida.")]
+    #[description = "ID of the session to remove"]
+    #[description_localized("pt-BR", "Identificador da sessão a ser removida.")]
     id: i64,
 ) -> Result<()> {
-    let lecture = ctx.data().db.lecture_repository().get(id).await?;
-    if let Some(lecture) = lecture {
-        ctx.data().db.lecture_repository().remove(&lecture).await?;
+    let session = ctx.data().db.session_repository().get(id).await?;
+    if let Some(session) = session {
+        ctx.data().db.session_repository().remove(&session).await?;
 
         let removed_msg = format!(
-            "Successfully removed lecture '{}' from the database.",
-            lecture.name
+            "Successfully removed session '{}' from the database.",
+            session.name
         );
         ctx.send(|b| b.content(removed_msg).ephemeral(true)).await?;
     } else {
         ctx.send(|b| {
-            b.content("Unknown lecture (maybe it was already deleted).")
+            b.content("Unknown session (maybe it was already deleted).")
                 .ephemeral(true)
         })
         .await?;
@@ -257,16 +253,16 @@ pub async fn remove(
     ephemeral,
     owners_only,
     name_localized("pt-BR", "listar"),
-    description_localized("pt-BR", "Lista todas as aulas no banco de dados.")
+    description_localized("pt-BR", "Lista todas as sessões no banco de dados.")
 )]
 pub async fn all(ctx: ApplicationContext<'_>) -> Result<()> {
-    let lectures = ctx.data().db.lecture_repository().find_all().await?;
-    let text = if lectures.is_empty() {
-        "No lectures registered.".to_string()
+    let sessions = ctx.data().db.session_repository().find_all().await?;
+    let text = if sessions.is_empty() {
+        "No sessions registered.".to_string()
     } else {
-        let mut text = String::from("Lectures:");
-        for lecture in lectures {
-            text.push_str(&format!("\n- {:?}", lecture));
+        let mut text = String::from("Sessions:");
+        for session in sessions {
+            text.push_str(&format!("\n- {:?}", session));
         }
         text
     };
