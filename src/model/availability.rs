@@ -1,7 +1,7 @@
 use diesel::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::DiscordId;
-use crate::schema::*;
+use crate::{model::Weekday, schema::*};
 
 /// Represents a certain time of the week when a Teacher can initiate a Lecture (or any kind
 /// of session) with students, which may "claim" one of them for the current week.
@@ -13,7 +13,7 @@ use crate::schema::*;
 pub struct Availability {
     pub id: i64,
     pub teacher_id: DiscordId,
-    pub weekday: i16,
+    pub weekday: Weekday,
     pub time_start: chrono::NaiveTime,
     pub time_end: chrono::NaiveTime,
 }
@@ -22,7 +22,7 @@ pub struct Availability {
 #[diesel(table_name = availability)]
 pub struct NewAvailability {
     pub teacher_id: DiscordId,
-    pub weekday: i16,
+    pub weekday: Weekday,
     pub time_start: chrono::NaiveTime,
     pub time_end: chrono::NaiveTime,
 }
@@ -33,7 +33,7 @@ pub struct NewAvailability {
 pub struct PartialAvailability {
     pub id: Option<i64>,
     pub teacher_id: Option<DiscordId>,
-    pub weekday: Option<i16>,
+    pub weekday: Option<Weekday>,
     pub time_start: Option<chrono::NaiveTime>,
     pub time_end: Option<chrono::NaiveTime>,
 }

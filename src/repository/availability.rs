@@ -10,7 +10,10 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{Availability, NewAvailability, PartialAvailability, Session, SessionStudent, Teacher},
+    model::{
+        Availability, NewAvailability, PartialAvailability, Session, SessionStudent, Teacher,
+        Weekday,
+    },
     schema::{availability, sessions},
 };
 
@@ -47,6 +50,10 @@ impl AvailabilityRepository {
             .optional()
             .map(|v: Option<(Availability, Session)>| v.map(|x| x.0))
             .map_err(From::from)
+    }
+
+    pub async fn find_after_weekday(&self, weekday: Weekday) {
+        todo!()
     }
 }
 
