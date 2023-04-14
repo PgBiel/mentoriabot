@@ -7,6 +7,7 @@ mod sessions;
 mod testform;
 mod userman;
 mod userup;
+mod schedule;
 
 pub use modal::modal;
 pub use ping::ping;
