@@ -1,5 +1,6 @@
 //! Implements the macro for #\[derive(SelectOption)\].
 
+use darling::util::Flag;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -39,8 +40,7 @@ struct SelectOptionAttributes {
     emoji_function: Option<syn::Path>,
 
     /// If this is the default selection option.
-    #[darling(default)]
-    is_default: bool,
+    is_default: Flag,
 }
 
 #[derive(Debug, Clone, darling::FromMeta)]
@@ -181,7 +181,7 @@ fn create_select_option_specs(
         let description_function = util::wrap_option_box(description_function);
         let emoji = util::wrap_option_into(emoji);
         let emoji_function = util::wrap_option_box(emoji_function);
-        let is_default = is_default;
+        let is_default = is_default.is_present();
 
         let value_key = value_key.as_ref().expect("Missing value key");
 

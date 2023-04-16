@@ -1,4 +1,5 @@
 //! Implements the #[derive(InteractionForm)] derive macro
+use darling::util::Flag;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -27,13 +28,11 @@ struct StructAttributes {
 struct FieldAttributes {
     /// Indicates this field either is a ModalFormComponent, or specify the ModalFormComponent
     /// struct manually
-    #[darling(default)]
-    modal: bool,
+    modal: Flag,
 
     /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself
     /// to it)
-    #[darling(default)]
-    component: bool,
+    component: Flag,
 }
 
 pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -77,7 +76,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         let field_inner_type =
             util::extract_type_parameter("Option", field_type).unwrap_or(field_type);
 
-        if field_attrs.component {
+        if field_attrs.component.is_present() {
             // is a message component
             components.push(generate_message_component(
                 field_name,
@@ -88,7 +87,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 ctx_error,
             ));
             create_fields.push(quote! { #field_name });
-        } else if field_attrs.modal {
+        } else if field_attrs.modal.is_present() {
             if modal_creation.is_some() {
                 return Err(syn::Error::new(
                     syn::spanned::Spanned::span(field_name),

@@ -1,5 +1,6 @@
 //! Implements the #[derive(GenerateReply)] derive macro
 
+use darling::util::Flag;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -32,11 +33,9 @@ struct ReplyAttrs {
     /// CreateEmbed`.
     embed_function: Option<syn::Path>,
 
-    #[darling(default)]
-    is_reply: bool,
+    is_reply: Flag,
 
-    #[darling(default)]
-    ephemeral: bool,
+    ephemeral: Flag,
 
     /// A function that takes context and a `&Data` and returns a `bool` (`true` if the message
     /// should be sent as ephemeral).
@@ -94,14 +93,18 @@ fn create_reply_spec(attrs: &ReplyAttrs) -> TokenStream2 {
     let attachment_function = util::wrap_option_box(&attrs.attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.allowed_mentions_function);
     let embed_function = util::wrap_option_box(&attrs.embed_function);
-    let is_reply = attrs.is_reply;
-    let ephemeral = attrs.ephemeral.then(|| quote! { true }).unwrap_or_else(|| {
-        attrs
-            .ephemeral_function
-            .as_ref()
-            .map(|func| quote! { #func(context, data).await?.into() })
-            .unwrap_or_else(|| quote! { false })
-    });
+    let is_reply = attrs.is_reply.is_present();
+    let ephemeral = attrs
+        .ephemeral
+        .is_present()
+        .then(|| quote! { true })
+        .unwrap_or_else(|| {
+            attrs
+                .ephemeral_function
+                .as_ref()
+                .map(|func| quote! { #func(context, data).await?.into() })
+                .unwrap_or_else(|| quote! { false })
+        });
 
     quote! {
         ::minirustbot_forms::ReplySpec {
@@ -123,7 +126,7 @@ fn validate_attrs(attrs: &ReplyAttrs, input: &syn::DeriveInput) -> Result<(), sy
         ));
     }
 
-    if attrs.ephemeral && attrs.ephemeral_function.is_some() {
+    if attrs.ephemeral.is_present() && attrs.ephemeral_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify 'ephemeral' and 'ephemeral_function' at the same time.",

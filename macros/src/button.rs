@@ -1,4 +1,5 @@
 //! Implements the #[derive(ButtonComponent)] derive macro
+use darling::util::Flag;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -30,17 +31,10 @@ struct ButtonAttributes {
     /// it is auto-generated.
     custom_id: Option<String>,
 
-    #[darling(default)]
-    primary: bool,
-
-    #[darling(default)]
-    secondary: bool,
-
-    #[darling(default)]
-    success: bool,
-
-    #[darling(default)]
-    danger: bool,
+    primary: Flag,
+    secondary: Flag,
+    success: Flag,
+    danger: Flag,
 
     /// Makes the button lead to the given link
     /// NOTE: Such a button cannot be awaited for.
@@ -57,8 +51,7 @@ struct ButtonAttributes {
     emoji_function: Option<syn::Path>,
 
     /// If this button is disabled and cannot be clicked
-    #[darling(default)]
-    disabled: bool,
+    disabled: Flag,
 
     /// Function that determines if this button is disabled
     /// (takes &Data, returns bool)
@@ -80,7 +73,7 @@ struct ButtonBaseAttributes {
 struct InteractionAttr {
     /// Marks this field as the receiver of the returned MessageComponentInteraction
     /// object.
-    interaction: Option<()>,
+    interaction: Flag,
 
     /// The default value of this field when instantiated.
     initializer: Option<syn::Expr>,
@@ -205,7 +198,7 @@ fn validate_attrs(
         .into());
     }
 
-    if struct_attrs.disabled && struct_attrs.disabled_function.is_some() {
+    if struct_attrs.disabled.is_present() && struct_attrs.disabled_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[disabled] and #[disabled_function] at the same time.",
@@ -229,7 +222,7 @@ fn single_button_create_with_interaction_code(
                 let len = fields.named.len();
                 for field in &fields.named {
                     let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                    if attrs.interaction.is_some() {
+                    if attrs.interaction.is_present() {
                         let field_name = field.ident.as_ref().expect("Expected named field");
 
                         let other_fields = if len == 1 {
@@ -251,7 +244,7 @@ fn single_button_create_with_interaction_code(
                 let len = fields.unnamed.len();
                 for (i, field) in fields.unnamed.iter().enumerate() {
                     let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                    if attrs.interaction.is_some() {
+                    if attrs.interaction.is_present() {
                         if len == 1 && i == 0 {
                             result = Some(quote! { Self(interaction.into()) });
                         } else {
@@ -296,7 +289,7 @@ fn single_button_create_with_interaction_code(
                 let mut non_default_field = None;
                 for field in fields {
                     let attrs: InteractionAttr = util::get_darling_attrs(&field.attrs)?;
-                    if attrs.interaction.is_some() {
+                    if attrs.interaction.is_present() {
                         if interaction_seen {
                             return Err(syn::Error::new(
                                 field.ident.as_ref().map(|i| i.span()).unwrap_or_else(|| field.span()),
@@ -375,17 +368,17 @@ fn create_button_spec(button_attrs: &ButtonAttributes, _data: &syn::Type) -> Tok
     let disabled = if let Some(disabled_function) = &button_attrs.disabled_function {
         quote! { #disabled_function(context, data).into() }
     } else {
-        let disabled = button_attrs.disabled;
+        let disabled = button_attrs.disabled.is_present();
         quote! { #disabled.into() }
     };
 
-    let style = if button_attrs.primary {
+    let style = if button_attrs.primary.is_present() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
-    } else if button_attrs.secondary {
+    } else if button_attrs.secondary.is_present() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Secondary })
-    } else if button_attrs.danger {
+    } else if button_attrs.danger.is_present() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Danger })
-    } else if button_attrs.success {
+    } else if button_attrs.success.is_present() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Success })
     } else if button_attrs.link.is_some() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Link })
