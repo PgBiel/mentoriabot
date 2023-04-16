@@ -80,6 +80,16 @@ pub fn button(input: TokenStream) -> TokenStream {
     }
 }
 
+#[proc_macro_derive(SelectMenuComponent, attributes(form_data, select, field))]
+pub fn select(input: TokenStream) -> TokenStream {
+    let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
+
+    match select::select(struct_) {
+        Ok(x) => x,
+        Err(e) => e.write_errors().into(),
+    }
+}
+
 #[proc_macro_derive(
     SelectOption,
     attributes(
