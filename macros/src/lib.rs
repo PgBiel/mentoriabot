@@ -1,5 +1,6 @@
 mod button;
 mod common;
+mod component;
 mod form;
 mod modal_component;
 mod reply;
