@@ -4,20 +4,10 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
-use crate::util;
-
-#[derive(Debug, Clone, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
-struct EnumAttributes {
-    /// The Data type, used for the SelectOptionSpec.
-    data: Option<syn::Type>,
-
-    /// Context's Data type.
-    ctx_data: syn::Type,
-
-    /// Context's Error type.
-    ctx_error: syn::Type,
-}
+use crate::{
+    common::{FormContextInfo, FormData, FormDataAttr},
+    util,
+};
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -92,16 +82,18 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
         variants_and_options.push((variant, attrs));
     }
 
-    let enum_attrs: EnumAttributes = util::get_darling_attrs(&input.attrs)?;
-
     // ---
-    let data_type = enum_attrs.data.clone().unwrap_or(util::empty_tuple_type());
+    let form_data: FormDataAttr = util::get_darling_attrs(&input.attrs)?;
 
-    let ctx_data = &enum_attrs.ctx_data;
-    let ctx_error = &enum_attrs.ctx_error;
+    let FormData {
+        data: data_type,
+        ctx: FormContextInfo {
+            data: ctx_data,
+            error: ctx_error,
+        },
+    } = &form_data.form_data;
 
-    let option_specs =
-        create_select_option_specs(&variants_and_options, &data_type, ctx_data, ctx_error);
+    let option_specs = create_select_option_specs(&variants_and_options);
     let from_select_value = from_select_value(&variants_and_options, &data_type)?;
     let enum_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -169,9 +161,6 @@ fn validate_option_attrs(
 
 fn create_select_option_specs(
     variants_with_options: &Vec<(&syn::Variant, SelectOptionAttributes)>,
-    data_type: &syn::Type,
-    ctx_data: &syn::Type,
-    ctx_error: &syn::Type,
 ) -> TokenStream2 {
     let mut specs = Vec::new();
     for (_, options) in variants_with_options {

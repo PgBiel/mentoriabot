@@ -6,21 +6,16 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
 
-use crate::util;
+use crate::{
+    common::{FormContextInfo, FormData},
+    util,
+};
 
 /// Representation of the struct attributes
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct SelectAttributes {
-    /// Type of the Data object to be passed between components.
-    /// By default, ()
-    data: Option<syn::Type>,
-
-    /// Context's Data type.
-    ctx_data: syn::Type,
-
-    /// Context's Error type.
-    ctx_error: syn::Type,
+    form_data: FormData,
 
     /// The button's fixed custom ID; if unspecified,
     /// it is auto-generated.
@@ -79,13 +74,13 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     validate_select_attrs(&select_attrs, &input)?;
 
     // ---
-    let data_type = select_attrs
-        .data
-        .clone()
-        .unwrap_or(util::empty_tuple_type());
-
-    let ctx_data = &select_attrs.ctx_data;
-    let ctx_error = &select_attrs.ctx_error;
+    let FormData {
+        data: data_type,
+        ctx: FormContextInfo {
+            data: ctx_data,
+            error: ctx_error,
+        },
+    } = &select_attrs.form_data;
 
     let fields_with_attrs = fields
         .iter()
@@ -121,7 +116,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         .into());
     };
 
-    let select_spec = create_select_spec(&select_attrs, selected_field, &data_type);
+    let select_spec = create_select_spec(&select_attrs, selected_field);
     let create_with_interaction = create_build_with_interaction(&fields_with_attrs)?;
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -233,7 +228,6 @@ fn create_build_with_interaction(
 fn create_select_spec(
     select_attrs: &SelectAttributes,
     selected_field: &syn::Field,
-    data: &syn::Type,
 ) -> TokenStream2 {
     let custom_id = util::wrap_option_into(&select_attrs.custom_id);
     let min_values = util::wrap_option_into(&select_attrs.min_values);

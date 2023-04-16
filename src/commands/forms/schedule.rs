@@ -15,9 +15,7 @@ use crate::{
 };
 
 #[derive(Debug, InteractionForm)]
-#[ctx_data = "Data"]
-#[ctx_error = "Error"]
-#[data = "ScheduleFormData"]
+#[form_data(data(ScheduleFormData), ctx(Data, Error))]
 pub(crate) struct ScheduleForm {
     #[component]
     pub(crate) select_time: SelectTimeComponent,
@@ -27,9 +25,7 @@ pub(crate) struct ScheduleForm {
 }
 
 #[derive(Debug, Clone, GenerateReply)]
-#[ctx_data = "Data"]
-#[ctx_error = "Error"]
-#[data = "ScheduleFormData"]
+#[form_data(data(ScheduleFormData), ctx(Data, Error))]
 #[reply(content_function = "select_time_reply_content", ephemeral)]
 pub(crate) struct SelectTimeComponent {
     pub(crate) selected_availability: Availability,

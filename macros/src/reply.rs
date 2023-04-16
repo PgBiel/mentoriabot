@@ -4,7 +4,11 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
-use crate::{util, util::macros::take_attribute_or_its_function_required};
+use crate::{
+    common::{FormContextInfo, FormData},
+    util,
+    util::macros::take_attribute_or_its_function_required,
+};
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -42,14 +46,7 @@ struct ReplyAttrs {
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct ReplyBaseAttrs {
-    /// The Data type to be accepted by the Reply.
-    data: Option<syn::Type>,
-
-    /// Context's Data type.
-    ctx_data: syn::Type,
-
-    /// Context's Error type.
-    ctx_error: syn::Type,
+    form_data: FormData,
 
     /// Reply info.
     reply: ReplyAttrs,
@@ -64,15 +61,15 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     // ---
 
-    let data_type = struct_attrs
-        .data
-        .clone()
-        .unwrap_or(util::empty_tuple_type());
+    let FormData {
+        data: data_type,
+        ctx: FormContextInfo {
+            data: ctx_data,
+            error: ctx_error,
+        },
+    } = &struct_attrs.form_data;
 
-    let ctx_data = &struct_attrs.ctx_data;
-    let ctx_error = &struct_attrs.ctx_error;
-
-    let reply_spec = create_reply_spec(reply_attrs, &data_type);
+    let reply_spec = create_reply_spec(reply_attrs);
 
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -92,7 +89,7 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     }.into())
 }
 
-fn create_reply_spec(attrs: &ReplyAttrs, data: &syn::Type) -> TokenStream2 {
+fn create_reply_spec(attrs: &ReplyAttrs) -> TokenStream2 {
     let content = take_attribute_or_its_function_required!(attrs; content, content_function);
     let attachment_function = util::wrap_option_box(&attrs.attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.allowed_mentions_function);

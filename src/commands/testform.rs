@@ -32,8 +32,7 @@ fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
 }
 
 #[derive(ButtonComponent, GenerateReply, Clone, Debug)]
-#[ctx_data = "Data"]
-#[ctx_error = "Error"]
+#[form_data(ctx(Data, Error))]
 #[label_function = "label_function"]
 #[danger]
 #[reply(content = "bruh", ephemeral)]
@@ -64,9 +63,7 @@ pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
 // }
 
 #[derive(InteractionForm, Debug, Clone)]
-#[ctx_data = "Data"]
-#[ctx_error = "Error"]
-#[data = "()"]
+#[form_data(ctx(Data, Error))]
 pub struct TestForm {
     #[modal]
     modal_answers: TestFormModal,

@@ -3,24 +3,21 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
-use crate::util;
+use crate::{
+    common::{FormContextInfo, FormData},
+    util::{self, parse_option},
+};
 
 /// Representation of the struct attributes
 #[derive(Debug, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct StructAttributes {
-    /// Type of the Data object to be passed to components.
-    /// By default, ()
-    data: Option<syn::Type>,
-
-    /// Context's Data type.
-    ctx_data: syn::Type,
-
-    /// Context's Error type.
-    ctx_error: syn::Type,
+    /// Gather form type parameters.
+    form_data: FormData,
 
     /// name of the function to run when the form is finished.
     /// It must take a single ApplicationContext object.
+    #[darling(map = "parse_option")]
     on_finish: Option<syn::Path>,
 }
 
@@ -58,14 +55,13 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     let struct_attrs: StructAttributes = util::get_darling_attrs(&input.attrs)?;
 
-    let data_type = struct_attrs
-        .data
-        .clone()
-        .unwrap_or(util::empty_tuple_type());
-    //  ^^^^^^^^^^ default to ()
-
-    let ctx_data = &struct_attrs.ctx_data;
-    let ctx_error = &struct_attrs.ctx_error;
+    let FormData {
+        data: data_type,
+        ctx: FormContextInfo {
+            data: ctx_data,
+            error: ctx_error,
+        },
+    } = &struct_attrs.form_data;
 
     let mut components = Vec::new();
     let mut create_fields = Vec::new();

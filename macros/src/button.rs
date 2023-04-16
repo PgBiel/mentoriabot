@@ -4,11 +4,14 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
 
-use crate::util::{
-    self,
-    macros::{
-        take_attribute_optional, take_attribute_or_its_function_optional,
-        take_attribute_or_its_function_required,
+use crate::{
+    common::{FormContextInfo, FormData},
+    util::{
+        self,
+        macros::{
+            take_attribute_optional, take_attribute_or_its_function_optional,
+            take_attribute_or_its_function_required,
+        },
     },
 };
 
@@ -16,15 +19,8 @@ use crate::util::{
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct ButtonAttributes {
-    /// Type of the Data object to be passed between components.
-    /// By default, ()
-    data: Option<syn::Type>,
-
-    /// Context's Data type.
-    ctx_data: syn::Type,
-
-    /// Context's Error type.
-    ctx_error: syn::Type,
+    /// Form type parameters
+    form_data: FormData,
 
     /// The button's literal label (please specify this, or a `label_function`)
     label: Option<String>,
@@ -89,13 +85,13 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     validate_attrs(&struct_attrs, &input)?;
 
     // ---
-    let data_type = struct_attrs
-        .data
-        .clone()
-        .unwrap_or(util::empty_tuple_type());
-
-    let ctx_data = &struct_attrs.ctx_data;
-    let ctx_error = &struct_attrs.ctx_error;
+    let FormData {
+        data: data_type,
+        ctx: FormContextInfo {
+            data: ctx_data,
+            error: ctx_error,
+        },
+    } = &struct_attrs.form_data;
 
     let button_spec = create_button_spec(&struct_attrs, &data_type);
     let create_with_interaction = single_button_create_with_interaction_code(&input)?

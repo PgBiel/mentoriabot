@@ -5,6 +5,7 @@ mod reply;
 mod select;
 mod select_option;
 mod util;
+mod common;
 
 use proc_macro::TokenStream;
 
@@ -33,10 +34,11 @@ use proc_macro::TokenStream;
 /// use minirustbot_macros::InteractionForm;
 ///
 /// #[derive(InteractionForm)]
-/// #[ctx_data = "Data"]
-/// #[ctx_error = "Error"]
-/// #[data = "MyDataType"]
-/// #[on_finish = my_function]
+/// #[form_data(
+///     data(MyDataType),
+///     ctx(Data, Error)
+/// )]
+/// #[on_finish(my_function)]
 /// pub struct MyForm {
 ///     #[modal]
 ///     modal_answers: MyModal, // first we run the modal
@@ -50,7 +52,7 @@ use proc_macro::TokenStream;
 /// ```
 #[proc_macro_derive(
     InteractionForm,
-    attributes(data, ctx_data, ctx_error, on_finish, modal, component)
+    attributes(form_data, on_finish, modal, component)
 )]
 pub fn form(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
@@ -74,9 +76,7 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(
     ButtonComponent,
     attributes(
-        data,
-        ctx_data,
-        ctx_error,
+        form_data,
         label,
         label_function,
         custom_id,
@@ -106,9 +106,7 @@ pub fn button(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(
     SelectOption,
     attributes(
-        data,
-        ctx_data,
-        ctx_error,
+        form_data,
         label,
         label_function,
         value_key,
@@ -129,7 +127,7 @@ pub fn select_option(input: TokenStream) -> TokenStream {
     }
 }
 
-#[proc_macro_derive(GenerateReply, attributes(data, ctx_data, ctx_error, reply,))]
+#[proc_macro_derive(GenerateReply, attributes(form_data, reply,))]
 pub fn reply(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 
