@@ -37,9 +37,11 @@ struct ReplyAttrs {
     /// CreateEmbed`.
     message_embed_function: Option<syn::Path>,
 
-    message_is_reply: Option<()>,
+    #[darling(default)]
+    message_is_reply: bool,
 
-    message_ephemeral: Option<()>,
+    #[darling(default)]
+    message_ephemeral: bool,
 
     /// A function that takes context and a `&Data` and returns a `bool` (`true` if the message
     /// should be sent as ephemeral).
@@ -48,13 +50,7 @@ struct ReplyAttrs {
 
 /// Generates an implementation of GenerateReply for a given type.
 pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let struct_attrs = input
-        .attrs
-        .iter()
-        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
-        .collect::<Result<Vec<_>, _>>()?;
-
-    let struct_attrs = <ReplyAttrs as darling::FromMeta>::from_list(&struct_attrs)?;
+    let struct_attrs: ReplyAttrs = util::get_darling_attrs(&input.attrs)?;
 
     validate_attrs(&struct_attrs, &input)?;
 
@@ -94,17 +90,17 @@ fn create_reply_spec(attrs: &ReplyAttrs, data: &syn::Type) -> TokenStream2 {
     let attachment_function = util::wrap_option_box(&attrs.message_attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.message_allowed_mentions_function);
     let embed_function = util::wrap_option_box(&attrs.message_embed_function);
-    let is_reply = attrs.message_is_reply.is_some();
+    let is_reply = attrs.message_is_reply;
     let ephemeral = attrs
         .message_ephemeral
-        .map(|_| quote! { true })
-        .or_else(|| {
+        .then(|| quote! { true })
+        .unwrap_or_else(|| {
             attrs
                 .message_ephemeral_function
                 .as_ref()
                 .map(|func| quote! { #func(context, data).await?.into() })
-        })
-        .unwrap_or_else(|| quote! { false });
+                .unwrap_or_else(|| quote! { false })
+        });
 
     quote! {
         ::minirustbot_forms::ReplySpec {
@@ -126,7 +122,7 @@ fn validate_attrs(attrs: &ReplyAttrs, input: &syn::DeriveInput) -> Result<(), sy
         ));
     }
 
-    if attrs.message_ephemeral.is_some() && attrs.message_ephemeral_function.is_some() {
+    if attrs.message_ephemeral && attrs.message_ephemeral_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[message_ephemeral] and #[message_ephemeral_function] at the same time."

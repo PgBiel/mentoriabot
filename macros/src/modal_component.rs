@@ -2,6 +2,8 @@
 use proc_macro::TokenStream;
 use quote::quote;
 
+use crate::util;
+
 /// Representation of the struct attributes
 #[derive(Debug, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -11,13 +13,7 @@ struct StructAttributes {
 }
 
 pub fn modal_component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let struct_attrs = input
-        .attrs
-        .iter()
-        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
-        .collect::<Result<Vec<_>, _>>()?;
-
-    let struct_attrs = <StructAttributes as darling::FromMeta>::from_list(&struct_attrs)?;
+    let struct_attrs: StructAttributes = util::get_darling_attrs(&input.attrs)?;
     let form = struct_attrs.form;
 
     let struct_ident = input.ident;

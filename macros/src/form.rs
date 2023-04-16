@@ -30,11 +30,13 @@ struct StructAttributes {
 struct FieldAttributes {
     /// Indicates this field either is a ModalFormComponent, or specify the ModalFormComponent
     /// struct manually
-    modal: Option<()>,
+    #[darling(default)]
+    modal: bool,
 
     /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself
     /// to it)
-    component: Option<()>,
+    #[darling(default)]
+    component: bool,
 }
 
 pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -54,13 +56,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         }
     };
 
-    let struct_attrs = input
-        .attrs
-        .iter()
-        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
-        .collect::<Result<Vec<_>, _>>()?;
-
-    let struct_attrs = <StructAttributes as darling::FromMeta>::from_list(&struct_attrs)?;
+    let struct_attrs: StructAttributes = util::get_darling_attrs(&input.attrs)?;
 
     let data_type = struct_attrs
         .data
@@ -85,7 +81,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         let field_inner_type =
             util::extract_type_parameter("Option", field_type).unwrap_or(field_type);
 
-        if field_attrs.component.is_some() {
+        if field_attrs.component {
             // is a message component
             components.push(generate_message_component(
                 field_name,
@@ -96,7 +92,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 ctx_error,
             ));
             create_fields.push(quote! { #field_name });
-        } else if field_attrs.modal.is_some() {
+        } else if field_attrs.modal {
             if modal_creation.is_some() {
                 return Err(syn::Error::new(
                     syn::spanned::Spanned::span(field_name),

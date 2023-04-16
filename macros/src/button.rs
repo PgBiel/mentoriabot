@@ -37,10 +37,17 @@ struct ButtonAttributes {
     /// it is auto-generated.
     custom_id: Option<String>,
 
-    primary: Option<()>,
-    secondary: Option<()>,
-    success: Option<()>,
-    danger: Option<()>,
+    #[darling(default)]
+    primary: bool,
+
+    #[darling(default)]
+    secondary: bool,
+
+    #[darling(default)]
+    success: bool,
+
+    #[darling(default)]
+    danger: bool,
 
     /// Makes the button lead to the given link
     /// NOTE: Such a button cannot be awaited for.
@@ -57,7 +64,8 @@ struct ButtonAttributes {
     emoji_function: Option<syn::Path>,
 
     /// If this button is disabled and cannot be clicked
-    disabled: Option<()>,
+    #[darling(default)]
+    disabled: bool,
 
     /// Function that determines if this button is disabled
     /// (takes &Data, returns bool)
@@ -76,13 +84,7 @@ struct InteractionAttr {
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let struct_attrs = input
-        .attrs
-        .iter()
-        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
-        .collect::<Result<Vec<_>, _>>()?;
-
-    let struct_attrs = <ButtonAttributes as darling::FromMeta>::from_list(&struct_attrs)?;
+    let struct_attrs: ButtonAttributes = util::get_darling_attrs(&input.attrs)?;
 
     validate_attrs(&struct_attrs, &input)?;
 
@@ -199,7 +201,7 @@ fn validate_attrs(
         .into());
     }
 
-    if struct_attrs.disabled.is_some() && struct_attrs.disabled_function.is_some() {
+    if struct_attrs.disabled && struct_attrs.disabled_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[disabled] and #[disabled_function] at the same time.",
@@ -369,17 +371,17 @@ fn create_button_spec(button_attrs: &ButtonAttributes, _data: &syn::Type) -> Tok
     let disabled = if let Some(disabled_function) = &button_attrs.disabled_function {
         quote! { #disabled_function(context, data).into() }
     } else {
-        let disabled = button_attrs.disabled.is_some();
+        let disabled = button_attrs.disabled;
         quote! { #disabled.into() }
     };
 
-    let style = if button_attrs.primary.is_some() {
+    let style = if button_attrs.primary {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
-    } else if button_attrs.secondary.is_some() {
+    } else if button_attrs.secondary {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Secondary })
-    } else if button_attrs.danger.is_some() {
+    } else if button_attrs.danger {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Danger })
-    } else if button_attrs.success.is_some() {
+    } else if button_attrs.success {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Success })
     } else if button_attrs.link.is_some() {
         Some(quote! { ::poise::serenity_prelude::ButtonStyle::Link })

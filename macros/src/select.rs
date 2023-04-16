@@ -33,7 +33,8 @@ struct SelectAttributes {
     max_values: Option<u64>,
 
     /// If this menu is disabled and cannot be clicked
-    disabled: Option<()>,
+    #[darling(default)]
+    disabled: bool,
 
     /// Function that determines if this menu is disabled
     /// (takes context and &Data, returns bool)
@@ -44,11 +45,13 @@ struct SelectAttributes {
 #[darling(allow_unknown_fields)]
 struct SelectFieldAttributes {
     /// Marks a field as receiving the response interaction object.
-    interaction: Option<()>,
+    #[darling(default)]
+    interaction: bool,
 
     /// Marks a field as receiving the selected option(s) by the user.
     /// Its type also specifies the options that will be presented.
-    selected_options: Option<()>,
+    #[darling(default)]
+    selected_options: bool,
 
     /// The initializer of any extra fields. Defaults to "Default::default()".
     initializer: Option<syn::Expr>,
@@ -99,7 +102,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     let selected_fields = fields_with_attrs
         .iter()
-        .filter(|(_, attrs)| attrs.selected_options.is_some())
+        .filter(|(_, attrs)| attrs.selected_options)
         .collect::<Vec<&(&syn::Field, SelectFieldAttributes)>>();
 
     if selected_fields.len() > 1 {
@@ -181,7 +184,7 @@ fn validate_select_attrs(
     select_attrs: &SelectAttributes,
     input: &syn::DeriveInput,
 ) -> Result<(), darling::Error> {
-    if select_attrs.disabled.is_some() && select_attrs.disabled_function.is_some() {
+    if select_attrs.disabled && select_attrs.disabled_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[disabled] and #[disabled_function] at the same time.",
@@ -200,9 +203,9 @@ fn create_build_with_interaction(
     for (field, attrs) in fields_with_attrs {
         let field_ident = field.ident.as_ref().expect("Expected named field");
 
-        if attrs.interaction.is_some() {
+        if attrs.interaction {
             field_initializers.push(quote! { #field_ident: interaction.into(), });
-        } else if attrs.selected_options.is_some() {
+        } else if attrs.selected_options {
             field_initializers.push(quote! {
                 #field_ident: interaction.data.values.into_iter().map(From::from).collect().into(),
             })
@@ -245,7 +248,7 @@ fn create_select_spec(
     let disabled = if let Some(disabled_function) = select_attrs.disabled_function.as_ref() {
         quote! { #disabled_function(context, data).await?.into() }
     } else {
-        let disabled = select_attrs.disabled.is_some();
+        let disabled = select_attrs.disabled;
         quote! { #disabled }
     };
 
