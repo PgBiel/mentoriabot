@@ -1,11 +1,11 @@
 mod button;
+mod common;
 mod form;
 mod modal_component;
 mod reply;
 mod select;
 mod select_option;
 mod util;
-mod common;
 
 use proc_macro::TokenStream;
 
@@ -34,10 +34,7 @@ use proc_macro::TokenStream;
 /// use minirustbot_macros::InteractionForm;
 ///
 /// #[derive(InteractionForm)]
-/// #[form_data(
-///     data(MyDataType),
-///     ctx(Data, Error)
-/// )]
+/// #[form_data(data(MyDataType), ctx(Data, Error))]
 /// #[on_finish(my_function)]
 /// pub struct MyForm {
 ///     #[modal]
@@ -50,10 +47,7 @@ use proc_macro::TokenStream;
 ///     buttons: MyButtonsComponent, // then this
 /// }
 /// ```
-#[proc_macro_derive(
-    InteractionForm,
-    attributes(form_data, on_finish, modal, component)
-)]
+#[proc_macro_derive(InteractionForm, attributes(form_data, on_finish, modal, component))]
 pub fn form(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 
@@ -75,24 +69,7 @@ pub fn modal_form_component(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(
     ButtonComponent,
-    attributes(
-        form_data,
-        label,
-        label_function,
-        custom_id,
-        primary,
-        secondary,
-        success,
-        danger,
-        link,
-        link_function,
-        emoji,
-        emoji_function,
-        disabled,
-        disabled_function,
-        interaction,
-        initializer
-    )
+    attributes(form_data, button, interaction, initializer)
 )]
 pub fn button(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);

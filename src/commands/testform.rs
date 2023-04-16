@@ -33,8 +33,7 @@ fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
 
 #[derive(ButtonComponent, GenerateReply, Clone, Debug)]
 #[form_data(ctx(Data, Error))]
-#[label_function = "label_function"]
-#[danger]
+#[button(label_function = "label_function", danger)]
 #[reply(content = "bruh", ephemeral)]
 pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
 

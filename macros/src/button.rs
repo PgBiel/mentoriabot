@@ -19,9 +19,6 @@ use crate::{
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 struct ButtonAttributes {
-    /// Form type parameters
-    form_data: FormData,
-
     /// The button's literal label (please specify this, or a `label_function`)
     label: Option<String>,
 
@@ -70,6 +67,16 @@ struct ButtonAttributes {
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
+struct ButtonBaseAttributes {
+    /// Form type parameters
+    form_data: FormData,
+
+    /// Button attributes
+    button: ButtonAttributes,
+}
+
+#[derive(Debug, Clone, darling::FromMeta)]
+#[darling(allow_unknown_fields)]
 struct InteractionAttr {
     /// Marks this field as the receiver of the returned MessageComponentInteraction
     /// object.
@@ -80,9 +87,10 @@ struct InteractionAttr {
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let struct_attrs: ButtonAttributes = util::get_darling_attrs(&input.attrs)?;
+    let struct_attrs: ButtonBaseAttributes = util::get_darling_attrs(&input.attrs)?;
+    let button_attrs = &struct_attrs.button;
 
-    validate_attrs(&struct_attrs, &input)?;
+    validate_attrs(button_attrs, &input)?;
 
     // ---
     let FormData {
@@ -93,7 +101,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         },
     } = &struct_attrs.form_data;
 
-    let button_spec = create_button_spec(&struct_attrs, &data_type);
+    let button_spec = create_button_spec(button_attrs, &data_type);
     let create_with_interaction = single_button_create_with_interaction_code(&input)?
         .unwrap_or_else(|| quote! { Default::default() });
 
