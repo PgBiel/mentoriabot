@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use diesel::{BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl};
+use chrono::Datelike;
+use diesel::{
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
+};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
@@ -52,7 +55,22 @@ impl AvailabilityRepository {
             .map_err(From::from)
     }
 
-    pub async fn find_after_weekday(&self, weekday: Weekday) {
+    /// Finds all non-taken availabilities this week,
+    /// after the given datetime.
+    /// It must be in the same timezone (UTC-3) as those stored
+    /// in the DB for availability times.
+    pub async fn find_nontaken_after(
+        &self,
+        datetime: chrono::DateTime<chrono::FixedOffset>,
+    ) -> Result<Option<Availability>> {
+        let utc = <chrono::Utc as chrono::TimeZone>::from_utc_datetime(
+            &chrono::Utc,
+            &datetime.naive_utc(),
+        );
+        utc.iso_week();
+
+        let weekday: Weekday = datetime.naive_local().weekday().into();
+        let time = datetime.time();
         todo!()
     }
 }

@@ -69,6 +69,34 @@ impl From<&Weekday> for i16 {
     }
 }
 
+impl From<chrono::Weekday> for Weekday {
+    fn from(value: chrono::Weekday) -> Self {
+        match value {
+            chrono::Weekday::Sun => Self::SUNDAY,
+            chrono::Weekday::Mon => Self::MONDAY,
+            chrono::Weekday::Tue => Self::TUESDAY,
+            chrono::Weekday::Wed => Self::WEDNESDAY,
+            chrono::Weekday::Thu => Self::THURSDAY,
+            chrono::Weekday::Fri => Self::FRIDAY,
+            chrono::Weekday::Sat => Self::SATURDAY,
+        }
+    }
+}
+
+impl From<Weekday> for chrono::Weekday {
+    fn from(value: Weekday) -> Self {
+        match value {
+            Weekday::SUNDAY => Self::Sun,
+            Weekday::MONDAY => Self::Mon,
+            Weekday::TUESDAY => Self::Tue,
+            Weekday::WEDNESDAY => Self::Wed,
+            Weekday::THURSDAY => Self::Thu,
+            Weekday::FRIDAY => Self::Fri,
+            Weekday::SATURDAY => Self::Sat,
+        }
+    }
+}
+
 impl ToSql<SmallInt, diesel::pg::Pg> for Weekday
 where
     i16: ToSql<SmallInt, diesel::pg::Pg>,
