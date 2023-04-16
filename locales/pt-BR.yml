@@ -37,12 +37,18 @@ main_on_error:
 commands:
   general:
     specify_subcommand: Por favor, especifique um subcomando.
-    no_modal_response: Não foi possível receber sua resposta ao formulário que acaba de ser apresentado; tente repetir esse comando novamente.
+    no_modal_response: Não foi possível receber sua resposta ao formulário que acaba de ser 
+      apresentado; tente repetir esse comando novamente.
+    cancelled: Operação cancelada.
   sessions:
     name: sessões
     description: Gerencia sessões de mentoria.
   schedule:
-    please_select_time: Há %{total_mentor_amount} mentores disponíveis nesta semana. Por favor
-      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis
+    please_select_time: Há %{total_mentor_amount} mentores disponíveis nesta semana. Por favor 
+      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis 
       nesse horário.
     no_mentors_available: Não há mais mentores disponíveis nesta semana. Foi mal!
+    one_mentor: "1 mentor disponível"
+    n_mentors: "%{amount} mentores disponíveis"
+    please_select_mentor: "**Horário selecionado:** %{time}\nPor favor, selecione um mentor:"
+    success: Você agendou com sucesso uma sessão no horário de %{time} com o mentor %{mentor}.

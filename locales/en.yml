@@ -38,7 +38,12 @@ commands:
   general:
     specify_subcommand: Please specify a subcommand.
     no_modal_response: Failed to receive your response to the modal form; please try running this command again.
+    cancelled: Operation cancelled.
   schedule:
-    please_select_time: There are %{total_mentor_amount} mentors available this week. Please
+    please_select_time: There are %{total_mentor_amount} mentors available this week. Please 
       select below the time you wish to schedule at to view available mentors at that time.
     no_mentors_available: There are no mentors available this week; sorry!
+    one_mentor: "1 mentor available"
+    n_mentors: "%{amount} mentors available"
+    please_select_mentor: "**Selected time: %{time}**\nPlease pick a mentor:"
+    success: You have successfully scheduled a session at %{time} with the mentor %{mentor}.
