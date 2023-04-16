@@ -4,7 +4,7 @@ use super::modals::modal::TestModal;
 use crate::{common::ApplicationContext, error::Error};
 
 /// Modal command.
-#[poise::command(slash_command)]
+#[poise::command(slash_command, owners_only)]
 pub async fn modal(
     ctx: ApplicationContext<'_>,
     #[description = "Modal title"] title: Option<String>,

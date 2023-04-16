@@ -3,7 +3,7 @@ use poise::serenity_prelude as serenity;
 use crate::{common::ApplicationContext, error::Error, forms::interaction};
 
 /// Displays your or another user's account creation date
-#[poise::command(slash_command)]
+#[poise::command(slash_command, owners_only)]
 pub async fn userup(
     ctx: ApplicationContext<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
