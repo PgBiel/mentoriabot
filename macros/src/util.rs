@@ -1,5 +1,18 @@
 mod darling_types;
+
 pub use darling_types::*;
+use quote::ToTokens;
+use syn::spanned::Spanned;
+
+/// Workaround to have required Option<> attributes in synthez
+pub fn require_token<T: ToTokens>(o: &Option<T>) -> Result<&Option<T>, syn::Error> {
+    o.is_some().then_some(o).ok_or_else(|| {
+        syn::Error::new(
+            o.span(),
+            "at least one expression must be provided for the attribute",
+        )
+    })
+}
 
 pub fn empty_tuple_type() -> syn::Type {
     syn::Type::Tuple(syn::TypeTuple {
@@ -17,6 +30,35 @@ pub fn get_darling_attrs<T: darling::FromMeta>(
         .collect::<Result<Vec<_>, _>>()?;
 
     <T as darling::FromMeta>::from_list(&mapped_attrs)
+}
+
+pub fn get_darling_attrs_ref<T: darling::FromMeta>(
+    attrs: &[&syn::Attribute],
+) -> Result<T, darling::Error> {
+    let mapped_attrs = attrs
+        .iter()
+        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    <T as darling::FromMeta>::from_list(&mapped_attrs)
+}
+
+pub fn get_darling_attrs_filtered<T: darling::FromMeta>(
+    attrs: &[syn::Attribute],
+    filter_by: &[&str],
+) -> Result<T, darling::Error> {
+    get_darling_attrs_ref(
+        &attrs
+            .into_iter()
+            .filter(|attr| {
+                attr.path
+                    .segments
+                    .first()
+                    .map(|p| filter_by.contains(&&*p.ident.to_string()))
+                    .unwrap_or(false)
+            })
+            .collect::<Vec<_>>(),
+    )
 }
 
 // From poise

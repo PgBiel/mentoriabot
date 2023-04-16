@@ -1,4 +1,4 @@
-use syn::NestedMeta;
+use syn::{Attribute, NestedMeta};
 
 use crate::util::{self, parse, Parsed2};
 
@@ -26,6 +26,12 @@ pub(crate) struct FormDataAttr {
 }
 
 // --- impls ---
+
+impl darling::FromAttributes for FormDataAttr {
+    fn from_attributes(attrs: &[Attribute]) -> darling::Result<Self> {
+        util::get_darling_attrs_filtered(attrs, &["form_data"])
+    }
+}
 
 impl darling::FromMeta for FormContextInfo {
     fn from_list(items: &[NestedMeta]) -> darling::Result<Self> {

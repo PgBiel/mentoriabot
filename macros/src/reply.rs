@@ -1,62 +1,58 @@
 //! Implements the #[derive(GenerateReply)] derive macro
 
-use darling::util::Flag;
+use darling::FromAttributes;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
+use synthez::ParseAttrs;
 
 use crate::{
-    common::{FormContextInfo, FormData},
+    common::{FormContextInfo, FormData, FormDataAttr},
     util,
-    util::macros::take_attribute_or_its_function_required,
 };
 
-#[derive(Debug, Clone, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
+// use synthez to be able to input arbitrary expression into 'content'
+#[derive(Debug, Default, Clone, synthez::ParseAttrs)]
 struct ReplyAttrs {
-    /// The content of the message to be sent.
-    content: Option<String>,
-
-    /// A function that returns the content of the message to be sent,
-    /// as a String, taking the context and &Data.
-    content_function: Option<syn::Path>,
+    /// The content of the message to be sent, as an expression
+    /// (in context: `context` and `data`)
+    #[parse(value, validate = util::require_token)]
+    content: Option<syn::Expr>,
 
     /// A function that takes a `&mut poise::CreateReply`, context, `&Data` and adds attachments to
     /// the CreateReply, returning the modified builder as `&mut poise::CreateReply`.
+    #[parse(value)]
     attachment_function: Option<syn::Path>,
 
     /// A function that takes a `&mut CreateAllowedMentions`, context and a `&Data` and returns
     /// `&mut CreateAllowedMentions`.
+    #[parse(value)]
     allowed_mentions_function: Option<syn::Path>,
 
     /// A function that takes a `&mut CreateEmbed`, context and a `&Data` and returns `&mut
     /// CreateEmbed`.
+    #[parse(value)]
     embed_function: Option<syn::Path>,
 
-    is_reply: Flag,
+    #[parse(ident)]
+    is_reply: Option<syn::Ident>,
 
-    ephemeral: Flag,
+    #[parse(ident)]
+    ephemeral: Option<syn::Ident>,
 
     /// A function that takes context and a `&Data` and returns a `bool` (`true` if the message
     /// should be sent as ephemeral).
+    #[parse(value)]
     ephemeral_function: Option<syn::Path>,
-}
-
-#[derive(Debug, Clone, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
-struct ReplyBaseAttrs {
-    form_data: FormData,
-
-    /// Reply info.
-    reply: ReplyAttrs,
 }
 
 /// Generates an implementation of GenerateReply for a given type.
 pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let struct_attrs: ReplyBaseAttrs = util::get_darling_attrs(&input.attrs)?;
-    let reply_attrs = &struct_attrs.reply;
+    // use 'from_attributes' to ignore 'reply' (which has arbitrary expressions)
+    let form_data = FormDataAttr::from_attributes(&input.attrs)?;
+    let reply_attrs = ReplyAttrs::parse_attrs("reply", &input)?;
 
-    validate_attrs(reply_attrs, &input)?;
+    validate_attrs(&reply_attrs, &input)?;
 
     // ---
 
@@ -66,9 +62,9 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             data: ctx_data,
             error: ctx_error,
         },
-    } = &struct_attrs.form_data;
+    } = &form_data.form_data;
 
-    let reply_spec = create_reply_spec(reply_attrs);
+    let reply_spec = create_reply_spec(&reply_attrs);
 
     let struct_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -89,14 +85,14 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 }
 
 fn create_reply_spec(attrs: &ReplyAttrs) -> TokenStream2 {
-    let content = take_attribute_or_its_function_required!(attrs; content, content_function);
+    let content = &attrs.content;
     let attachment_function = util::wrap_option_box(&attrs.attachment_function);
     let allowed_mentions_function = util::wrap_option_box(&attrs.allowed_mentions_function);
     let embed_function = util::wrap_option_box(&attrs.embed_function);
-    let is_reply = attrs.is_reply.is_present();
+    let is_reply = attrs.is_reply.is_some();
     let ephemeral = attrs
         .ephemeral
-        .is_present()
+        .is_some()
         .then(|| quote! { true })
         .unwrap_or_else(|| {
             attrs
@@ -108,7 +104,7 @@ fn create_reply_spec(attrs: &ReplyAttrs) -> TokenStream2 {
 
     quote! {
         ::minirustbot_forms::ReplySpec {
-            content: #content,
+            content: #content.into(),
             attachment_function: #attachment_function,
             allowed_mentions_function: #allowed_mentions_function,
             embed_function: #embed_function,
@@ -119,14 +115,7 @@ fn create_reply_spec(attrs: &ReplyAttrs) -> TokenStream2 {
 }
 
 fn validate_attrs(attrs: &ReplyAttrs, input: &syn::DeriveInput) -> Result<(), syn::Error> {
-    if attrs.content.is_some() && attrs.content_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify 'content' and 'content_function' at the same time.",
-        ));
-    }
-
-    if attrs.ephemeral.is_present() && attrs.ephemeral_function.is_some() {
+    if attrs.ephemeral.is_some() && attrs.ephemeral_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify 'ephemeral' and 'ephemeral_function' at the same time.",

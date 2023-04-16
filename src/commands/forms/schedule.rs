@@ -1,15 +1,16 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use minirustbot_forms::{
-    Buildable, CustomId, FormError, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec, SelectValue,
-};
 use poise::{serenity_prelude as serenity, serenity_prelude::MessageComponentInteraction};
 
 use crate::{
     common::{ApplicationContext, Data},
-    error::Error,
-    forms::{error::Result as FormResult, GenerateReply, InteractionForm, MessageFormComponent},
+    error::{Error, Result},
+    forms::{
+        error::Result as FormResult, Buildable, CustomId, FormError, GenerateReply,
+        InteractionForm, MessageFormComponent, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec,
+        SelectValue,
+    },
     model::{Availability, DiscordId, Teacher, Weekday},
     util::tr,
 };
@@ -26,7 +27,9 @@ pub(crate) struct ScheduleForm {
 
 #[derive(Debug, Clone, GenerateReply)]
 #[form_data(data(ScheduleFormData), ctx(Data, Error))]
-#[reply(content_function = "select_time_reply_content", ephemeral)]
+#[reply(content = (
+    select_time_reply_content(context, data).await?
+), ephemeral)]
 pub(crate) struct SelectTimeComponent {
     pub(crate) selected_availability: Availability,
 }
@@ -43,12 +46,15 @@ struct ScheduleFormData {
 }
 
 // impls
-fn select_time_reply_content(context: ApplicationContext<'_>, data: &ScheduleFormData) -> String {
-    tr!(
+async fn select_time_reply_content(
+    context: ApplicationContext<'_>,
+    data: &ScheduleFormData,
+) -> FormResult<String> {
+    Ok(tr!(
         "commands.schedule.please_select_time",
         ctx = context,
         total_mentor_amount = "6"
-    )
+    ))
 }
 
 #[async_trait]
