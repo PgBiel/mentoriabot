@@ -34,26 +34,48 @@ pub(crate) struct SelectTimeComponent {
     pub(crate) selected_availability: Availability,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, GenerateReply)]
+#[form_data(data(ScheduleFormData), ctx(Data, Error))]
+#[reply(content = (
+    select_mentor_reply_content(context, data).await?
+), ephemeral)]
 pub(crate) struct SelectMentorComponent {
     pub(crate) selected_mentor: Teacher,
 }
 
 /// Stores data while the ScheduleForm is still being constructed.
 #[derive(Default)]
-struct ScheduleFormData {
+pub(crate) struct ScheduleFormData {
     selected_availability: Option<Availability>,
 }
 
 // impls
 async fn select_time_reply_content(
     context: ApplicationContext<'_>,
-    data: &ScheduleFormData,
+    _: &ScheduleFormData,
 ) -> FormResult<String> {
     Ok(tr!(
         "commands.schedule.please_select_time",
         ctx = context,
         total_mentor_amount = "6"
+    ))
+}
+
+async fn select_mentor_reply_content(
+    context: ApplicationContext<'_>,
+    data: &ScheduleFormData,
+) -> FormResult<String> {
+    let time = data
+        .selected_availability
+        .as_ref()
+        .ok_or(FormError::InvalidUserResponse)?
+        .time_start
+        .format("%H:%M:%S");
+
+    Ok(tr!(
+        "commands.schedule.please_select_mentor",
+        ctx = context,
+        time = time.to_string()
     ))
 }
 
@@ -134,33 +156,6 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
 }
 
 #[async_trait]
-impl GenerateReply<Data, Error, ScheduleFormData> for SelectMentorComponent {
-    type ReplyBuilder = ReplySpec;
-
-    async fn create_reply(
-        context: ApplicationContext<'_>,
-        data: &ScheduleFormData,
-    ) -> FormResult<Self::ReplyBuilder> {
-        let time = data
-            .selected_availability
-            .as_ref()
-            .ok_or(FormError::InvalidUserResponse)?
-            .time_start
-            .format("%H:%M:%S");
-
-        Ok(ReplySpec {
-            content: tr!(
-                "commands.schedule.please_select_mentor",
-                ctx = context,
-                time = time.to_string()
-            ),
-            ephemeral: true,
-            ..Default::default()
-        })
-    }
-}
-
-#[async_trait]
 impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorComponent {
     async fn send_component(
         context: ApplicationContext<'_>,
@@ -202,9 +197,9 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
     }
 
     async fn on_response(
-        context: ApplicationContext<'_>,
+        _: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
-        data: &mut ScheduleFormData,
+        _: &mut ScheduleFormData,
     ) -> FormResult<Option<Box<Self>>> {
         let mentor_id = interaction
             .data

@@ -8,6 +8,7 @@ use crate::error::Result;
 pub trait InteractionForm: Sync {
     type ContextData: Send + Sync;
     type ContextError: Send + Sync;
+    type FormData: Default + Send + Sync;
 
     /// Runs this form's components and builds this form's instance.
     ///
@@ -17,6 +18,7 @@ pub trait InteractionForm: Sync {
     /// [`execute`]: InteractionForm::execute
     async fn run_components(
         context: ApplicationContext<'_, Self::ContextData, Self::ContextError>,
+        form_data: Self::FormData,
     ) -> Result<Box<Self>>;
 
     /// Executes this form with the given context.
@@ -26,7 +28,18 @@ pub trait InteractionForm: Sync {
     async fn execute(
         context: ApplicationContext<'_, Self::ContextData, Self::ContextError>,
     ) -> Result<Box<Self>> {
-        let mut data = Self::run_components(context).await?;
+        let mut data = Self::run_components(context, Default::default()).await?;
+        data = data.on_finish(context).await?;
+        Ok(data)
+    }
+
+    /// Similar to [`execute`], but providing default values
+    /// for data.
+    async fn execute_with_defaults(
+        context: ApplicationContext<'_, Self::ContextData, Self::ContextError>,
+        form_data: Self::FormData,
+    ) -> Result<Box<Self>> {
+        let mut data = Self::run_components(context, form_data).await?;
         data = data.on_finish(context).await?;
         Ok(data)
     }

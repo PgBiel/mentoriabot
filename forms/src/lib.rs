@@ -29,7 +29,7 @@ pub use component::{
     ModalFormComponent, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec, SelectOption,
     Subcomponent,
 };
-pub use error::FormError;
+pub use error::{CtxError, CtxResult, FormError, Result};
 pub use form::InteractionForm;
 pub use interaction::{CustomId, HasCustomId, SelectValue};
 

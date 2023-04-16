@@ -111,3 +111,23 @@ impl std::error::Error for Error {
         }
     }
 }
+
+// --- forms ---
+
+impl From<Error> for forms::CtxError<Error> {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Form(err) => Self::Form(err),
+            err => Self::Ctx(err),
+        }
+    }
+}
+
+impl From<forms::CtxError<Error>> for Error {
+    fn from(err: forms::CtxError<Error>) -> Self {
+        match err {
+            forms::CtxError::Form(err) => Self::Form(err),
+            forms::CtxError::Ctx(err) => err,
+        }
+    }
+}

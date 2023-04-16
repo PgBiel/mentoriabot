@@ -123,9 +123,13 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         impl #impl_generics ::minirustbot_forms::InteractionForm for #struct_ident #ty_generics #where_clause {
             type ContextData = #ctx_data;
             type ContextError = #ctx_error;
+            type FormData = #data_type;
 
-            async fn run_components(context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
-                let mut __component_data: #data_type = ::std::default::Default::default();
+            async fn run_components(
+                context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>,
+                form_data: Self::FormData
+            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+                let mut __component_data = form_data;
                 #modal_creation
                 #( #components )*
                 Ok(Box::new(Self {

@@ -26,8 +26,14 @@ pub enum FormError {
 
 /// Shorthand for a [`Result`] with [`FormError`].
 ///
-/// [`Result`]: ::core::result::Result
+/// [`Result`]: core::result::Result
 pub type Result<T> = std::result::Result<T, FormError>;
+
+/// Shorthand for a [`Result`] with a [`CtxError`], which may hold
+/// both a FormError and a customized contextual Error.
+///
+/// [`Result`]: core::result::Result
+pub type CtxResult<T, E> = std::result::Result<T, CtxError<E>>;
 
 impl Display for FormError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -54,5 +60,17 @@ impl std::error::Error for FormError {
 impl From<serenity::Error> for FormError {
     fn from(value: serenity::Error) -> Self {
         Self::Serenity(value)
+    }
+}
+
+/// May hold either a FormError or a typical Error from the context.
+pub enum CtxError<E> {
+    Form(FormError),
+    Ctx(E),
+}
+
+impl<E> From<FormError> for CtxError<E> {
+    fn from(value: FormError) -> Self {
+        Self::Form(value)
     }
 }
