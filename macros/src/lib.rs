@@ -129,22 +129,7 @@ pub fn select_option(input: TokenStream) -> TokenStream {
     }
 }
 
-#[proc_macro_derive(
-    GenerateReply,
-    attributes(
-        data,
-        ctx_data,
-        ctx_error,
-        message_content,
-        message_content_function,
-        message_attachment_function,
-        message_allowed_mentions_function,
-        message_embed_function,
-        message_is_reply,
-        message_ephemeral,
-        message_ephemeral_function,
-    )
-)]
+#[proc_macro_derive(GenerateReply, attributes(data, ctx_data, ctx_error, reply,))]
 pub fn reply(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 

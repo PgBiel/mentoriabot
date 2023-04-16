@@ -13,7 +13,7 @@ use crate::error::Result;
 pub trait GenerateReply<ContextData, ContextError, FormData = ()> {
     type ReplyBuilder: for<'a> Buildable<poise::CreateReply<'a>>;
 
-    async fn create_reply<'a, 'b>(
+    async fn create_reply(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &FormData,
     ) -> Result<Self::ReplyBuilder>;

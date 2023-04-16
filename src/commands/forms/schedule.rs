@@ -4,12 +4,10 @@ use async_trait::async_trait;
 use minirustbot_forms::{
     Buildable, CustomId, FormError, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec, SelectValue,
 };
-use poise::{
-    serenity_prelude as serenity, serenity_prelude::MessageComponentInteraction, ApplicationContext,
-};
+use poise::{serenity_prelude as serenity, serenity_prelude::MessageComponentInteraction};
 
 use crate::{
-    common::Data,
+    common::{ApplicationContext, Data},
     error::Error,
     forms::{error::Result as FormResult, GenerateReply, InteractionForm, MessageFormComponent},
     model::{Availability, DiscordId, Teacher, Weekday},
@@ -28,7 +26,11 @@ pub(crate) struct ScheduleForm {
     pub(crate) select_mentor: SelectMentorComponent,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, GenerateReply)]
+#[ctx_data = "Data"]
+#[ctx_error = "Error"]
+#[data = "ScheduleFormData"]
+#[reply(content_function = "select_time_reply_content", ephemeral)]
 pub(crate) struct SelectTimeComponent {
     pub(crate) selected_availability: Availability,
 }
@@ -45,30 +47,18 @@ struct ScheduleFormData {
 }
 
 // impls
-#[async_trait]
-impl GenerateReply<Data, Error, ScheduleFormData> for SelectTimeComponent {
-    type ReplyBuilder = ReplySpec;
-
-    async fn create_reply<'a, 'b>(
-        context: ApplicationContext<'_, Data, Error>,
-        data: &ScheduleFormData,
-    ) -> FormResult<Self::ReplyBuilder> {
-        Ok(ReplySpec {
-            content: tr!(
-                "commands.schedule.please_select_time",
-                ctx = context,
-                total_mentor_amount = "6"
-            ),
-            ephemeral: true,
-            ..Default::default()
-        })
-    }
+fn select_time_reply_content(context: ApplicationContext<'_>, data: &ScheduleFormData) -> String {
+    tr!(
+        "commands.schedule.please_select_time",
+        ctx = context,
+        total_mentor_amount = "6"
+    )
 }
 
 #[async_trait]
 impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent {
     async fn send_component(
-        context: ApplicationContext<'_, Data, Error>,
+        context: ApplicationContext<'_>,
         data: &mut ScheduleFormData,
     ) -> FormResult<Vec<CustomId>> {
         let custom_id = CustomId::generate();
@@ -112,7 +102,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
     }
 
     async fn on_response(
-        context: ApplicationContext<'_, Data, Error>,
+        context: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
         data: &mut ScheduleFormData,
     ) -> FormResult<Option<Box<Self>>> {
@@ -145,8 +135,8 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
 impl GenerateReply<Data, Error, ScheduleFormData> for SelectMentorComponent {
     type ReplyBuilder = ReplySpec;
 
-    async fn create_reply<'a, 'b>(
-        context: ApplicationContext<'_, Data, Error>,
+    async fn create_reply(
+        context: ApplicationContext<'_>,
         data: &ScheduleFormData,
     ) -> FormResult<Self::ReplyBuilder> {
         let time = data
@@ -171,7 +161,7 @@ impl GenerateReply<Data, Error, ScheduleFormData> for SelectMentorComponent {
 #[async_trait]
 impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorComponent {
     async fn send_component(
-        context: ApplicationContext<'_, Data, Error>,
+        context: ApplicationContext<'_>,
         data: &mut ScheduleFormData,
     ) -> FormResult<Vec<CustomId>> {
         // let avail_id = data.selected_availability;
@@ -210,7 +200,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
     }
 
     async fn on_response(
-        context: ApplicationContext<'_, Data, Error>,
+        context: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
         data: &mut ScheduleFormData,
     ) -> FormResult<Option<Box<Self>>> {

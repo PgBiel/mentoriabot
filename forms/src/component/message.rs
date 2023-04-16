@@ -3,7 +3,6 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
-use super::GenerateReply;
 use crate::{
     error::{FormError, Result},
     interaction::{self, CustomId},
@@ -12,8 +11,7 @@ use crate::{
 /// A Form component for either a Button or a Select Menu;
 /// that is, one that can be displayed on a message.
 #[async_trait]
-pub trait MessageFormComponent<ContextData, ContextError, FormData = ()>:
-    GenerateReply<ContextData, ContextError, FormData> + Send + Sync
+pub trait MessageFormComponent<ContextData, ContextError, FormData = ()>: Send + Sync
 where
     ContextData: Send + Sync,
     ContextError: Send + Sync,

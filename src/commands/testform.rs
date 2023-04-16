@@ -34,10 +34,9 @@ fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
 #[derive(ButtonComponent, GenerateReply, Clone, Debug)]
 #[ctx_data = "Data"]
 #[ctx_error = "Error"]
-#[message_content = "bruh"]
 #[label_function = "label_function"]
 #[danger]
-#[message_ephemeral]
+#[reply(content = "bruh", ephemeral)]
 pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
 
 // #[derive(SelectOption)]
