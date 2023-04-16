@@ -15,9 +15,9 @@ macro_rules! implement_buildable_for_lambda_with_type {
     ($Builder:ty) => {
         /// [`Buildable`] is automatically implemented for certain lambdas
         /// with the same signature as `on_build`.
-        impl<T> Buildable<$Builder> for T
+        impl<'b, T> Buildable<$Builder> for T
         where
-            T: Fn(&mut $Builder) -> &mut $Builder,
+            T: for<'a> Fn(&'a mut $Builder) -> &'a mut $Builder,
         {
             fn on_build<'a>(&self, builder: &'a mut $Builder) -> &'a mut $Builder {
                 self(builder)
@@ -32,6 +32,7 @@ implement_buildable_for_lambda_with_type!(serenity::CreateActionRow);
 implement_buildable_for_lambda_with_type!(serenity::CreateButton);
 implement_buildable_for_lambda_with_type!(serenity::CreateSelectMenu);
 implement_buildable_for_lambda_with_type!(serenity::CreateSelectMenuOption);
+implement_buildable_for_lambda_with_type!(poise::CreateReply<'b>);
 
 /// Union of the [`Buildable`] and [`HasCustomId`] traits.
 /// (Automatically implemented for any trait that implements both of those traits.)

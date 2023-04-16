@@ -39,7 +39,7 @@ macro_rules! impl_from_u64_id {
     Hash,
 )]
 #[diesel(sql_type = VarChar)]
-pub struct DiscordId(u64);
+pub struct DiscordId(pub u64);
 
 impl DiscordId {
     /// Represents this Discord ID as a User mention.
