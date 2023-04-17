@@ -9,11 +9,10 @@ use super::{
     UpdatableRepository,
 };
 use crate::{
-    error::Result,
+    error::{Error, Result},
     model::{DiscordId, NewUser, PartialUser, Session, SessionStudent, Teacher, User},
     schema::{session_students, teachers, users},
 };
-use crate::error::Error;
 
 /// Manages User instances.
 #[derive(Clone)]

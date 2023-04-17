@@ -1,9 +1,8 @@
 use async_trait::async_trait;
 use poise::ApplicationContext;
-use crate::ContextualResult;
 
 use super::Buildable;
-use crate::error::Result;
+use crate::{error::Result, ContextualResult};
 
 /// Indicates a reply can be generated for this component type.
 /// Does so by generating asynchronously a [`Buildable`] for a [`poise::CreateReply`].

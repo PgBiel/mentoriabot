@@ -19,8 +19,8 @@ pub mod component;
 pub mod error;
 mod form;
 pub mod interaction;
-pub mod util;
 pub mod state;
+pub mod util;
 
 #[cfg(test)]
 mod tests;
