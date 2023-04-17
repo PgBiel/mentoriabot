@@ -6,8 +6,8 @@ pub(crate) struct MiniRustBotConfig {
     /// This bot's token.
     pub(crate) token: String,
 
-    /// This bot's Guild ID.
-    pub(crate) guild_id: u64,
+    /// The Guild IDs where the bot is functional.
+    pub(crate) guild_ids: Vec<u64>,
 
     /// This bot's database URL.
     pub(crate) database_url: String,

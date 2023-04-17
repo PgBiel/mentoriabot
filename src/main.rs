@@ -193,7 +193,7 @@ config.example.json structure.",
     let Config {
         database_url,
         token,
-        guild_id,
+        guild_ids,
         admin_userids,
         default_logging_level,
     } = parsed_config;
@@ -223,12 +223,16 @@ config.example.json structure.",
         .intents(serenity::GatewayIntents::non_privileged())
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
-                poise::builtins::register_in_guild(
-                    ctx,
-                    &framework.options().commands,
-                    GuildId(guild_id),
-                )
-                .await?;
+                // register commands in the guild IDs.
+                for guild_id in guild_ids {
+                    info!("Registering for {}...", guild_id);
+                    poise::builtins::register_in_guild(
+                        ctx,
+                        &framework.options().commands,
+                        GuildId(guild_id),
+                    )
+                    .await?;
+                }
                 info!("Registered");
                 Ok(Data::new(db, admin_userids))
             })
