@@ -23,13 +23,13 @@ use crate::error::Error;
 )]
 #[diesel(sql_type = SmallInt)]
 pub enum Weekday {
-    SUNDAY = 0,
-    MONDAY = 1,
-    TUESDAY = 2,
-    WEDNESDAY = 3,
-    THURSDAY = 4,
-    FRIDAY = 5,
-    SATURDAY = 6,
+    Sunday = 0,
+    Monday = 1,
+    Tuesday = 2,
+    Wednesday = 3,
+    Thursday = 4,
+    Friday = 5,
+    Saturday = 6,
 }
 
 impl TryFrom<i16> for Weekday {
@@ -37,13 +37,13 @@ impl TryFrom<i16> for Weekday {
 
     fn try_from(value: i16) -> Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::SUNDAY),
-            1 => Ok(Self::MONDAY),
-            2 => Ok(Self::TUESDAY),
-            3 => Ok(Self::WEDNESDAY),
-            4 => Ok(Self::THURSDAY),
-            5 => Ok(Self::FRIDAY),
-            6 => Ok(Self::SATURDAY),
+            0 => Ok(Self::Sunday),
+            1 => Ok(Self::Monday),
+            2 => Ok(Self::Tuesday),
+            3 => Ok(Self::Wednesday),
+            4 => Ok(Self::Thursday),
+            5 => Ok(Self::Friday),
+            6 => Ok(Self::Saturday),
             _ => Err(Error::Other("Failed to convert from i16 to Weekday")),
         }
     }
@@ -52,33 +52,33 @@ impl TryFrom<i16> for Weekday {
 impl From<Weekday> for i16 {
     fn from(value: Weekday) -> Self {
         match value {
-            Weekday::SUNDAY => 0,
-            Weekday::MONDAY => 1,
-            Weekday::TUESDAY => 2,
-            Weekday::WEDNESDAY => 3,
-            Weekday::THURSDAY => 4,
-            Weekday::FRIDAY => 5,
-            Weekday::SATURDAY => 6,
+            Weekday::Sunday => 0,
+            Weekday::Monday => 1,
+            Weekday::Tuesday => 2,
+            Weekday::Wednesday => 3,
+            Weekday::Thursday => 4,
+            Weekday::Friday => 5,
+            Weekday::Saturday => 6,
         }
     }
 }
 
 impl From<&Weekday> for i16 {
     fn from(value: &Weekday) -> Self {
-        Into::<i16>::into(value.clone())
+        Into::<i16>::into(*value)
     }
 }
 
 impl From<chrono::Weekday> for Weekday {
     fn from(value: chrono::Weekday) -> Self {
         match value {
-            chrono::Weekday::Sun => Self::SUNDAY,
-            chrono::Weekday::Mon => Self::MONDAY,
-            chrono::Weekday::Tue => Self::TUESDAY,
-            chrono::Weekday::Wed => Self::WEDNESDAY,
-            chrono::Weekday::Thu => Self::THURSDAY,
-            chrono::Weekday::Fri => Self::FRIDAY,
-            chrono::Weekday::Sat => Self::SATURDAY,
+            chrono::Weekday::Sun => Self::Sunday,
+            chrono::Weekday::Mon => Self::Monday,
+            chrono::Weekday::Tue => Self::Tuesday,
+            chrono::Weekday::Wed => Self::Wednesday,
+            chrono::Weekday::Thu => Self::Thursday,
+            chrono::Weekday::Fri => Self::Friday,
+            chrono::Weekday::Sat => Self::Saturday,
         }
     }
 }
@@ -86,13 +86,13 @@ impl From<chrono::Weekday> for Weekday {
 impl From<Weekday> for chrono::Weekday {
     fn from(value: Weekday) -> Self {
         match value {
-            Weekday::SUNDAY => Self::Sun,
-            Weekday::MONDAY => Self::Mon,
-            Weekday::TUESDAY => Self::Tue,
-            Weekday::WEDNESDAY => Self::Wed,
-            Weekday::THURSDAY => Self::Thu,
-            Weekday::FRIDAY => Self::Fri,
-            Weekday::SATURDAY => Self::Sat,
+            Weekday::Sunday => Self::Sun,
+            Weekday::Monday => Self::Mon,
+            Weekday::Tuesday => Self::Tue,
+            Weekday::Wednesday => Self::Wed,
+            Weekday::Thursday => Self::Thu,
+            Weekday::Friday => Self::Fri,
+            Weekday::Saturday => Self::Sat,
         }
     }
 }

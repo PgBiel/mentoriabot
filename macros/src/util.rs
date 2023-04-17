@@ -49,7 +49,7 @@ pub fn get_darling_attrs_filtered<T: darling::FromMeta>(
 ) -> Result<T, darling::Error> {
     get_darling_attrs_ref(
         &attrs
-            .into_iter()
+            .iter()
             .filter(|attr| {
                 attr.path
                     .segments

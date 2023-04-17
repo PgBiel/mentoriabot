@@ -142,7 +142,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
         let availability = Availability {
             id: selected,
             teacher_id: DiscordId(123),
-            weekday: Weekday::MONDAY,
+            weekday: Weekday::Monday,
             time_start: chrono::NaiveTime::from_hms_opt(23, 0, 0).unwrap(),
             time_end: chrono::NaiveTime::from_hms_opt(23, 0, 0).unwrap(),
         };

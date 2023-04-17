@@ -82,7 +82,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 field_name,
                 field_type,
                 field_inner_type,
-                &data_type,
+                data_type,
                 ctx_data,
                 ctx_error,
             ));
@@ -100,7 +100,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 field_name,
                 /* modal_type: */ field_type,
                 /* modal_inner_type: */ field_inner_type,
-                &data_type,
+                data_type,
                 ctx_data,
                 ctx_error,
             ));

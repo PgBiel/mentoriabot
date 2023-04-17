@@ -94,7 +94,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         },
     } = &struct_attrs.form_data;
 
-    let button_spec = create_button_spec(button_attrs, &data_type);
+    let button_spec = create_button_spec(button_attrs, data_type);
     let create_with_interaction = single_button_create_with_interaction_code(&input)?
         .unwrap_or_else(|| quote! { Default::default() });
 

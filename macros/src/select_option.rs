@@ -94,7 +94,7 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
     } = &form_data.form_data;
 
     let option_specs = create_select_option_specs(&variants_and_options);
-    let from_select_value = from_select_value(&variants_and_options, &data_type)?;
+    let from_select_value = from_select_value(&variants_and_options, data_type)?;
     let enum_ident = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
