@@ -20,6 +20,7 @@ pub mod error;
 mod form;
 pub mod interaction;
 pub mod util;
+pub mod state;
 
 #[cfg(test)]
 mod tests;

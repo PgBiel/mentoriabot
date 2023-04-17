@@ -9,13 +9,19 @@ use crate::util::generate_custom_id;
 /// Note that this struct implements [`Default`] by
 /// generating a pseudorandom value, based on the current Unix
 /// timestamp.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CustomId(pub String);
 
 impl CustomId {
     /// Generates a CustomId based on the current Unix time.
     pub fn generate() -> Self {
         Self(generate_custom_id())
+    }
+
+    /// Generates a CustomId based on the current Unix time,
+    /// with a prefix.
+    pub fn generate_prefixed(prefix: &str) -> Self {
+        Self(format!("{}{}", prefix, generate_custom_id()))
     }
 }
 
