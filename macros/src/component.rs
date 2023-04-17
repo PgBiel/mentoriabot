@@ -135,7 +135,7 @@ struct FieldAttributes {
 //                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
 //                 data: &mut #data_type,
 //             ) ->
-// ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
+// ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
 //
 //                 let __buildables = <Self as ::minirustbot_forms::Subcomponent<#ctx_data,
 // #ctx_error, #data_type>>::generate_buildables(context, data).await?;                 let
@@ -163,7 +163,7 @@ struct FieldAttributes {
 //                 interaction:
 // ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,                 data:
 // &mut #data_type,             ) ->
-// ::minirustbot_forms::error::Result<::core::option::Option<::std::boxed::Box<Self>>> {
+// ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>> {
 // ::core::result::Result::Ok(::core::option::Option::Some(                     <Self as
 // ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error,
 // #data_type>>::build_from_interaction(context, interaction, data)                         .await?
@@ -205,7 +205,7 @@ struct FieldAttributes {
 // fn parse_on_finish(struct_attrs: &StructAttributes) -> Option<TokenStream2> {
 //     struct_attrs.on_finish.as_ref().map(|on_finish| quote! {
 //             async fn on_finish(self, context: ::poise::ApplicationContext<'_, Self::ContextData,
-// Self::ContextError>) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+// Self::ContextError>) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>> {
 // #on_finish(context).into()             }
 //         })
 // }

@@ -5,7 +5,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
-use crate::{error::Result, interaction::SelectValue};
+use crate::{error::Result, interaction::SelectValue, ContextualResult};
 
 pub mod button;
 pub mod reply;
@@ -40,7 +40,7 @@ pub trait Subcomponent<ContextData, ContextError, FormData = ()> {
     async fn generate_buildables(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut FormData,
-    ) -> Result<Vec<Self::ReturnedBuildable>>;
+    ) -> ContextualResult<Vec<Self::ReturnedBuildable>, ContextError>;
 
     /// Constructs this subcomponent from the received interaction, by e.g.
     /// comparing the custom IDs or the received select option value.
@@ -48,7 +48,7 @@ pub trait Subcomponent<ContextData, ContextError, FormData = ()> {
         context: ApplicationContext<'_, ContextData, ContextError>,
         interaction: Arc<serenity::MessageComponentInteraction>,
         data: &mut FormData,
-    ) -> Result<Box<Self>>;
+    ) -> ContextualResult<Box<Self>, ContextError>;
 }
 
 /// Represents a Select Option, that is,
@@ -61,12 +61,12 @@ pub trait SelectOption<ContextData, ContextError, FormData = ()> {
     async fn generate_options(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut FormData,
-    ) -> Result<Vec<SelectMenuOptionSpec>>;
+    ) -> ContextualResult<Vec<SelectMenuOptionSpec>, ContextError>;
 
     /// Builds Self based on the selected value, using context and data as necessary.
     async fn build_from_selected_value(
         value: SelectValue,
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut FormData,
-    ) -> Result<Box<Self>>;
+    ) -> ContextualResult<Box<Self>, ContextError>;
 }

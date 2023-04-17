@@ -77,7 +77,7 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn create_reply(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &#data_type,
-            ) -> ::minirustbot_forms::error::Result<Self::ReplyBuilder> {
+            ) -> ::minirustbot_forms::error::ContextualResult<Self::ReplyBuilder, #ctx_error> {
                 Ok(#reply_spec)
             }
         }

@@ -109,7 +109,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn generate_buildables(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<Self::ReturnedBuildable>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<Self::ReturnedBuildable>, #ctx_error> {
                 Ok(::std::vec![ #button_spec ])
             }
 
@@ -117,7 +117,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, #ctx_error> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
@@ -129,7 +129,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn send_component(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>, #ctx_error> {
 
                 let __buildables = <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
                 let __custom_ids = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&__buildables);
@@ -153,7 +153,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::core::option::Option<::std::boxed::Box<Self>>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>, #ctx_error> {
                 ::core::result::Result::Ok(::core::option::Option::Some(
                     <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
                         .await?

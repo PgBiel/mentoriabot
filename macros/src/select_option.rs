@@ -106,7 +106,7 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
             async fn generate_options(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type
-            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec>, #ctx_error> {
                 Ok(#option_specs)
             }
 
@@ -114,7 +114,7 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
                 value: ::minirustbot_forms::interaction::SelectValue,
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type
-            ) -> ::minirustbot_forms::error::Result<Self> {
+            ) -> ::minirustbot_forms::error::ContextualResult<Self, #ctx_error> {
                 #from_select_value
             }
         }

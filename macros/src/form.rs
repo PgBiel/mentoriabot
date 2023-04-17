@@ -128,7 +128,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn run_components(
                 context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>,
                 form_data: Self::FormData
-            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, Self::ContextError> {
                 let mut __component_data = form_data;
                 #modal_creation
                 #( #components )*
@@ -171,7 +171,7 @@ fn generate_modal_creation(
 
 fn parse_on_finish(struct_attrs: &StructAttributes) -> Option<TokenStream2> {
     struct_attrs.on_finish.as_ref().map(|on_finish| quote! {
-            async fn on_finish(self, context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+            async fn on_finish(self, context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, Self::ContextError> {
                 #on_finish(context).into()
             }
         })

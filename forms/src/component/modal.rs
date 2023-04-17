@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use poise::{ApplicationContext, Modal as PoiseModal};
 
-use crate::error::{FormError, Result};
+use crate::{
+    error::{FormError, Result},
+    ContextualResult,
+};
 
 /// A Modal Component. This is blanket-implemented for all [`poise::Modal`] types,
 /// but you may wish to override its behavior (by default, the `Modal` is itself).
@@ -16,17 +19,20 @@ pub trait ModalFormComponent<
 {
     type Modal: poise::Modal + Send + Sync;
 
-    async fn on_response(modal: Self::Modal, data: &mut FormData) -> Result<Box<Self>>;
+    async fn on_response(
+        modal: Self::Modal,
+        data: &mut FormData,
+    ) -> ContextualResult<Box<Self>, ContextError>;
 
     async fn run(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut FormData,
-    ) -> Result<Box<Self>> {
+    ) -> ContextualResult<Box<Self>, ContextError> {
         let response: Option<Self::Modal> = Self::Modal::execute(context).await?;
 
         match response {
             Some(modal) => Self::on_response(modal, data).await,
-            None => Err(FormError::NoResponse),
+            None => Err(FormError::NoResponse.into()),
         }
     }
 }
@@ -41,7 +47,7 @@ where
 {
     type Modal = Self;
 
-    async fn on_response(modal: Self, _: &mut D) -> Result<Box<Self>> {
+    async fn on_response(modal: Self, _: &mut D) -> ContextualResult<Box<Self>, CE> {
         Ok(Box::new(modal))
     }
 }

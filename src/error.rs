@@ -114,7 +114,7 @@ impl std::error::Error for Error {
 
 // --- forms ---
 
-impl From<Error> for forms::CtxError<Error> {
+impl From<Error> for forms::ContextualError<Error> {
     fn from(err: Error) -> Self {
         match err {
             Error::Form(err) => Self::Form(err),
@@ -123,11 +123,11 @@ impl From<Error> for forms::CtxError<Error> {
     }
 }
 
-impl From<forms::CtxError<Error>> for Error {
-    fn from(err: forms::CtxError<Error>) -> Self {
+impl From<forms::ContextualError<Error>> for Error {
+    fn from(err: forms::ContextualError<Error>) -> Self {
         match err {
-            forms::CtxError::Form(err) => Self::Form(err),
-            forms::CtxError::Ctx(err) => err,
+            forms::ContextualError::Form(err) => Self::Form(err),
+            forms::ContextualError::Ctx(err) => err,
         }
     }
 }

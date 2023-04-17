@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
 use crate::{
-    error::{FormError, Result},
+    error::{ContextualResult, FormError},
     interaction::{self, CustomId},
 };
 
@@ -22,17 +22,17 @@ where
     async fn send_component(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut FormData,
-    ) -> Result<Vec<CustomId>>;
+    ) -> ContextualResult<Vec<CustomId>, ContextError>;
 
     /// Method that waits for the user's response to the interaction.
     async fn wait_for_response(
         context: ApplicationContext<'_, ContextData, ContextError>,
         _data: &mut FormData,
         custom_ids: &Vec<CustomId>,
-    ) -> Result<Option<Arc<serenity::MessageComponentInteraction>>> {
+    ) -> ContextualResult<Option<Arc<serenity::MessageComponentInteraction>>, ContextError> {
         interaction::wait_for_message_interactions(context, custom_ids)
             .await
-            .map_err(FormError::Serenity)
+            .map_err(From::from)
     }
 
     /// Method to react to the user's response to the interaction.
@@ -42,14 +42,14 @@ where
         context: ApplicationContext<'_, ContextData, ContextError>,
         interaction: Arc<serenity::MessageComponentInteraction>,
         data: &mut FormData,
-    ) -> Result<Option<Box<Self>>>;
+    ) -> ContextualResult<Option<Box<Self>>, ContextError>;
 
     /// The main method, causes the component to be sent to Discord
     /// and its response awaited by invoking the other methods.
     async fn run(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &mut FormData,
-    ) -> Result<Box<Self>> {
+    ) -> ContextualResult<Box<Self>, ContextError> {
         let ids = Self::send_component(context, data).await?;
 
         // keep waiting for a response until 'on_response' returns something
@@ -72,7 +72,7 @@ where
                     }
                     // otherwise keep waiting for a response
                 }
-                None => return Err(FormError::NoResponse),
+                None => return Err(FormError::NoResponse.into()),
             }
         }
     }

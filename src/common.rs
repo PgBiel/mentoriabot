@@ -1,4 +1,4 @@
-use crate::{connection::DatabaseManager, error::Error};
+use crate::{connection::DatabaseManager, error::Error, forms};
 
 /// Global command data, which is stored and accessible in all command invocations
 #[derive(Clone)]
@@ -25,3 +25,6 @@ pub type FrameworkError<'a> = poise::FrameworkError<'a, Data, Error>;
 
 /// The bot's custom Application Context type
 pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, Error>;
+
+/// Results in Forms use our Error.
+pub type ContextualResult<T> = forms::ContextualResult<T, Error>;

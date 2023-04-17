@@ -1,15 +1,14 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use poise::{serenity_prelude as serenity, serenity_prelude::MessageComponentInteraction};
+use poise::serenity_prelude::MessageComponentInteraction;
 
 use crate::{
-    common::{ApplicationContext, Data},
-    error::{Error, Result},
+    common::{ApplicationContext, ContextualResult, Data},
+    error::Error,
     forms::{
         error::Result as FormResult, Buildable, CustomId, FormError, GenerateReply,
-        InteractionForm, MessageFormComponent, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec,
-        SelectValue,
+        InteractionForm, MessageFormComponent, SelectMenuOptionSpec, SelectMenuSpec, SelectValue,
     },
     model::{Availability, DiscordId, Teacher, Weekday},
     util::tr,
@@ -84,7 +83,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
     async fn send_component(
         context: ApplicationContext<'_>,
         data: &mut ScheduleFormData,
-    ) -> FormResult<Vec<CustomId>> {
+    ) -> ContextualResult<Vec<CustomId>> {
         let custom_id = CustomId::generate();
         let select_menu = SelectMenuSpec {
             custom_id: custom_id.clone(),
@@ -129,15 +128,15 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
         context: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
         data: &mut ScheduleFormData,
-    ) -> FormResult<Option<Box<Self>>> {
+    ) -> ContextualResult<Option<Box<Self>>> {
         let selected = interaction.data.values.first();
 
         let Some(selected) = selected else {
-            return Err(FormError::InvalidUserResponse);
+            return Err(FormError::InvalidUserResponse.into());
         };
 
         let Ok(selected) = selected.parse::<i64>() else {
-            return Err(FormError::InvalidUserResponse);
+            return Err(FormError::InvalidUserResponse.into());
         };
 
         let availability = Availability {
@@ -160,7 +159,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
     async fn send_component(
         context: ApplicationContext<'_>,
         data: &mut ScheduleFormData,
-    ) -> FormResult<Vec<CustomId>> {
+    ) -> ContextualResult<Vec<CustomId>> {
         // let avail_id = data.selected_availability;
         let custom_id = CustomId::generate();
         let select_menu = SelectMenuSpec {
@@ -200,7 +199,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
         _: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
         _: &mut ScheduleFormData,
-    ) -> FormResult<Option<Box<Self>>> {
+    ) -> ContextualResult<Option<Box<Self>>> {
         let mentor_id = interaction
             .data
             .values

@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use poise::ApplicationContext;
+use crate::ContextualResult;
 
 use super::Buildable;
 use crate::error::Result;
@@ -16,5 +17,5 @@ pub trait GenerateReply<ContextData, ContextError, FormData = ()> {
     async fn create_reply(
         context: ApplicationContext<'_, ContextData, ContextError>,
         data: &FormData,
-    ) -> Result<Self::ReplyBuilder>;
+    ) -> ContextualResult<Self::ReplyBuilder, ContextError>;
 }

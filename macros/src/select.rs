@@ -149,7 +149,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn generate_buildables(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::std::vec::Vec<Self::ReturnedBuildable>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<Self::ReturnedBuildable>, #ctx_error> {
                 Ok(::std::vec![ #select_spec ])
             }
 
@@ -157,7 +157,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 context: ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut #data_type,
-            ) -> ::minirustbot_forms::error::Result<::std::boxed::Box<Self>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, #ctx_error> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
