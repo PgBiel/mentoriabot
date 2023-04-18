@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use minirustbot_forms::FormState;
 use poise::serenity_prelude::MessageComponentInteraction;
 
 use crate::{
@@ -51,7 +52,7 @@ pub(crate) struct ScheduleFormData {
 // impls
 async fn select_time_reply_content(
     context: ApplicationContext<'_>,
-    _: &ScheduleFormData,
+    _: &FormState<ScheduleFormData>,
 ) -> FormResult<String> {
     Ok(tr!(
         "commands.schedule.please_select_time",
@@ -62,9 +63,10 @@ async fn select_time_reply_content(
 
 async fn select_mentor_reply_content(
     context: ApplicationContext<'_>,
-    data: &ScheduleFormData,
+    data: &FormState<ScheduleFormData>,
 ) -> FormResult<String> {
     let time = data
+        .data
         .selected_availability
         .as_ref()
         .ok_or(FormError::InvalidUserResponse)?
@@ -82,7 +84,7 @@ async fn select_mentor_reply_content(
 impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent {
     async fn send_component(
         context: ApplicationContext<'_>,
-        data: &mut ScheduleFormData,
+        data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Vec<CustomId>> {
         let custom_id = CustomId::generate();
         let select_menu = SelectMenuSpec {
@@ -125,9 +127,9 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
     }
 
     async fn on_response(
-        context: ApplicationContext<'_>,
+        _context: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
-        data: &mut ScheduleFormData,
+        data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Option<Box<Self>>> {
         let selected = interaction.data.values.first();
 
@@ -146,7 +148,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
             time_start: chrono::NaiveTime::from_hms_opt(23, 0, 0).unwrap(),
             time_end: chrono::NaiveTime::from_hms_opt(23, 0, 0).unwrap(),
         };
-        data.selected_availability = Some(availability.clone());
+        data.data.selected_availability = Some(availability.clone());
 
         Ok(Some(Box::new(SelectTimeComponent {
             selected_availability: availability,
@@ -158,7 +160,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
 impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorComponent {
     async fn send_component(
         context: ApplicationContext<'_>,
-        data: &mut ScheduleFormData,
+        data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Vec<CustomId>> {
         // let avail_id = data.selected_availability;
         let custom_id = CustomId::generate();
@@ -198,7 +200,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
     async fn on_response(
         _: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
-        _: &mut ScheduleFormData,
+        _: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Option<Box<Self>>> {
         let mentor_id = interaction
             .data

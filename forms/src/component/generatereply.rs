@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use poise::ApplicationContext;
 
 use super::Buildable;
-use crate::{error::Result, ContextualResult};
+use crate::{error::Result, ContextualResult, FormState};
 
 /// Indicates a reply can be generated for this component type.
 /// Does so by generating asynchronously a [`Buildable`] for a [`poise::CreateReply`].
@@ -15,6 +15,6 @@ pub trait GenerateReply<ContextData, ContextError, FormData = ()> {
 
     async fn create_reply(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &FormData,
+        data: &FormState<FormData>,
     ) -> ContextualResult<Self::ReplyBuilder, ContextError>;
 }

@@ -6,6 +6,7 @@ use poise::{serenity_prelude as serenity, ApplicationContext};
 use crate::{
     error::{ContextualResult, FormError},
     interaction::{self, CustomId},
+    FormState,
 };
 
 /// A Form component for either a Button or a Select Menu;
@@ -21,13 +22,13 @@ where
     /// This should return all Custom IDs for which a User response is expected.
     async fn send_component(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &mut FormData,
+        data: &mut FormState<FormData>,
     ) -> ContextualResult<Vec<CustomId>, ContextError>;
 
     /// Method that waits for the user's response to the interaction.
     async fn wait_for_response(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        _data: &mut FormData,
+        _data: &mut FormState<FormData>,
         custom_ids: &Vec<CustomId>,
     ) -> ContextualResult<Option<Arc<serenity::MessageComponentInteraction>>, ContextError> {
         interaction::wait_for_message_interactions(context, custom_ids)
@@ -41,14 +42,14 @@ where
     async fn on_response(
         context: ApplicationContext<'_, ContextData, ContextError>,
         interaction: Arc<serenity::MessageComponentInteraction>,
-        data: &mut FormData,
+        data: &mut FormState<FormData>,
     ) -> ContextualResult<Option<Box<Self>>, ContextError>;
 
     /// The main method, causes the component to be sent to Discord
     /// and its response awaited by invoking the other methods.
     async fn run(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &mut FormData,
+        data: &mut FormState<FormData>,
     ) -> ContextualResult<Box<Self>, ContextError> {
         let ids = Self::send_component(context, data).await?;
 

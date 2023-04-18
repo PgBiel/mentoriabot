@@ -3,7 +3,7 @@ use poise::{ApplicationContext, Modal as PoiseModal};
 
 use crate::{
     error::{FormError, Result},
-    ContextualResult,
+    ContextualResult, FormState,
 };
 
 /// A Modal Component. This is blanket-implemented for all [`poise::Modal`] types,
@@ -21,12 +21,12 @@ pub trait ModalFormComponent<
 
     async fn on_response(
         modal: Self::Modal,
-        data: &mut FormData,
+        data: &mut FormState<FormData>,
     ) -> ContextualResult<Box<Self>, ContextError>;
 
     async fn run(
         context: ApplicationContext<'_, ContextData, ContextError>,
-        data: &mut FormData,
+        data: &mut FormState<FormData>,
     ) -> ContextualResult<Box<Self>, ContextError> {
         let response: Option<Self::Modal> = Self::Modal::execute(context).await?;
 
@@ -47,7 +47,7 @@ where
 {
     type Modal = Self;
 
-    async fn on_response(modal: Self, _: &mut D) -> ContextualResult<Box<Self>, CE> {
+    async fn on_response(modal: Self, _: &mut FormState<D>) -> ContextualResult<Box<Self>, CE> {
         Ok(Box::new(modal))
     }
 }

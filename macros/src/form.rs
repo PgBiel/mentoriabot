@@ -129,7 +129,7 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 context: ::poise::ApplicationContext<'_, Self::ContextData, Self::ContextError>,
                 form_data: Self::FormData
             ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, Self::ContextError> {
-                let mut __component_data = form_data;
+                let mut __component_data = ::minirustbot_forms::FormState::new(form_data);
                 #modal_creation
                 #( #components )*
                 Ok(Box::new(Self {

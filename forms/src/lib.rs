@@ -19,7 +19,7 @@ pub mod component;
 pub mod error;
 mod form;
 pub mod interaction;
-pub mod state;
+mod state;
 pub mod util;
 
 #[cfg(test)]
@@ -33,6 +33,7 @@ pub use component::{
 pub use error::{ContextualError, ContextualResult, FormError, Result};
 pub use form::InteractionForm;
 pub use interaction::{CustomId, HasCustomId, SelectValue};
+pub use state::FormState;
 
 pub mod macros {
     pub use minirustbot_macros::*;

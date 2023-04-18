@@ -148,7 +148,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         impl #impl_generics ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             async fn generate_buildables(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &mut #data_type,
+                data: &mut ::minirustbot_forms::FormState<#data_type>,
             ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<Self::ReturnedBuildable>, #ctx_error> {
                 Ok(::std::vec![ #select_spec ])
             }
@@ -156,7 +156,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn build_from_interaction(
                 context: ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
-                data: &mut #data_type,
+                data: &mut ::minirustbot_forms::FormState<#data_type>,
             ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, #ctx_error> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
