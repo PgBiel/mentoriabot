@@ -27,25 +27,6 @@ pub struct TestFormModal {
     more: Option<String>,
 }
 
-fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
-    format!("I am {}", ctx.author().name)
-}
-
-#[derive(ButtonComponent, GenerateReply, Clone, Debug)]
-#[form_data(ctx(Data, Error))]
-#[button(label_function = "label_function", danger)]
-#[reply(content = "bruh", ephemeral)]
-pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
-
-#[derive(MessageFormComponent, GenerateReply, Clone, Debug)]
-#[forms(form_data(ctx(Data, Error)))]
-#[form_data(ctx(Data, Error))]
-#[reply(content = "hey", ephemeral)]
-pub struct MyButtonComponent {
-    #[field(button)]
-    my_button: Option<Button>,
-}
-
 // #[derive(SelectOption)]
 // #[ctx_data = "Data"]
 // #[ctx_error = "Error"]
@@ -70,14 +51,30 @@ pub struct MyButtonComponent {
 //     },
 // }
 
+fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
+    format!("I am {}", ctx.author().name)
+}
+
+#[derive(ButtonComponent, GenerateReply, Clone, Debug)]
+#[form_data(ctx(Data, Error))]
+#[button(label_function = "label_function", danger)]
+#[reply(content = "bruh", ephemeral)]
+pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
+
+#[derive(MessageFormComponent, GenerateReply, Clone, Debug)]
+#[form_data(ctx(Data, Error))]
+#[reply(content = "hey", ephemeral)]
+pub struct MyButtonComponent {
+    #[field(button)]
+    my_button: Option<Button>,
+}
+
 #[derive(InteractionForm, Debug, Clone)]
 #[form_data(ctx(Data, Error))]
 pub struct TestForm {
     #[modal]
     modal_answers: TestFormModal,
 
-    // #[component]
-    // first_sel_comp: TestFormFirstSelection,
     #[component]
     button: MyButtonComponent,
 }

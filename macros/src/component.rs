@@ -1,5 +1,5 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-use darling::{util::Flag, FromDeriveInput};
+use darling::{util::Flag, FromDeriveInput, FromAttributes};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens, TokenStreamExt};
 
@@ -7,10 +7,11 @@ use crate::{
     common::{FormContextInfo, FormData},
     util::{self, parse_option},
 };
+use crate::common::FormDataAttr;
 
 /// Representation of the struct attributes
 #[derive(Debug, darling::FromDeriveInput)]
-#[darling(supports(struct_named), attributes(forms))]
+#[darling(supports(struct_named), attributes(component))]
 #[darling(allow_unknown_fields)]
 struct ComponentStruct {
     ident: syn::Ident,
@@ -18,9 +19,6 @@ struct ComponentStruct {
     /// The struct's fields
     ///                      vvvvvvvvvvvvvvvvvvvvvv No enum variants allowed!
     data: darling::ast::Data<darling::util::Ignored, SubcomponentField>,
-
-    /// Gather form type parameters.
-    form_data: FormData,
 
     /// Optionally, an async function with the same signature
     /// as `wait_for_response` to override.
@@ -99,13 +97,14 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
 
     // ---
     // form data
+    let form_data = FormDataAttr::from_attributes(&input.attrs)?.form_data;
     let FormData {
         data: data_type,
         ctx: FormContextInfo {
             data: ctx_data,
             error: ctx_error,
         },
-    } = &component_struct.form_data;
+    } = &form_data;
 
     let (
         subcomponent_buildables_sections,
@@ -127,7 +126,9 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
     subcomponent_create_from_interaction_ifs.reverse();
 
     // 'wait_for_response' override, if any
-    let wait_for_response = component_struct.wait_for_response_func();
+    let wait_for_response = component_struct.wait_for_response_func(
+        ctx_data, ctx_error, data_type
+    );
 
     // get the struct's generics
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -311,16 +312,13 @@ impl SubcomponentField {
 
 impl ComponentStruct {
     /// Generate a "wait_for_response" function based on the given parameter for that.
-    fn wait_for_response_func(&self) -> Option<TokenStream> {
+    fn wait_for_response_func(
+        &self,
+        ctx_data: &syn::Type,
+        ctx_error: &syn::Type,
+        data_type: &syn::Type,
+    ) -> Option<TokenStream> {
         self.wait_for_response.as_ref().map(|func| {
-            let FormData {
-                data: data_type,
-                ctx: FormContextInfo {
-                    data: ctx_data,
-                    error: ctx_error,
-                },
-            } = &self.form_data;
-
             quote! {
                 async fn wait_for_response(
                     context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
