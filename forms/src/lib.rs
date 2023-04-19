@@ -39,4 +39,6 @@ pub mod macros {
     pub use minirustbot_macros::*;
 }
 
-pub use macros::{ButtonComponent, GenerateReply, InteractionForm, SelectOption};
+pub use macros::{
+    ButtonComponent, GenerateReply, InteractionForm, MessageFormComponent, SelectOption,
+};

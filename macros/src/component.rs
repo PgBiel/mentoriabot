@@ -1,8 +1,7 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-use darling::util::Flag;
-use proc_macro::TokenStream;
-use proc_macro2::TokenStream as TokenStream2;
-use quote::quote;
+use darling::{util::Flag, FromDeriveInput};
+use proc_macro2::TokenStream;
+use quote::{quote, ToTokens, TokenStreamExt};
 
 use crate::{
     common::{FormContextInfo, FormData},
@@ -10,9 +9,16 @@ use crate::{
 };
 
 /// Representation of the struct attributes
-#[derive(Debug, darling::FromMeta)]
+#[derive(Debug, darling::FromDeriveInput)]
+#[darling(supports(struct_named), attributes(forms))]
 #[darling(allow_unknown_fields)]
-struct StructAttributes {
+struct ComponentStruct {
+    ident: syn::Ident,
+
+    /// The struct's fields
+    ///                      vvvvvvvvvvvvvvvvvvvvvv No enum variants allowed!
+    data: darling::ast::Data<darling::util::Ignored, SubcomponentField>,
+
     /// Gather form type parameters.
     form_data: FormData,
 
@@ -21,7 +27,7 @@ struct StructAttributes {
     #[darling(map = "parse_option")]
     wait_for_response: Option<syn::Path>,
 
-    /// Name of the async function to run when the form is finished.
+    /// Name of the async function to run when the component receives a response.
     /// It must take an ApplicationContext object, an `Arc<MessageComponentInteraction>`,
     /// a `&mut FormData`, the constructed `Self` (from its components),
     /// and return a `impl Future<Output = Result<Option<Self>>>`.
@@ -29,12 +35,27 @@ struct StructAttributes {
     /// while returning `Some(Self)` will advance the form.
     #[darling(map = "parse_option")]
     on_response: Option<syn::Path>,
+
+    /// Indicates this whole struct is a single button row.
+    button: Flag,
+
+    /// Indicates this whole struct is a row with multiple buttons.
+    buttons: Flag,
+
+    /// Indicates this whole struct is a select menu.
+    select: Flag,
 }
 
-/// Representation of the struct field attributes
-#[derive(Debug, Default, darling::FromMeta)]
-#[darling(allow_unknown_fields, default)]
-struct FieldAttributes {
+/// Data from a subcomponent field
+// #[darling(attributes(button, buttons, select))]
+#[derive(Debug, Clone, darling::FromField)]
+#[darling(attributes(field))]
+#[darling(allow_unknown_fields)]
+struct SubcomponentField {
+    ident: Option<syn::Ident>,
+
+    ty: syn::Type,
+
     /// Indicates this field is a single button row.
     button: Flag,
 
@@ -43,169 +64,315 @@ struct FieldAttributes {
 
     /// Indicates this field is a select menu.
     select: Flag,
+
+    /// If this field should have a custom initializer
+    /// (instead of Default::default)
+    /// when not specified.
+    initializer: Option<syn::Expr>,
+
+    /// This subcomponent's index in the generated Component implementation.
+    #[darling(skip)]
+    count: Option<i32>,
+
+    /// If this subcomponent is actually the whole component.
+    #[darling(skip)]
+    is_self: bool,
 }
 
-// pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-//     let fields = match input.data {
-//         syn::Data::Struct(syn::DataStruct {
-//             fields: syn::Fields::Named(fields),
-//             ..
-//         }) => fields.named,
-//         _ => {
-//             return Err(syn::Error::new(
-//                 // use Darling errors to indicate visually where the error occurred
-//                 input.ident.span(), /* <-- Error will display at the struct's name
-//                                      * ('ident'/identity) */
-//                 "Only structs with named fields can be used for deriving a Component.",
-//             )
-//             .into());
-//         }
-//     };
-//
-//     let struct_attrs: StructAttributes = util::get_darling_attrs(&input.attrs)?;
-//
-//     let FormData {
-//         data: data_type,
-//         ctx: FormContextInfo {
-//             data: ctx_data,
-//             error: ctx_error,
-//         },
-//     } = &struct_attrs.form_data;
-//
-//     let mut components = Vec::new();
-//     let mut create_fields = Vec::new();
-//     let mut modal_creation: Option<TokenStream2> = None;
-//
-//     for field in fields {
-//         let field_name: &syn::Ident = field.ident.as_ref().expect("Unnamed field");
-//         // Extract data from syn::Field
-//         let field_attrs: FieldAttributes = util::get_darling_attrs(&field.attrs)?;
-//
-//         let field_type: &syn::Type = &field.ty;
-//
-//         let field_inner_type =
-//             util::extract_type_parameter("Option", field_type).unwrap_or(field_type);
-//
-//         if field_attrs.component.is_present() {
-//             // is a message component
-//             components.push(generate_message_component(
-//                 field_name,
-//                 field_type,
-//                 field_inner_type,
-//                 &data_type,
-//                 ctx_data,
-//                 ctx_error,
-//             ));
-//             create_fields.push(quote! { #field_name });
-//         } else if field_attrs.modal.is_present() {
-//             if modal_creation.is_some() {
-//                 return Err(syn::Error::new(
-//                     syn::spanned::Spanned::span(field_name),
-//                     "Multiple #[modal] are not allowed.",
-//                 )
-//                 .into());
-//             }
-//
-//             modal_creation = Some(generate_modal_creation(
-//                 field_name,
-//                 /* modal_type: */ field_type,
-//                 /* modal_inner_type: */ field_inner_type,
-//                 &data_type,
-//                 ctx_data,
-//                 ctx_error,
-//             ));
-//             create_fields.push(quote! { #field_name });
-//         } else {
-//             create_fields.push(quote! { #field_name: Default::default() });
-//         }
-//     }
-//
-//     // for '#[on_finish = function_name]'
-//     let on_finish = parse_on_finish(&struct_attrs);
-//
-//     let struct_ident = input.ident; // struct's name as an object
-//
-//     // get the struct's generics
-//     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-//
-//     Ok(quote! { const _: () = {
-//         #[::async_trait::async_trait]
-//         impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error,
-// #data_type> for #struct_ident #ty_generics #where_clause {             async fn send_component(
-//                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-//                 data: &mut #data_type,
-//             ) ->
-// ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>> {
-//
-//                 let __buildables = <Self as ::minirustbot_forms::Subcomponent<#ctx_data,
-// #ctx_error, #data_type>>::generate_buildables(context, data).await?;                 let
-// __custom_ids = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&__buildables);
-//
-//                 let __reply = <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error,
-// #data_type>>::create_reply(context, data).await?;
-//
-//                 context.send(|f|
-//                     <::minirustbot_forms::ReplySpec as
-// ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
-// .components(|f| f                             .create_action_row(|mut f| {
-//                                 for buildable in &__buildables {
-//                                     f = f.create_button(|b|
-// ::minirustbot_forms::Buildable::<::poise::serenity_prelude::CreateButton>::on_build(buildable,
-// b));                                 }
-//                                 f
-//                             }))).await?;
-//
-//                 Ok(__custom_ids.into_iter().map(::core::clone::Clone::clone).collect())
-//             }
-//
-//             async fn on_response(
-//                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-//                 interaction:
-// ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,                 data:
-// &mut #data_type,             ) ->
-// ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>> {
-// ::core::result::Result::Ok(::core::option::Option::Some(                     <Self as
-// ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error,
-// #data_type>>::build_from_interaction(context, interaction, data)                         .await?
-//                 ))
-//             }
-//         }
-//     }; }.into())
-// }
-//
-// fn generate_message_component(
-//     field_name: &syn::Ident,
-//     field_type: &syn::Type,
-//     field_inner_type: &syn::Type,
-//     data_type: &syn::Type,
-//     ctx_data: &syn::Type,
-//     ctx_error: &syn::Type,
-// ) -> TokenStream2 {
-//     // use .into() in case it's an Option<>, Box<> etc.
-//     quote! {
-//         let #field_name: #field_type = (*<#field_inner_type as
-// ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type>>::run(context, &mut
-// __component_data).await?).into();     }
-// }
-//
-// fn generate_modal_creation(
-//     modal_field_name: &syn::Ident,
-//     modal_type: &syn::Type,
-//     modal_inner_type: &syn::Type,
-//     data_type: &syn::Type,
-//     ctx_data: &syn::Type,
-//     ctx_error: &syn::Type,
-// ) -> TokenStream2 {
-//     quote! {
-//         let #modal_field_name: #modal_type = (*<#modal_inner_type as
-// ::minirustbot_forms::ModalFormComponent<#ctx_data, #ctx_error, #data_type>>::run(context, &mut
-// __component_data).await?).into();     }
-// }
-//
-// fn parse_on_finish(struct_attrs: &StructAttributes) -> Option<TokenStream2> {
-//     struct_attrs.on_finish.as_ref().map(|on_finish| quote! {
-//             async fn on_finish(self, context: ::poise::ApplicationContext<'_, Self::ContextData,
-// Self::ContextError>) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>> {
-// #on_finish(context).into()             }
-//         })
-// }
+pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
+    let component_struct = ComponentStruct::from_derive_input(&input)?;
+    let component_subcomponent = SubcomponentField::from_component(&component_struct);
+    let mut subcomponent_count = 0;
+    let subcomponents = component_subcomponent
+        .into_iter()
+        .chain(
+            component_struct
+                .data
+                .clone()
+                .take_struct()
+                .unwrap()
+                .fields
+                .into_iter(),
+        )
+        .map(|s| s.init_counter(&mut subcomponent_count))
+        .collect::<Vec<SubcomponentField>>();
+
+    // ---
+    // form data
+    let FormData {
+        data: data_type,
+        ctx: FormContextInfo {
+            data: ctx_data,
+            error: ctx_error,
+        },
+    } = &component_struct.form_data;
+
+    let (
+        subcomponent_buildables_sections,
+        (subcomponent_row_creators, mut subcomponent_create_from_interaction_ifs),
+    ): (Vec<TokenStream>, (Vec<TokenStream>, Vec<TokenStream>)) = subcomponents
+        .iter()
+        .map(|c| {
+            (
+                c.gen_buildables_section(ctx_data, ctx_error, data_type),
+                (
+                    c.create_row(),
+                    c.create_from_interaction(ctx_data, ctx_error, data_type, &component_struct),
+                ),
+            )
+        })
+        .unzip();
+
+    // pop from stack in the reverse order of pushing
+    subcomponent_create_from_interaction_ifs.reverse();
+
+    // 'wait_for_response' override, if any
+    let wait_for_response = component_struct.wait_for_response_func();
+
+    // get the struct's generics
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    let struct_ident = component_struct.ident;
+
+    let q = quote! { const _: () = {
+        #[::async_trait::async_trait]
+        impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+            async fn send_component(
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
+                data: &mut ::minirustbot_forms::FormState<#data_type>,
+            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>, #ctx_error> {
+
+                data.subcomponent_id_stack.clear();
+                let __custom_ids = ::std::vec::Vec::new();
+
+                #(#subcomponent_buildables_sections)*
+
+                let __reply = <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(context, data).await?;
+
+                context.send(|f|
+                    <::minirustbot_forms::ReplySpec as ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
+                        .components(|f| f
+                            #(#subcomponent_row_creators)*)).await?;
+
+                Ok(__custom_ids) //.into_iter().map(::core::clone::Clone::clone).collect())
+            }
+
+            #wait_for_response
+
+            async fn on_response(
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
+                interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
+                data: &mut ::minirustbot_forms::FormState<#data_type>
+            ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>> {
+                #(#subcomponent_create_from_interaction_ifs)*
+
+                ::core::result::Result::Err(::minirustbot_forms::error::FormError::InvalidUserResponse.into())
+            }
+        }
+    }};
+    println!("Q: {}", q);
+    Ok(q)
+}
+
+impl SubcomponentField {
+    /// Inits this instance's counter.
+    fn init_counter(mut self, count: &mut i32) -> Self {
+        self.count = Some(*count);
+        *count += 1;
+        self
+    }
+
+    /// Generates the "send_component" section relative to this subcomponent.
+    /// Basically calls the buildables generator function, gets their custom IDs,
+    /// and then pushes their custom IDs to the ID stack (so that we can compare them later,
+    /// in order).
+    fn gen_buildables_section(
+        &self,
+        ctx_data: &syn::Type,
+        ctx_error: &syn::Type,
+        data_type: &syn::Type,
+    ) -> TokenStream {
+        let ty = &self.ty;
+        let count = self.count.unwrap();
+        let buildables_var = format!("__buildables{}", count);
+        let custom_ids_var = format!("__custom_ids{}", count);
+
+        quote! {
+            let #buildables_var = <#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
+            let #custom_ids_var = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&#buildables_var);
+
+            data.subcomponent_id_stack.push(<__custom_ids as ::core::clone::Clone>::clone(#custom_ids_var));
+            __custom_ids.append(#custom_ids_var);
+        }
+    }
+
+    /// Creates this subcomponent's row.
+    fn create_row(&self) -> TokenStream {
+        let count = self.count.unwrap();
+        if self.buttons.is_present() {
+            let buildables_var = format!("__buildables{}", count);
+            quote! {
+                .create_action_row(|b| {
+                    let buildable = &#buildables_var.at(0);
+                    ::minirustbot_forms::Buildable::<::poise::serenity_prelude::CreateActionRow>::on_build(buildable, b)
+                })
+            }
+        } else {
+            let (func, buildable_type) = if self.button.is_present() {
+                (
+                    quote! { create_button },
+                    quote! { ::poise::serenity_prelude::CreateButton },
+                )
+            } else if self.select.is_present() {
+                (
+                    quote! { create_select_menu },
+                    quote! { ::poise::serenity_prelude::CreateSelectMenu },
+                )
+            } else {
+                panic!("Subcomponent is not button, buttons or select. {:?}", self)
+            };
+
+            let buildables_var = format!("__buildables{}", count);
+            quote! {
+                .create_action_row(|mut f| {
+                    for buildable in &#buildables_var #count {
+                        f = f.#func(|b| ::minirustbot_forms::Buildable::<#buildable_type>::on_build(buildable, b));
+                    }
+                    f
+                })
+            }
+        }
+    }
+
+    /// The necessary code to create this subcomponent from the received interaction.
+    fn create_from_interaction(
+        &self,
+        ctx_data: &syn::Type,
+        ctx_error: &syn::Type,
+        data_type: &syn::Type,
+        component_struct: &ComponentStruct,
+    ) -> TokenStream {
+        let ty = &self.ty;
+        let return_expr = if self.is_self {
+            let result = quote! {
+                <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
+                        .await?
+            };
+            let result = component_struct.on_response_wrapper(result);
+            quote! {  // return built self
+                return ::core::result::Result::Ok(::core::option::Option::Some(#result));
+            }
+        } else {
+            let result = quote! {
+                <#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
+                        .await?
+            };
+            let result = component_struct.on_response_wrapper(result);
+            let initializer = component_struct.build_initializer(self.ident.as_ref(), Some(result));
+
+            quote! {
+                return ::core::result::Result::Ok(::core::option::Option::Some(::std::boxed::Box::new(#initializer)));
+            }
+        };
+
+        // Pop this component's IDs from the ID stack
+        // (Should be in order!)
+        quote! {
+            if data.subcomponent_id_stack.pop().ok_or(::minirustbot_forms::error::FormError::InvalidUserResponse)?.contains(::minirustbot_forms::CustomId(interaction.data.custom_id)) {
+                #return_expr
+            }
+        }
+    }
+
+    /// Creates a subcomponent from a ComponentStruct, if applicable.
+    fn from_component(component: &ComponentStruct) -> Option<Self> {
+        (component.button.is_present()
+            || component.buttons.is_present()
+            || component.select.is_present())
+        .then(|| Self {
+            ident: Some(component.ident.clone()),
+            ty: util::empty_tuple_type(),
+            button: Default::default(),
+            buttons: Default::default(),
+            select: Default::default(),
+            initializer: None,
+            count: None,
+            is_self: true,
+        })
+    }
+}
+
+impl ComponentStruct {
+    /// Generate a "wait_for_response" function based on the given parameter for that.
+    fn wait_for_response_func(&self) -> Option<TokenStream> {
+        self.wait_for_response.as_ref().map(|func| {
+            let FormData {
+                data: data_type,
+                ctx: FormContextInfo {
+                    data: ctx_data,
+                    error: ctx_error,
+                },
+            } = &self.form_data;
+
+            quote! {
+                async fn wait_for_response(
+                    context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
+                    data: &mut ::minirustbot_forms::FormState<#data_type>,
+                    custom_ids: &::std::vec::Vec<::minirustbot_forms::CustomId>,
+                ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>>, #ctx_error> {
+                    #func(context, data, custom_ids)
+                }
+            }
+        })
+    }
+
+    /// Generate a "on_response" call based on the given path parameter.
+    fn on_response_wrapper(&self, tokens: TokenStream) -> TokenStream {
+        self.on_response
+            .as_ref()
+            .map(|func| {
+                quote! {
+                    #func(context, interaction, data, *(#tokens))
+                }
+            })
+            .unwrap_or(tokens)
+    }
+
+    /// Builds a initializing statement for the Component struct.
+    fn build_initializer(
+        &self,
+        replacing_ident: Option<&syn::Ident>,
+        replacing_expr: Option<TokenStream>,
+    ) -> TokenStream {
+        let fields = self
+            .data
+            .as_ref()
+            .take_struct()
+            .unwrap()
+            .fields
+            .into_iter()
+            .map(|f| {
+                (
+                    f.ident.clone().unwrap(),
+                    f.initializer
+                        .as_ref()
+                        .map(|i| i.into_token_stream())
+                        .unwrap_or(quote! { Default::default() }),
+                )
+            })
+            .map(|(ident, init)| {
+                if replacing_ident.map(|i| *i == ident).unwrap_or(false) {
+                    (ident, replacing_expr.clone().unwrap())
+                } else {
+                    (ident, init)
+                }
+            })
+            .map(|(ident, init)| quote! { #ident: #init, })
+            .collect::<Vec<TokenStream>>();
+
+        quote! {
+            Self {
+                #(#fields)*
+            }
+        }
+    }
+}

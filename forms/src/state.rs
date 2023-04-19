@@ -12,10 +12,10 @@ pub struct FormState<T = ()> {
     /// User-defined data shared between components.
     pub data: T,
 
-    /// A queue of subcomponent ID lists. Useful
+    /// A stack of subcomponent ID lists. Useful
     /// to be able to correlate sent components and received responses.
     /// Mostly intended for use with the component-deriving macro.
-    pub subcomponent_id_queue: Vec<Vec<CustomId>>,
+    pub subcomponent_id_stack: Vec<Vec<CustomId>>,
 }
 
 impl<T> FormState<T> {
@@ -23,7 +23,7 @@ impl<T> FormState<T> {
     pub fn new(data: T) -> Self {
         Self {
             data,
-            subcomponent_id_queue: Vec::new(),
+            subcomponent_id_stack: Vec::new(),
         }
     }
 }

@@ -77,6 +77,24 @@ pub(crate) fn parse2<T, U, R: From<(T, U)>>(parsed: Parsed2<T, U>) -> R {
     (parsed.0, parsed.1).into()
 }
 
+/// Holds either a type or `Self`.
+pub(crate) enum TypeOrSelf {
+    Ty(syn::Type),
+    SelfType(syn::Token![Self])
+}
+
+impl From<syn::Type> for TypeOrSelf {
+    fn from(value: syn::Type) -> Self {
+        Self::Ty(value)
+    }
+}
+
+impl From<syn::Token![Self]> for TypeOrSelf {
+    fn from(value: syn::Token!(Self)) -> Self {
+        Self::SelfType(value)
+    }
+}
+
 /// Syn Fold to make all lifetimes 'static. Used to access trait items of a type without having its
 /// concrete lifetime available
 #[allow(dead_code)]

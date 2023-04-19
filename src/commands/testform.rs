@@ -5,7 +5,7 @@ use poise::serenity_prelude as serenity;
 use crate::{
     common::{ApplicationContext, Data},
     error::Error,
-    forms::{ButtonComponent, GenerateReply, InteractionForm, SelectOption},
+    forms::{ButtonComponent, GenerateReply, InteractionForm, MessageFormComponent},
 };
 
 #[derive(Debug, Default, Clone, poise::Modal)]
@@ -36,6 +36,15 @@ fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
 #[button(label_function = "label_function", danger)]
 #[reply(content = "bruh", ephemeral)]
 pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
+
+#[derive(MessageFormComponent, GenerateReply, Clone, Debug)]
+#[forms(form_data(ctx(Data, Error)))]
+#[form_data(ctx(Data, Error))]
+#[reply(content = "hey", ephemeral)]
+pub struct MyButtonComponent {
+    #[field(button)]
+    my_button: Option<Button>,
+}
 
 // #[derive(SelectOption)]
 // #[ctx_data = "Data"]

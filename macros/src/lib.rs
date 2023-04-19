@@ -58,6 +58,29 @@ pub fn form(input: TokenStream) -> TokenStream {
     }
 }
 
+#[proc_macro_derive(
+    MessageFormComponent,
+    attributes(
+        forms,
+        field,
+        form_data,
+        wait_for_response,
+        on_response,
+        button,
+        buttons,
+        select,
+        initializer
+    )
+)]
+pub fn component(input: TokenStream) -> TokenStream {
+    let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
+
+    match component::component(struct_) {
+        Ok(x) => x.into(),
+        Err(e) => e.write_errors().into(),
+    }
+}
+
 #[proc_macro_derive(ModalFormComponent, attributes(form))]
 pub fn modal_form_component(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
