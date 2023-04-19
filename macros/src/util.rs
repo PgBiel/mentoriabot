@@ -1,8 +1,14 @@
 mod darling_types;
 
+use proc_macro2::Span;
 pub use darling_types::*;
 use quote::ToTokens;
 use syn::spanned::Spanned;
+
+/// Converts a string to ident (which can be inserted without quotes)
+pub fn string_to_ident(s: &str) -> syn::Ident {
+    syn::Ident::new(s, Span::call_site())
+}
 
 /// Workaround to have required Option<> attributes in synthez
 pub fn require_token<T: ToTokens>(o: &Option<T>) -> Result<&Option<T>, syn::Error> {

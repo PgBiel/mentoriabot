@@ -79,7 +79,7 @@ pub struct TestForm {
     // #[component]
     // first_sel_comp: TestFormFirstSelection,
     #[component]
-    button: Button,
+    button: MyButtonComponent,
 }
 
 /// Runs test form

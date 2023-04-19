@@ -133,7 +133,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     let struct_ident = component_struct.ident;
 
-    let q = quote! { const _: () = {
+    let result = quote! { const _: () = {
         #[::async_trait::async_trait]
         impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             async fn send_component(
@@ -142,7 +142,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
             ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>, #ctx_error> {
 
                 data.subcomponent_id_stack.clear();
-                let __custom_ids = ::std::vec::Vec::new();
+                let mut __custom_ids = ::std::vec::Vec::new();
 
                 #(#subcomponent_buildables_sections)*
 
@@ -150,7 +150,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
 
                 context.send(|f|
                     <::minirustbot_forms::ReplySpec as ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
-                        .components(|f| f
+                        .components(|mut f| f
                             #(#subcomponent_row_creators)*)).await?;
 
                 Ok(__custom_ids) //.into_iter().map(::core::clone::Clone::clone).collect())
@@ -162,20 +162,29 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut ::minirustbot_forms::FormState<#data_type>
-            ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>> {
+            ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>, #ctx_error> {
                 #(#subcomponent_create_from_interaction_ifs)*
 
                 ::core::result::Result::Err(::minirustbot_forms::error::FormError::InvalidUserResponse.into())
             }
         }
-    }};
-    println!("Q: {}", q);
-    Ok(q)
+    };
+    };
+
+    Ok(result)
 }
 
 impl SubcomponentField {
+    /// Take T from inside an Option<T>.
+    fn init_type(mut self) -> Self {
+        self.ty = util::extract_type_parameter("Option", &self.ty)
+            .unwrap_or(&self.ty)
+            .clone();
+        self
+    }
     /// Inits this instance's counter.
     fn init_counter(mut self, count: &mut i32) -> Self {
+        self = self.init_type();
         self.count = Some(*count);
         *count += 1;
         self
@@ -193,23 +202,23 @@ impl SubcomponentField {
     ) -> TokenStream {
         let ty = &self.ty;
         let count = self.count.unwrap();
-        let buildables_var = format!("__buildables{}", count);
-        let custom_ids_var = format!("__custom_ids{}", count);
+        let buildables_var = util::string_to_ident(&format!("__buildables{}", count));
+        let custom_ids_var = util::string_to_ident(&format!("__custom_ids{}", count));
 
         quote! {
             let #buildables_var = <#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
-            let #custom_ids_var = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&#buildables_var);
+            let mut #custom_ids_var = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&#buildables_var).into_iter().map(::core::clone::Clone::clone).collect::<Vec<_>>();
 
-            data.subcomponent_id_stack.push(<__custom_ids as ::core::clone::Clone>::clone(#custom_ids_var));
-            __custom_ids.append(#custom_ids_var);
+            data.subcomponent_id_stack.push(::core::clone::Clone::clone(&#custom_ids_var));
+            __custom_ids.append(&mut #custom_ids_var);
         }
     }
 
     /// Creates this subcomponent's row.
     fn create_row(&self) -> TokenStream {
         let count = self.count.unwrap();
+        let buildables_var = util::string_to_ident(&format!("__buildables{}", count));
         if self.buttons.is_present() {
-            let buildables_var = format!("__buildables{}", count);
             quote! {
                 .create_action_row(|b| {
                     let buildable = &#buildables_var.at(0);
@@ -231,10 +240,9 @@ impl SubcomponentField {
                 panic!("Subcomponent is not button, buttons or select. {:?}", self)
             };
 
-            let buildables_var = format!("__buildables{}", count);
             quote! {
                 .create_action_row(|mut f| {
-                    for buildable in &#buildables_var #count {
+                    for buildable in &#buildables_var {
                         f = f.#func(|b| ::minirustbot_forms::Buildable::<#buildable_type>::on_build(buildable, b));
                     }
                     f
@@ -263,8 +271,8 @@ impl SubcomponentField {
             }
         } else {
             let result = quote! {
-                <#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
-                        .await?
+                (*<#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
+                        .await?).into()
             };
             let result = component_struct.on_response_wrapper(result);
             let initializer = component_struct.build_initializer(self.ident.as_ref(), Some(result));
@@ -277,7 +285,7 @@ impl SubcomponentField {
         // Pop this component's IDs from the ID stack
         // (Should be in order!)
         quote! {
-            if data.subcomponent_id_stack.pop().ok_or(::minirustbot_forms::error::FormError::InvalidUserResponse)?.contains(::minirustbot_forms::CustomId(interaction.data.custom_id)) {
+            if data.subcomponent_id_stack.pop().ok_or(::minirustbot_forms::error::FormError::InvalidUserResponse)?.contains(&::minirustbot_forms::CustomId(interaction.data.custom_id.clone())) {
                 #return_expr
             }
         }
