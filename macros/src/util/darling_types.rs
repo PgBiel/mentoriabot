@@ -80,7 +80,7 @@ pub(crate) fn parse2<T, U, R: From<(T, U)>>(parsed: Parsed2<T, U>) -> R {
 /// Holds either a type or `Self`.
 pub(crate) enum TypeOrSelf {
     Ty(syn::Type),
-    SelfType(syn::Token![Self])
+    SelfType(syn::Token![Self]),
 }
 
 impl From<syn::Type> for TypeOrSelf {

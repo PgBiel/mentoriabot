@@ -1,7 +1,7 @@
 mod darling_types;
 
-use proc_macro2::Span;
 pub use darling_types::*;
+use proc_macro2::Span;
 use quote::ToTokens;
 use syn::spanned::Spanned;
 

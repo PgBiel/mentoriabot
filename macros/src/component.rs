@@ -1,13 +1,12 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-use darling::{util::Flag, FromDeriveInput, FromAttributes};
+use darling::{util::Flag, FromAttributes, FromDeriveInput};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens, TokenStreamExt};
 
 use crate::{
-    common::{FormContextInfo, FormData},
+    common::{FormContextInfo, FormData, FormDataAttr},
     util::{self, parse_option},
 };
-use crate::common::FormDataAttr;
 
 /// Representation of the struct attributes
 #[derive(Debug, darling::FromDeriveInput)]
@@ -126,9 +125,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
     subcomponent_create_from_interaction_ifs.reverse();
 
     // 'wait_for_response' override, if any
-    let wait_for_response = component_struct.wait_for_response_func(
-        ctx_data, ctx_error, data_type
-    );
+    let wait_for_response = component_struct.wait_for_response_func(ctx_data, ctx_error, data_type);
 
     // get the struct's generics
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();

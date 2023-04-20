@@ -7,56 +7,9 @@ use syn::spanned::Spanned;
 
 use crate::{
     common::{FormContextInfo, FormData},
-    util::{
-        self,
-        macros::{
-            take_attribute_optional, take_attribute_or_its_function_optional,
-            take_attribute_or_its_function_required,
-        },
-    },
+    model::{ButtonSpecRepr, ToSpec, ValidateAttrs},
+    util,
 };
-
-/// Representation of the struct attributes
-#[derive(Debug, Clone, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
-struct ButtonAttributes {
-    /// The button's literal label (please specify this, or a `label_function`)
-    label: Option<String>,
-
-    /// Path to a function (accepting &Data, as specified by `#[data = "Data"]`)
-    /// that returns the button's label as a Into<String> (specify this or `label`).
-    label_function: Option<syn::Path>,
-
-    /// The button's fixed custom ID; if unspecified,
-    /// it is auto-generated.
-    custom_id: Option<String>,
-
-    primary: Flag,
-    secondary: Flag,
-    success: Flag,
-    danger: Flag,
-
-    /// Makes the button lead to the given link
-    /// NOTE: Such a button cannot be awaited for.
-    link: Option<String>,
-
-    /// Function takes &Data, and returns the link the button leads to (Into<String>).
-    link_function: Option<syn::Path>,
-
-    /// An optional single emoji to display near the label
-    emoji: Option<char>,
-
-    /// Function that returns the emoji to display near the button label
-    /// (takes &Data, returns Into<ReactionType>)
-    emoji_function: Option<syn::Path>,
-
-    /// If this button is disabled and cannot be clicked
-    disabled: Flag,
-
-    /// Function that determines if this button is disabled
-    /// (takes &Data, returns bool)
-    disabled_function: Option<syn::Path>,
-}
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -65,7 +18,7 @@ struct ButtonBaseAttributes {
     form_data: FormData,
 
     /// Button attributes
-    button: ButtonAttributes,
+    button: ButtonSpecRepr,
 }
 
 #[derive(Debug, Clone, darling::FromMeta)]
@@ -83,7 +36,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     let struct_attrs: ButtonBaseAttributes = util::get_darling_attrs(&input.attrs)?;
     let button_attrs = &struct_attrs.button;
 
-    validate_attrs(button_attrs, &input)?;
+    button_attrs.validate_attrs()?;
 
     // ---
     let FormData {
@@ -94,7 +47,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         },
     } = &struct_attrs.form_data;
 
-    let button_spec = create_button_spec(button_attrs, data_type);
+    let button_spec = button_attrs.to_spec();
     let create_with_interaction = single_button_create_with_interaction_code(&input)?
         .unwrap_or_else(|| quote! { Default::default() });
 
@@ -161,52 +114,6 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             }
         }
     }.into())
-}
-
-fn validate_attrs(
-    struct_attrs: &ButtonAttributes,
-    input: &syn::DeriveInput,
-) -> Result<(), darling::Error> {
-    if struct_attrs.label.is_some() && struct_attrs.label_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[label] and #[label_function] at the same time.",
-        )
-        .into());
-    }
-
-    if struct_attrs.label.is_none() && struct_attrs.label_function.is_none() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Must specify either a #[label] or a #[label_function], so that the button may have a label."
-        ).into());
-    }
-
-    if struct_attrs.emoji.is_some() && struct_attrs.emoji_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[emoji] and #[emoji_function] at the same time.",
-        )
-        .into());
-    }
-
-    if struct_attrs.link.is_some() && struct_attrs.link_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[link] and #[link_function] at the same time.",
-        )
-        .into());
-    }
-
-    if struct_attrs.disabled.is_present() && struct_attrs.disabled_function.is_some() {
-        return Err(syn::Error::new(
-            input.ident.span(),
-            "Cannot specify #[disabled] and #[disabled_function] at the same time.",
-        )
-        .into());
-    }
-
-    Ok(())
 }
 
 fn single_button_create_with_interaction_code(
@@ -357,45 +264,4 @@ fn single_button_create_with_interaction_code(
     };
 
     Ok(result)
-}
-
-fn create_button_spec(button_attrs: &ButtonAttributes, _data: &syn::Type) -> TokenStream2 {
-    let label = take_attribute_or_its_function_required!(button_attrs; label, label_function);
-    let custom_id = take_attribute_optional!(button_attrs; custom_id);
-    let link = take_attribute_or_its_function_optional!(button_attrs; link, link_function);
-    let emoji = take_attribute_or_its_function_optional!(button_attrs; emoji, emoji_function);
-
-    let disabled = if let Some(disabled_function) = &button_attrs.disabled_function {
-        quote! { #disabled_function(context, data).into() }
-    } else {
-        let disabled = button_attrs.disabled.is_present();
-        quote! { #disabled.into() }
-    };
-
-    let style = if button_attrs.primary.is_present() {
-        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Primary })
-    } else if button_attrs.secondary.is_present() {
-        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Secondary })
-    } else if button_attrs.danger.is_present() {
-        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Danger })
-    } else if button_attrs.success.is_present() {
-        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Success })
-    } else if button_attrs.link.is_some() {
-        Some(quote! { ::poise::serenity_prelude::ButtonStyle::Link })
-    } else {
-        None
-    };
-
-    let style = util::wrap_option_into(&style);
-
-    quote! {
-        ::minirustbot_forms::ButtonSpec {
-            label: #label,
-            custom_id: #custom_id,
-            style: #style,
-            link: #link,
-            emoji: #emoji,
-            disabled: #disabled,
-        }
-    }
 }

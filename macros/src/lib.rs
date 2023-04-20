@@ -3,6 +3,7 @@ mod common;
 mod component;
 mod form;
 mod modal_component;
+mod model;
 mod reply;
 mod select;
 mod select_option;
