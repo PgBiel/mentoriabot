@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use minirustbot_forms::SelectMenuOptionSpec;
+use minirustbot_macros::SelectMenuComponent;
 use poise::serenity_prelude as serenity;
 
 use crate::{
@@ -68,6 +70,29 @@ pub struct MyButtonComponent {
     #[field(button)]
     my_button: Option<Button>,
 }
+
+fn select_opts() -> Vec<SelectMenuOptionSpec> {
+    vec![
+        SelectMenuOptionSpec {
+            label: "abcdef".to_string(),
+            value_key: "test1".into(),
+            description: "ghijkl".to_string().into(),
+            ..Default::default()
+        },
+        SelectMenuOptionSpec {
+            label: "abcdefgg".to_string(),
+            value_key: "test2".into(),
+            description: "ghijkl".to_string().into(),
+            ..Default::default()
+        },
+    ]
+}
+
+// #[derive(MessageFormComponent, SelectMenuComponent, GenerateReply, Clone, Debug)]
+// #[form_data(ctx(Data, Error))]
+// #[select(options = select_opts())]
+// #[reply(content = "test", ephemeral)]
+// pub struct Selector {}
 
 #[derive(InteractionForm, Debug, Clone)]
 #[form_data(ctx(Data, Error))]

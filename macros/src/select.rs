@@ -154,7 +154,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             }
 
             async fn build_from_interaction(
-                context: ApplicationContext<'_, #ctx_data, #ctx_error>,
+                context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
                 data: &mut ::minirustbot_forms::FormState<#data_type>,
             ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, #ctx_error> {
