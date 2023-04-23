@@ -13,10 +13,7 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{
-        Availability, NewAvailability, PartialAvailability, Session, SessionStudent, Teacher,
-        Weekday,
-    },
+    model::{Availability, NewAvailability, PartialAvailability, Session, Teacher, Weekday},
     schema::{availability, sessions},
 };
 

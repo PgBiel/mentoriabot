@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
+use diesel::{OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
@@ -10,8 +10,8 @@ use super::{
 };
 use crate::{
     error::{Error, Result},
-    model::{DiscordId, NewUser, PartialUser, Session, SessionStudent, Teacher, User},
-    schema::{session_students, teachers, users},
+    model::{DiscordId, NewUser, PartialUser, Session, Teacher, User},
+    schema::users,
 };
 
 /// Manages User instances.
@@ -57,19 +57,11 @@ impl UserRepository {
             .ok_or_else(|| Error::Other("Could not find User for a certain teacher!"))
     }
 
-    /// Searches for all Users that are Students of
-    /// a particular Session.
-    pub async fn find_by_session(&self, session: &Session) -> Result<Vec<User>> {
-        users::table
-            .inner_join(session_students::table)
-            .filter(session_students::session_id.eq(session.id))
-            .get_results(&mut self.lock_connection().await?)
-            .await
-            .map(|v: Vec<(User, SessionStudent)>| {
-                // get just the User (we don't need the SessionStudent).
-                v.into_iter().map(|x| x.0).collect()
-            })
-            .map_err(From::from)
+    /// Gets a Session's student User.
+    pub async fn find_student_of_session(&self, session: &Session) -> Result<User> {
+        self.get(session.student_id)
+            .await?
+            .ok_or_else(|| Error::Other("Could not find User that is student of a session!"))
     }
 }
 

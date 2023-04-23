@@ -30,7 +30,7 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
     Box::pin(async move {
         let locale = framework_error
             .ctx()
-            .map(util::get_defaulted_locale)
+            .map(util::locale::get_defaulted_locale)
             .unwrap_or("pt-BR");
 
         let response = match &framework_error {
@@ -129,9 +129,9 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                         locale = locale,
                         "duration" => {
                             if locale == "pt-BR" {
-                                util::convert_duration_to_brazilian_string(*remaining_cooldown)
+                                util::locale::convert_duration_to_brazilian_string(*remaining_cooldown)
                             } else {
-                                util::convert_duration_to_string(*remaining_cooldown)
+                                util::locale::convert_duration_to_string(*remaining_cooldown)
                             }
                         }
                     )

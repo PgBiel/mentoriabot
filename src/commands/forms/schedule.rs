@@ -215,6 +215,8 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
                 user_id: mentor_id,
                 email: Some("test@gmail.com".to_string()),
                 specialty: "Test".to_string(),
+                company: None,
+                company_role: None,
             },
         })))
     }

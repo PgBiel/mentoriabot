@@ -5,10 +5,11 @@ use poise::serenity_prelude as serenity;
 use crate::{
     commands::modals::sessions::SessionCreateModals,
     common::{ApplicationContext, Context},
-    error::{Error, Result},
+    error::Result,
     model::{NewSession, NewUser, Session, User},
     repository::Repository,
-    util::{self, brazil_timezone, tr},
+    util,
+    util::{tr, BRAZIL_TIMEZONE},
 };
 
 /// Manages sessions with mentors.
@@ -170,16 +171,14 @@ pub async fn get(
         } = db.user_repository().find_by_teacher(&teacher).await?;
         let teacher_mention = teacher_id.as_user_mention();
 
-        let timezone = brazil_timezone()
-            .ok_or_else(|| Error::Other("Failed to fetch the Brazilian timezone"))?;
-
-        let start_at = start_at.with_timezone(&timezone);
+        let start_at = start_at.with_timezone(&*BRAZIL_TIMEZONE);
         let duration = end_at.signed_duration_since(start_at);
 
         ctx.send(|f| {
             f.ephemeral(true).embed(|f| {
                 if ctx.locale() == Some("pt-BR") {
-                    let duration = util::convert_chrono_duration_to_brazilian_string(duration);
+                    let duration =
+                        util::locale::convert_chrono_duration_to_brazilian_string(duration);
                     f.title(format!("Sessão '{}'", name))
                         .field(
                             "Mentor",
@@ -191,7 +190,7 @@ pub async fn get(
                         .description(format!("\"{}\"", description))
                         .color(serenity::Colour::BLITZ_BLUE)
                 } else {
-                    let duration = util::convert_chrono_duration_to_string(duration);
+                    let duration = util::locale::convert_chrono_duration_to_string(duration);
                     f.title(format!("Session '{}'", name))
                         .field(
                             "Mentor",
