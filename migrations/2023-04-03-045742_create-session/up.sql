@@ -11,5 +11,6 @@ CREATE TABLE sessions (
   notified BOOLEAN NOT NULL,
   availability_id BIGINT REFERENCES availability (id) ON DELETE SET NULL,
   start_at timestamp with time zone NOT NULL,
-  end_at timestamp with time zone NOT NULL
+  end_at timestamp with time zone NOT NULL,
+  CHECK (start_at < end_at)
 );

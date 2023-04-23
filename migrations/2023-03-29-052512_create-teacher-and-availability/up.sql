@@ -12,5 +12,6 @@ CREATE TABLE availability (
   teacher_id VARCHAR NOT NULL REFERENCES teachers (user_id),
   weekday SMALLINT NOT NULL CHECK (weekday >= 0 AND weekday <= 6),
   time_start time NOT NULL,
-  time_end time NOT NULL
+  time_end time NOT NULL,
+  CHECK (time_start < time_end)
 );
