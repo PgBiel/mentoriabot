@@ -29,6 +29,8 @@ diesel::table! {
         user_id -> Varchar,
         email -> Nullable<Varchar>,
         specialty -> Varchar,
+        company -> Nullable<Varchar>,
+        company_role -> Nullable<Varchar>,
     }
 }
 
