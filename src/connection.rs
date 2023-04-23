@@ -7,7 +7,7 @@ use diesel_async::{
 
 use crate::{
     error::Result,
-    repository::{SessionRepository, SessionStudentRepository, UserRepository},
+    repository::{SessionRepository, UserRepository},
 };
 
 /// Manages database Connection and Repository objects, using a
@@ -17,7 +17,6 @@ pub struct DatabaseManager {
     pool: Arc<Pool<AsyncPgConnection>>,
     user_repository: UserRepository,
     session_repository: SessionRepository,
-    session_student_repository: SessionStudentRepository,
 }
 
 /// General function for creating a connection pool to the database.
@@ -36,13 +35,11 @@ impl DatabaseManager {
 
         let user_repository = UserRepository::new(&pool);
         let session_repository = SessionRepository::new(&pool);
-        let session_student_repository = SessionStudentRepository::new(&pool);
 
         Ok(Self {
             pool,
             user_repository,
             session_repository,
-            session_student_repository,
         })
     }
 
@@ -59,10 +56,5 @@ impl DatabaseManager {
     /// Returns a [`SessionRepository`] object using the current connection pool.
     pub fn session_repository(&self) -> &SessionRepository {
         &self.session_repository
-    }
-
-    /// Returns a [`SessionStudentRepository`] object using the current connection pool.
-    pub fn session_student_repository(&self) -> &SessionStudentRepository {
-        &self.session_student_repository
     }
 }

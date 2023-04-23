@@ -12,9 +12,6 @@ pub use user::UserRepository;
 mod session;
 pub use session::SessionRepository;
 
-mod session_student;
-pub use session_student::SessionStudentRepository;
-
 mod availability;
 pub use availability::AvailabilityRepository;
 

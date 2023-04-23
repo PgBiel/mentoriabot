@@ -11,6 +11,7 @@ use crate::schema::*;
 pub struct Session {
     pub id: i64,
     pub teacher_id: DiscordId,
+    pub student_id: DiscordId,
     pub name: String,
     pub description: String,
     pub notified: bool,
@@ -24,6 +25,7 @@ pub struct Session {
 #[diesel(table_name = sessions)]
 pub struct NewSession {
     pub teacher_id: DiscordId,
+    pub student_id: DiscordId,
     pub name: String,
     pub description: String,
     pub notified: bool,
@@ -36,6 +38,7 @@ pub struct NewSession {
 #[diesel(table_name = sessions)]
 pub struct PartialSession {
     pub teacher_id: Option<DiscordId>,
+    pub student_id: Option<DiscordId>,
     pub name: Option<String>,
     pub description: Option<String>,
     pub notified: Option<bool>,
@@ -50,6 +53,7 @@ impl From<NewSession> for PartialSession {
     fn from(session: NewSession) -> Self {
         Self {
             teacher_id: Some(session.teacher_id),
+            student_id: Some(session.student_id),
             name: Some(session.name),
             description: Some(session.description),
             notified: Some(session.notified),

@@ -106,6 +106,7 @@ async fn create(
             description,
             availability_id: None, // TODO
             teacher_id: author_id,
+            student_id: author_id,
             notified: false,
             start_at,
             end_at,
