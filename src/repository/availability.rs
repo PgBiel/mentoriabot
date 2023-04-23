@@ -3,7 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use chrono::Datelike;
 use diesel::{
-    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
+    dsl::date, expression::AsExpression, query_builder::AsQuery,
+    query_dsl::positional_order_dsl::PositionalOrderDsl, BelongingToDsl, BoolExpressionMethods,
+    CombineDsl, ExpressionMethods, IntoSql, JoinOnDsl, NullableExpressionMethods,
+    OptionalExtension, QueryDsl,
 };
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
@@ -52,23 +55,43 @@ impl AvailabilityRepository {
             .map_err(From::from)
     }
 
-    /// Finds all non-taken availabilities this week,
-    /// after the given datetime.
-    /// It must be in the same timezone (UTC-3) as those stored
-    /// in the DB for availability times.
-    pub async fn find_nontaken_after(
+    /// Finds all non-taken availabilities at the given datetime.
+    /// It is assumed that availability times stored
+    /// in the DB are in UTC-3.
+    pub async fn find_nontaken_at_date(
         &self,
         datetime: chrono::DateTime<chrono::FixedOffset>,
-    ) -> Result<Option<Availability>> {
-        let utc = <chrono::Utc as chrono::TimeZone>::from_utc_datetime(
-            &chrono::Utc,
-            &datetime.naive_utc(),
-        );
-        utc.iso_week();
-
+    ) -> Result<Vec<Availability>> {
         let weekday: Weekday = datetime.naive_local().weekday().into();
-        let time = datetime.time();
-        todo!()
+
+        // get all 'Availability' which occur later today (same weekday)
+        // except for those linked to sessions
+        let query = diesel::sql_query(
+            "SELECT * FROM availability
+            WHERE weekday = ? AND time_start > ?
+            EXCEPT (
+                SELECT * FROM availability
+                INNER JOIN sessions
+                ON availability.id = sessions.availability_id
+            )",
+        );
+        query
+            .bind::<diesel::sql_types::SmallInt, _>(weekday)
+            .bind::<diesel::sql_types::Time, _>(datetime.time()) // UTC-3 on both operands
+            .get_results(&mut self.lock_connection().await?)
+            .await
+            .map_err(From::from)
+        // availability::table
+        //     .select(availability::all_columns)
+        //     .filter(availability::weekday.eq(weekday.as_expression()))
+        //     .except(
+        //         availability::table
+        //             .inner_join(sessions::table)
+        //             .select(availability::all_columns),
+        //     )
+        //     .get_results(&mut self.lock_connection().await?)
+        //     .await
+        //     .map_err(From::from)
     }
 }
 

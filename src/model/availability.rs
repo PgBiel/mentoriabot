@@ -1,12 +1,21 @@
-use diesel::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
+use diesel::{AsChangeset, Associations, Identifiable, Insertable, Queryable, QueryableByName};
 
 use super::DiscordId;
 use crate::{model::Weekday, schema::*};
 
-/// Represents a certain time of the week when a Teacher can initiate a Lecture (or any kind
-/// of session) with students, which may "claim" one of them for the current week.
+/// Represents a certain time of the week when a Teacher can initiate a Session
+/// with students, which may "claim" one of them for the current week.
 #[derive(
-    Queryable, Identifiable, Insertable, AsChangeset, Associations, Debug, Clone, PartialEq, Eq,
+    Queryable,
+    Identifiable,
+    Insertable,
+    AsChangeset,
+    Associations,
+    QueryableByName,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
 )]
 #[diesel(belongs_to(super::Teacher, foreign_key = teacher_id))]
 #[diesel(table_name = availability)]
