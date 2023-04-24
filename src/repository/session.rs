@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
+use diesel::{ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
@@ -10,8 +10,8 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, NewSession, PartialSession, Session, Teacher},
-    schema::{sessions, teachers},
+    model::{DiscordId, NewSession, PartialSession, Session, Teacher, User},
+    schema::{sessions, teachers, users},
 };
 
 /// Manages Session instances.
@@ -32,7 +32,23 @@ impl SessionRepository {
     /// Finds a Session and retrieves the associated teacher's Teacher object.
     pub async fn get_with_teacher(&self, session_id: i64) -> Result<Option<(Session, Teacher)>> {
         sessions::table
+            .filter(sessions::id.eq(session_id))
             .inner_join(teachers::table)
+            .get_results(&mut self.lock_connection().await?)
+            .await
+            .map(|v| v.into_iter().next())
+            .map_err(From::from)
+    }
+
+    /// Finds a Session and retrieves both the associated teacher's Teacher object
+    /// and the student's User object.
+    pub async fn get_with_participants(
+        &self,
+        session_id: i64,
+    ) -> Result<Option<(Session, Teacher, User)>> {
+        sessions::table
+            .inner_join(teachers::table)
+            .inner_join(users::table)
             .filter(sessions::id.eq(session_id))
             .get_results(&mut self.lock_connection().await?)
             .await
