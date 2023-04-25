@@ -15,6 +15,7 @@ mod util;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
+use minirustbot_forms::FormError;
 
 use crate::{common::FrameworkError, error::Error, util::tr};
 
@@ -158,24 +159,32 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 error!("Database connection error: {error}");
                 tr!("main_on_error.database_connection.default", locale = locale)
             }
+            FrameworkError::Command {
+                error: Error::Form(FormError::Cancelled),
+                ..
+            } => {
+                "".to_string() // form cancelled by the user or by an already explained reason.
+            }
             _ => {
                 error!("Unexpected bot error: {}", framework_error);
                 tr!("main_on_error.unexpected.default", locale = locale)
             }
         };
 
-        if let Some(ctx) = framework_error.ctx() {
-            ctx.send(|b| {
-                b.content(tr!(
-                    "main_on_error.error_message",
-                    locale = locale,
-                    "message" => response
-                ))
-            })
-            .await
-            .err()
-            .map(|err| warn!("Failed to reply with error message: {err}"))
-            .unwrap_or_default()
+        if !response.is_empty() {
+            if let Some(ctx) = framework_error.ctx() {
+                ctx.send(|b| {
+                    b.content(tr!(
+                        "main_on_error.error_message",
+                        locale = locale,
+                        "message" => response
+                    ))
+                })
+                .await
+                .err()
+                .map(|err| warn!("Failed to reply with error message: {err}"))
+                .unwrap_or_default()
+            }
         }
     })
 }

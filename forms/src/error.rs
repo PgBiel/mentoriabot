@@ -20,6 +20,9 @@ pub enum FormError {
     /// link, without giving any feedback to the bot about the user's action.
     CannotAwaitComponent,
 
+    /// Form interrupted.
+    Cancelled,
+
     /// Indicates a Serenity error occurred.
     Serenity(serenity::Error),
 }
@@ -43,6 +46,7 @@ impl Display for FormError {
             Self::CannotAwaitComponent => {
                 write!(f, "This form component is not awaitable (e.g. link button)")
             }
+            Self::Cancelled => write!(f, "Form cancelled or interrupted."),
             Self::Serenity(cause) => Display::fmt(cause, f),
         }
     }
