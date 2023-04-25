@@ -48,9 +48,4 @@ diesel::joinable!(sessions -> teachers (teacher_id));
 diesel::joinable!(sessions -> users (student_id));
 diesel::joinable!(teachers -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    availability,
-    sessions,
-    teachers,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(availability, sessions, teachers, users,);

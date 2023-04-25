@@ -7,9 +7,8 @@ use diesel_async::{
 
 use crate::{
     error::Result,
-    repository::{AvailabilityRepository, SessionRepository, UserRepository},
+    repository::{AvailabilityRepository, SessionRepository, TeacherRepository, UserRepository},
 };
-use crate::repository::TeacherRepository;
 
 /// Manages database Connection and Repository objects, using a
 /// connection [`Pool`].
