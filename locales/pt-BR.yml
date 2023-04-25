@@ -47,7 +47,7 @@ commands:
     please_select_time: Há %{total_mentor_amount} mentores disponíveis nesta semana. Por favor 
       selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis 
       nesse horário.
-    no_mentors_available: Não há mais mentores disponíveis nesta semana. Foi mal!
+    no_mentors_available: Não há mais mentores disponíveis hoje. Foi mal!
     one_mentor: "1 mentor disponível"
     n_mentors: "%{amount} mentores disponíveis"
     please_select_mentor: "**Horário selecionado:** %{time}\nPor favor, selecione um mentor:"
