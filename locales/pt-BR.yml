@@ -44,7 +44,10 @@ commands:
     name: sessões
     description: Gerencia sessões de mentoria.
   schedule:
-    please_select_time: Há %{total_mentor_amount} mentores disponíveis nesta semana. Por favor 
+    please_select_time_one: Há 1 mentor disponível hoje. Por favor 
+      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível 
+      nesse horário.
+    please_select_time_n: Há %{total_mentor_amount} mentores disponíveis hoje. Por favor 
       selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis 
       nesse horário.
     no_mentors_available: Não há mais mentores disponíveis hoje. Foi mal!
