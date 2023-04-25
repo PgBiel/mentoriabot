@@ -9,6 +9,7 @@ use crate::{
     error::Result,
     repository::{AvailabilityRepository, SessionRepository, UserRepository},
 };
+use crate::repository::TeacherRepository;
 
 /// Manages database Connection and Repository objects, using a
 /// connection [`Pool`].
@@ -17,6 +18,7 @@ pub struct DatabaseManager {
     pool: Arc<Pool<AsyncPgConnection>>,
     user_repository: UserRepository,
     session_repository: SessionRepository,
+    teacher_repository: TeacherRepository,
     availability_repository: AvailabilityRepository,
 }
 
@@ -36,12 +38,14 @@ impl DatabaseManager {
 
         let user_repository = UserRepository::new(&pool);
         let session_repository = SessionRepository::new(&pool);
+        let teacher_repository = TeacherRepository::new(&pool);
         let availability_repository = AvailabilityRepository::new(&pool);
 
         Ok(Self {
             pool,
             user_repository,
             session_repository,
+            teacher_repository,
             availability_repository,
         })
     }
@@ -59,6 +63,11 @@ impl DatabaseManager {
     /// Returns a [`SessionRepository`] object using the current connection pool.
     pub fn session_repository(&self) -> &SessionRepository {
         &self.session_repository
+    }
+
+    /// Returns a [`TeacherRepository`] object using the current connection pool.
+    pub fn teacher_repository(&self) -> &TeacherRepository {
+        &self.teacher_repository
     }
 
     /// Returns an [`AvailabilityRepository`] object using the current connection pool.

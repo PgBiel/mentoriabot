@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use diesel::{OptionalExtension, QueryDsl};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
@@ -10,7 +10,8 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, NewTeacher, PartialTeacher, Session, Teacher, User},
+    model::{Availability, DiscordId, NewTeacher, PartialTeacher, Session, Teacher, User},
+    schema,
     schema::teachers,
 };
 
@@ -58,6 +59,35 @@ impl TeacherRepository {
     /// Gets a User's associated Teacher instance.
     pub async fn find_by_user(&self, user: &User) -> Result<Option<Teacher>> {
         self.get(user.discord_id).await
+    }
+
+    /// Gets all teachers linked to certain availabilities.
+    pub async fn find_by_availabilities(
+        &self,
+        availabilities: &[Availability],
+    ) -> Result<Vec<(Teacher, User, Availability)>> {
+        teachers::table
+            .inner_join(schema::users::table)
+            .inner_join(schema::availability::table)
+            .filter(
+                schema::availability::id.eq_any(
+                    availabilities
+                        .iter()
+                        .map(|avail| avail.id)
+                        .collect::<Vec<_>>(),
+                ),
+            )
+            .filter(
+                teachers::user_id.eq_any(
+                    availabilities
+                        .iter()
+                        .map(|avail| avail.teacher_id)
+                        .collect::<Vec<_>>(),
+                ),
+            )
+            .get_results(&mut self.lock_connection().await?)
+            .await
+            .map_err(From::from)
     }
 }
 

@@ -16,6 +16,7 @@ mod availability;
 pub use availability::AvailabilityRepository;
 
 mod teacher;
+pub use teacher::TeacherRepository;
 
 pub mod macros;
 
