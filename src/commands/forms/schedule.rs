@@ -1,6 +1,7 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
+use chrono::Timelike;
 use minirustbot_forms::FormState;
 use poise::serenity_prelude::MessageComponentInteraction;
 
@@ -11,8 +12,9 @@ use crate::{
         error::Result as FormResult, Buildable, CustomId, FormError, GenerateReply,
         InteractionForm, MessageFormComponent, SelectMenuOptionSpec, SelectMenuSpec, SelectValue,
     },
-    model::{Availability, DiscordId, Teacher, Weekday},
-    util::tr,
+    model::{Availability, DiscordId, Teacher, User},
+    util,
+    util::{time::hour_minute_display, tr, BRAZIL_TIMEZONE},
 };
 
 #[derive(Debug, InteractionForm)]
@@ -30,9 +32,7 @@ pub(crate) struct ScheduleForm {
 #[reply(content = (
     select_time_reply_content(context, data).await?
 ), ephemeral)]
-pub(crate) struct SelectTimeComponent {
-    pub(crate) selected_availability: Availability,
-}
+pub(crate) struct SelectTimeComponent;
 
 #[derive(Debug, Clone, GenerateReply)]
 #[form_data(data(ScheduleFormData), ctx(Data, Error))]
@@ -40,25 +40,46 @@ pub(crate) struct SelectTimeComponent {
     select_mentor_reply_content(context, data).await?
 ), ephemeral)]
 pub(crate) struct SelectMentorComponent {
+    pub(crate) selected_availability: Availability,
+    pub(crate) selected_mentor_user: User,
     pub(crate) selected_mentor: Teacher,
 }
 
 /// Stores data while the ScheduleForm is still being constructed.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub(crate) struct ScheduleFormData {
-    selected_availability: Option<Availability>,
+    availabilities: Vec<Availability>,
+    teacher_tuples: Vec<(Teacher, User, Availability)>,
 }
 
 // impls
 async fn select_time_reply_content(
     context: ApplicationContext<'_>,
-    _: &FormState<ScheduleFormData>,
+    data: &FormState<ScheduleFormData>,
 ) -> FormResult<String> {
-    Ok(tr!(
-        "commands.schedule.please_select_time",
-        ctx = context,
-        total_mentor_amount = "6"
-    ))
+    let mut seen_mentors = Vec::new();
+    let mentors = data
+        .availabilities
+        .iter()
+        .map(|avail| avail.teacher_id)
+        .fold(0u32, |acc, teacher_id| {
+            if !seen_mentors.contains(&teacher_id) {
+                seen_mentors.push(teacher_id);
+                acc.checked_add(1).unwrap()
+            } else {
+                acc
+            }
+        });
+
+    Ok(if mentors == 1 {
+        tr!("commands.schedule.please_select_time_one", ctx = context)
+    } else {
+        tr!(
+            "commands.schedule.please_select_time_n",
+            ctx = context,
+            total_mentor_amount = mentors
+        )
+    })
 }
 
 async fn select_mentor_reply_content(
@@ -66,17 +87,15 @@ async fn select_mentor_reply_content(
     data: &FormState<ScheduleFormData>,
 ) -> FormResult<String> {
     let time = data
-        .data
-        .selected_availability
-        .as_ref()
+        .availabilities
+        .first()
         .ok_or(FormError::InvalidUserResponse)?
-        .time_start
-        .format("%H:%M:%S");
+        .time_start;
 
     Ok(tr!(
         "commands.schedule.please_select_mentor",
         ctx = context,
-        time = time.to_string()
+        time = hour_minute_display(time),
     ))
 }
 
@@ -86,31 +105,66 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
         context: ApplicationContext<'_>,
         data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Vec<CustomId>> {
+        let availabilities = context
+            .data
+            .db
+            .availability_repository()
+            .find_nontaken_at_date(chrono::Utc::now().with_timezone(&*BRAZIL_TIMEZONE))
+            .await?;
+
+        // No mentors have time available for sessions today
+        if availabilities.is_empty() {
+            context
+                .send(|b| b.content(tr!("commands.schedule.no_mentors_available", ctx = context)))
+                .await?;
+            return Err(FormError::Cancelled.into());
+        }
+
+        let mut unique_availability_times: HashMap<chrono::NaiveTime, i32> = HashMap::new();
+        for avail in &availabilities {
+            let time_start = avail.time_start;
+            if let Some(amount) = unique_availability_times.get_mut(&time_start) {
+                *amount = amount
+                    .checked_add(1i32)
+                    .ok_or_else(|| Error::Other("too many mentors"))?;
+            } else {
+                unique_availability_times.insert(time_start, 1);
+            }
+        }
+        let mut unique_availability_times: Vec<(chrono::NaiveTime, i32)> =
+            unique_availability_times.into_iter().collect();
+
+        // sort by increasing times
+        unique_availability_times.sort();
+
         let custom_id = CustomId::generate();
         let select_menu = SelectMenuSpec {
             custom_id: custom_id.clone(),
-            options: vec![
-                SelectMenuOptionSpec {
-                    label: "12:00".to_string(),
-                    value_key: SelectValue::from("1"),
-                    description: Some(tr!("commands.schedule.one_mentor", ctx = context)),
-                    emoji: None,
-                    is_default: false,
-                },
-                SelectMenuOptionSpec {
-                    label: "13:00".to_string(),
-                    value_key: SelectValue::from("2"),
-                    description: Some(tr!(
-                        "commands.schedule.n_mentors",
-                        ctx = context,
-                        amount = "5"
-                    )),
-                    emoji: None,
-                    is_default: false,
-                },
-            ],
+            options: unique_availability_times
+                .into_iter()
+                .map(|(time, amount_mentors)| {
+                    let time_string = hour_minute_display(time).to_string();
+                    SelectMenuOptionSpec {
+                        label: time_string.clone(),
+                        value_key: SelectValue::from(time_string),
+                        description: Some(if amount_mentors == 1 {
+                            tr!("commands.schedule.one_mentor", ctx = context)
+                        } else {
+                            tr!(
+                                "commands.schedule.n_mentors",
+                                ctx = context,
+                                amount = amount_mentors
+                            )
+                        }),
+                        ..Default::default()
+                    }
+                })
+                .collect(),
             ..Default::default()
         };
+
+        data.availabilities = availabilities;
+
         let reply =
             <Self as GenerateReply<Data, Error, ScheduleFormData>>::create_reply(context, data)
                 .await?;
@@ -137,22 +191,22 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
             return Err(FormError::InvalidUserResponse.into());
         };
 
-        let Ok(selected) = selected.parse::<i64>() else {
+        let Ok(selected) = util::time::parse_hour_minute(selected) else {
             return Err(FormError::InvalidUserResponse.into());
         };
 
-        let availability = Availability {
-            id: selected,
-            teacher_id: DiscordId(123),
-            weekday: Weekday::Monday,
-            time_start: chrono::NaiveTime::from_hms_opt(23, 0, 0).unwrap(),
-            time_end: chrono::NaiveTime::from_hms_opt(23, 0, 0).unwrap(),
-        };
-        data.data.selected_availability = Some(availability.clone());
+        let availabilities = std::mem::take(&mut data.availabilities);
+        let selected_availabilities = availabilities
+            .into_iter()
+            .filter(|avail| {
+                // ignore seconds
+                avail.time_start.with_second(0).unwrap() == selected.with_second(0).unwrap()
+            })
+            .collect::<Vec<_>>();
 
-        Ok(Some(Box::new(SelectTimeComponent {
-            selected_availability: availability,
-        })))
+        data.availabilities = selected_availabilities;
+
+        Ok(Some(Box::new(SelectTimeComponent)))
     }
 }
 
@@ -162,29 +216,45 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
         context: ApplicationContext<'_>,
         data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Vec<CustomId>> {
-        // let avail_id = data.selected_availability;
-        let custom_id = CustomId::generate();
-        let select_menu = SelectMenuSpec {
-            custom_id: custom_id.clone(),
-            options: vec![
-                SelectMenuOptionSpec {
-                    label: "João Silva".to_string(),
-                    value_key: SelectValue::from("1"),
-                    description: Some("Cálculo, Programação, etc.".to_string()),
-                    ..Default::default()
-                },
-                SelectMenuOptionSpec {
-                    label: "Parmênides Ferreira".to_string(),
-                    value_key: SelectValue::from("2"),
-                    description: Some("Análise de Algoritmos ou qualquer outra coisa".to_string()),
-                    ..Default::default()
-                },
-            ],
-            ..Default::default()
-        };
         let reply =
             <Self as GenerateReply<Data, Error, ScheduleFormData>>::create_reply(context, data)
                 .await?;
+
+        let availabilities = std::mem::take(&mut data.availabilities);
+        let mut teachers = context
+            .data
+            .db
+            .teacher_repository()
+            .find_by_availabilities(&availabilities)
+            .await?;
+
+        if teachers.is_empty() {
+            return Err(FormError::InvalidUserResponse.into());
+        }
+
+        teachers.sort_by_cached_key(|(_, user, avail)| (avail.time_start, user.name.clone()));
+
+        let custom_id = CustomId::generate();
+        let select_menu = SelectMenuSpec {
+            custom_id: custom_id.clone(),
+            options: teachers
+                .iter()
+                .map(|(teacher, user, avail)| {
+                    // include both teacher and availability in the key
+                    let value_key = format!("{}|{}", teacher.user_id, avail.id);
+                    SelectMenuOptionSpec {
+                        label: user.name.clone(),
+                        value_key: SelectValue::from(value_key),
+                        description: Some(teacher.specialty.to_string()),
+                        ..Default::default()
+                    }
+                })
+                .collect(),
+            ..Default::default()
+        };
+
+        // place the teacher tuples in data so we can use later
+        std::mem::swap(&mut data.teacher_tuples, &mut teachers);
 
         context
             .send(|b| {
@@ -200,24 +270,32 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
     async fn on_response(
         _: ApplicationContext<'_>,
         interaction: Arc<MessageComponentInteraction>,
-        _: &mut FormState<ScheduleFormData>,
+        data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Option<Box<Self>>> {
-        let mentor_id = interaction
+        let teacher_tuples = std::mem::take(&mut data.teacher_tuples);
+
+        let (teacher, user, availability) = interaction
             .data
             .values
             .first()
-            .map(|v| v.parse::<DiscordId>())
-            .ok_or(FormError::InvalidUserResponse)?
-            .map_err(|_| FormError::InvalidUserResponse)?;
+            .and_then(|v| v.split_once('|'))
+            .and_then(|(teacher, avail)| {
+                teacher
+                    .parse::<DiscordId>()
+                    .ok()
+                    .zip(avail.parse::<i64>().ok())
+            })
+            .and_then(|(teacher_id, avail_id)| {
+                teacher_tuples.into_iter().find(|(teacher, _, avail)| {
+                    teacher.user_id == teacher_id && avail.id == avail_id
+                })
+            })
+            .ok_or(FormError::InvalidUserResponse)?;
 
         Ok(Some(Box::new(Self {
-            selected_mentor: Teacher {
-                user_id: mentor_id,
-                email: Some("test@gmail.com".to_string()),
-                specialty: "Test".to_string(),
-                company: None,
-                company_role: None,
-            },
+            selected_availability: availability,
+            selected_mentor_user: user,
+            selected_mentor: teacher,
         })))
     }
 }

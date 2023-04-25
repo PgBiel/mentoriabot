@@ -1,9 +1,7 @@
 use super::forms::schedule::ScheduleForm;
 use crate::{
-    common::{ApplicationContext, Context},
-    error::Result,
-    forms::InteractionForm,
-    util::tr,
+    commands::forms::schedule::SelectMentorComponent, common::ApplicationContext, error::Result,
+    forms::InteractionForm, util, util::tr,
 };
 
 /// Schedules a session with a Mentor
@@ -15,15 +13,18 @@ use crate::{
 )]
 pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     let form = *ScheduleForm::execute(ctx).await?;
-    let availability = form.select_time.selected_availability;
-    let mentor = form.select_mentor.selected_mentor;
+    let SelectMentorComponent {
+        selected_availability,
+        selected_mentor_user,
+        ..
+    } = form.select_mentor;
 
     ctx.send(|b| {
         b.content(tr!(
             "commands.schedule.success",
             ctx = ctx,
-            time = availability.time_start.format("%H:%M:%S"),
-            mentor = "Jonathan"
+            time = util::time::hour_minute_display(selected_availability.time_start),
+            mentor = selected_mentor_user.name
         ))
     })
     .await?;
