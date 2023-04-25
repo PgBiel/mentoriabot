@@ -122,7 +122,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
 
         let mut unique_availability_times: HashMap<chrono::NaiveTime, i32> = HashMap::new();
         for avail in &availabilities {
-            let time_start = avail.time_start;
+            let time_start = avail.time_start.with_second(0).unwrap();
             if let Some(amount) = unique_availability_times.get_mut(&time_start) {
                 *amount = amount
                     .checked_add(1i32)
@@ -239,15 +239,11 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
             custom_id: custom_id.clone(),
             options: teachers
                 .iter()
-                .map(|(teacher, user, avail)| {
-                    // include both teacher and availability in the key
-                    let value_key = format!("{}|{}", teacher.user_id, avail.id);
-                    SelectMenuOptionSpec {
-                        label: user.name.clone(),
-                        value_key: SelectValue::from(value_key),
-                        description: Some(teacher.specialty.to_string()),
-                        ..Default::default()
-                    }
+                .map(|(teacher, user, avail)| SelectMenuOptionSpec {
+                    label: user.name.clone(),
+                    value_key: SelectValue::from(avail.id.to_string()),
+                    description: Some(teacher.specialty.to_string()),
+                    ..Default::default()
                 })
                 .collect(),
             ..Default::default()
@@ -278,17 +274,11 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
             .data
             .values
             .first()
-            .and_then(|v| v.split_once('|'))
-            .and_then(|(teacher, avail)| {
-                teacher
-                    .parse::<DiscordId>()
-                    .ok()
-                    .zip(avail.parse::<i64>().ok())
-            })
-            .and_then(|(teacher_id, avail_id)| {
-                teacher_tuples.into_iter().find(|(teacher, _, avail)| {
-                    teacher.user_id == teacher_id && avail.id == avail_id
-                })
+            .and_then(|v| v.parse::<i64>().ok())
+            .and_then(|avail_id| {
+                teacher_tuples
+                    .into_iter()
+                    .find(|(_, _, avail)| avail.id == avail_id)
             })
             .ok_or(FormError::InvalidUserResponse)?;
 
