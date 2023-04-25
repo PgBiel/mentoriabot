@@ -145,26 +145,21 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 error!("Failed to run bot setup: {error}");
                 tr!("main_on_error.setup.default", locale = locale)
             }
-            FrameworkError::Command {
-                error: Error::Diesel(error),
-                ..
-            } => {
-                error!("Diesel database error: {error}");
-                tr!("main_on_error.database.default", locale = locale)
-            }
-            FrameworkError::Command {
-                error: error @ (Error::DieselConnection(_) | Error::DeadpoolPool(_)),
-                ..
-            } => {
-                error!("Database connection error: {error}");
-                tr!("main_on_error.database_connection.default", locale = locale)
-            }
-            FrameworkError::Command {
-                error: Error::Form(FormError::Cancelled),
-                ..
-            } => {
-                "".to_string() // form cancelled by the user or by an already explained reason.
-            }
+            FrameworkError::Command { error, .. } => match error {
+                Error::Diesel(error) => {
+                    error!("Diesel database error: {error}");
+                    tr!("main_on_error.database.default", locale = locale)
+                }
+                Error::DieselConnection(_) | Error::DeadpoolPool(_) => {
+                    error!("Database connection error: {error}");
+                    tr!("main_on_error.database_connection.default", locale = locale)
+                }
+                Error::Form(FormError::Cancelled) => "".to_string(),
+                _ => {
+                    error!("Unexpected command error: {}: {}", framework_error, error);
+                    tr!("main_on_error.unexpected.default", locale = locale)
+                }
+            },
             _ => {
                 error!("Unexpected bot error: {}", framework_error);
                 tr!("main_on_error.unexpected.default", locale = locale)
