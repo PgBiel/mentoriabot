@@ -45,6 +45,7 @@ pub fn datetime_with_time<T: TimeZone>(
         .and_then(|d| d.with_second(time.second()))
 }
 
+/// Converts a [`chrono::DateTime`] object in a certain timezone to UTC.
 pub fn datetime_as_utc<T: TimeZone>(
     datetime: &chrono::DateTime<T>,
 ) -> chrono::DateTime<chrono::Utc> {
