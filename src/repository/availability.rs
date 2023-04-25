@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use chrono::Datelike;
+use chrono::{Datelike, TimeZone};
 use diesel::{
-    dsl::date, expression::AsExpression, query_builder::AsQuery,
-    query_dsl::positional_order_dsl::PositionalOrderDsl, BelongingToDsl, BoolExpressionMethods,
-    CombineDsl, ExpressionMethods, IntoSql, JoinOnDsl, NullableExpressionMethods,
-    OptionalExtension, QueryDsl,
+    dsl::{exists, not},
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods,
+    NullableExpressionMethods, OptionalExtension, QueryDsl,
 };
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
@@ -62,36 +61,40 @@ impl AvailabilityRepository {
         &self,
         datetime: chrono::DateTime<chrono::FixedOffset>,
     ) -> Result<Vec<Availability>> {
+        let utc = chrono::Utc.from_utc_datetime(&datetime.naive_utc());
         let weekday: Weekday = datetime.naive_local().weekday().into();
 
-        // get all 'Availability' which occur later today (same weekday)
-        // except for those linked to sessions
-        let query = diesel::sql_query(
-            "SELECT * FROM availability
-            WHERE weekday = ? AND time_start > ?
-            EXCEPT (
-                SELECT * FROM availability
-                INNER JOIN sessions
-                ON availability.id = sessions.availability_id
-            )",
-        );
-        query
-            .bind::<diesel::sql_types::SmallInt, _>(weekday)
-            .bind::<diesel::sql_types::Time, _>(datetime.time()) // UTC-3 on both operands
-            .get_results(&mut self.lock_connection().await?)
-            .await
-            .map_err(From::from)
-        // availability::table
-        //     .select(availability::all_columns)
-        //     .filter(availability::weekday.eq(weekday.as_expression()))
-        //     .except(
-        //         availability::table
-        //             .inner_join(sessions::table)
-        //             .select(availability::all_columns),
-        //     )
+        // let query = diesel::sql_query(
+        //     "SELECT * FROM availability
+        //     WHERE weekday = (?) AND time_start > (?)
+        //     EXCEPT (
+        //         SELECT availability.* FROM availability
+        //         INNER JOIN sessions
+        //         ON availability.id = sessions.availability_id
+        //     )",
+        // );
+        // query
+        //     .bind::<diesel::sql_types::SmallInt, _>(weekday)
+        //     .bind::<diesel::sql_types::Time, _>(datetime.time()) // UTC-3 on both operands
         //     .get_results(&mut self.lock_connection().await?)
         //     .await
         //     .map_err(From::from)
+
+        // get all 'Availability' which occur later today (same weekday)
+        // except for those linked to sessions
+        availability::table
+            .select(availability::all_columns)
+            .filter(availability::weekday.eq(weekday))
+            .filter(not(exists(
+                sessions::table.filter(
+                    sessions::availability_id
+                        .eq(availability::id.nullable())
+                        .and(sessions::end_at.ge(utc)),
+                ),
+            )))
+            .get_results(&mut self.lock_connection().await?)
+            .await
+            .map_err(From::from)
     }
 }
 
