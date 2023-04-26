@@ -86,6 +86,9 @@ pub trait UpdatableRepository: Repository {
 
 #[cfg(test)]
 mod tests {
+    use diesel::Connection;
+    use diesel_migrations::MigrationHarness;
+
     use crate::connection::DatabaseManager;
 
     /// Initializes the database for testing.
@@ -94,6 +97,16 @@ mod tests {
         let test_db_url =
             std::env::var("DATABASE_TEST_URL").expect("Failed to get 'DATABASE_TEST_URL' env var.");
 
+        migrate_test_db(&test_db_url);
+
         DatabaseManager::test(&test_db_url).unwrap()
+    }
+
+    /// Migrates the test database based on the migrations directory.
+    fn migrate_test_db(db_url: &str) {
+        let mut connection = diesel::PgConnection::establish(db_url).unwrap();
+        let migrations_dir =
+            diesel_migrations::FileBasedMigrations::find_migrations_directory().unwrap();
+        connection.run_pending_migrations(migrations_dir).unwrap();
     }
 }

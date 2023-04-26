@@ -29,6 +29,8 @@ minirustbot_forms = { path = "forms" }
 
 [dev-dependencies]
 dotenvy = "0.15.6"
+diesel = { version = "2.0.4", features = ["chrono", "postgres"] }
+diesel_migrations = "2.0.0"
 
 # For translations with 'cargo i18n'
 [package.metadata.i18n]

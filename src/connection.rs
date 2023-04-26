@@ -84,6 +84,11 @@ impl DatabaseManager {
         }
     }
 
+    /// Returns this Database Manager's connection pool.
+    pub fn pool(&self) -> Arc<Pool<AsyncPgConnection>> {
+        Arc::clone(&self.pool)
+    }
+
     /// Returns a [`UserRepository`] object using the current connection pool.
     pub fn user_repository(&self) -> &UserRepository {
         &self.user_repository
