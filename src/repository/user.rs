@@ -112,14 +112,28 @@ impl UpdatableRepository for UserRepository {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::connection::create_connection;
+#[cfg(test)]
+mod tests {
+    use super::super::tests::init_db;
+    use crate::{
+        model::{DiscordId, NewUser},
+        repository::Repository,
+    };
 
-//     #[test]
-//     fn test_basic_operations() {
-//         let db_url = std::env::var("DATABASE_URL").expect("Testing database requires DATABASE_URL
-// env var.");         let conn = create_connection(&db_url);
+    #[tokio::test]
+    async fn test_get_insert() {
+        let db = init_db();
+        let repo = db.user_repository();
 
-//     }
-// }
+        let id = DiscordId(12345);
+        let new_user = NewUser {
+            discord_id: id,
+            name: "Joseph".to_string(),
+            bio: Some("I am myself".to_string()),
+        };
+
+        assert_eq!(None, repo.get(id).await.unwrap());
+        assert_eq!(new_user, repo.insert(&new_user).await.unwrap());
+        assert_eq!(Some(new_user), repo.get(id).await.unwrap());
+    }
+}
