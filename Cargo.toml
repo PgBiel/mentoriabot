@@ -27,6 +27,9 @@ rust-i18n = "1.1.4"
 minirustbot_macros = { path = "macros" }
 minirustbot_forms = { path = "forms" }
 
+[dev-dependencies]
+dotenvy = "0.15.6"
+
 # For translations with 'cargo i18n'
 [package.metadata.i18n]
 # The available locales for your application, default: ["en"].

@@ -83,3 +83,17 @@ pub trait UpdatableRepository: Repository {
         new_entity: Self::PartialEntity,
     ) -> Result<Self::Entity>;
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::connection::DatabaseManager;
+
+    /// Initializes the database for testing.
+    pub(super) fn init_db() -> DatabaseManager {
+        dotenvy::dotenv().unwrap();
+        let test_db_url =
+            std::env::var("DATABASE_TEST_URL").expect("Failed to get 'DATABASE_TEST_URL' env var.");
+
+        DatabaseManager::test(&test_db_url).unwrap()
+    }
+}
