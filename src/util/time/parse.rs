@@ -8,7 +8,7 @@ use chrono::Datelike;
 
 use crate::{
     error::{Error, Result},
-    util::time::BRAZIL_TIMEZONE,
+    util::time::{brazil_now, BRAZIL_TIMEZONE},
 };
 
 /// Represents a DateTime which can be parsed in a semi-human format.
@@ -50,21 +50,23 @@ impl FromStr for HumanParseableDateTime {
     /// ```
     /// # use crate::util::HumanParseableDateTime;
     /// # use chrono::TimeZone;
-    /// let today = chrono::Utc::now();
+    /// // UTC-3 (base for parsing)
+    /// let timezone = chrono::FixedOffset::west_opt(3 * HOUR).unwrap();
+    /// let today = chrono::Utc::now().with_timezone(&timezone);
     /// let expected_date1 = today
-    ///     .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
+    ///     .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
     ///     .single()
     ///     .unwrap();
     /// let expected_date2 = today
-    ///     .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
+    ///     .with_ymd_and_hms(2023, 3, 19, 11, 29, 0)
     ///     .single()
     ///     .unwrap();
     /// let expected_date3 = today
-    ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 14, 29, 30)
+    ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 11, 29, 30)
     ///     .single()
     ///     .unwrap();
     /// let expected_date4 = today
-    ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 14, 29, 0)
+    ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 11, 29, 0)
     ///     .single()
     ///     .unwrap();
     ///
@@ -91,7 +93,7 @@ impl FromStr for HumanParseableDateTime {
             .replace("  ", " ")
             .replace([',', ';'], "");
 
-        let curr_date = chrono::Utc::now().with_timezone(&*BRAZIL_TIMEZONE);
+        let curr_date = brazil_now();
 
         let today = format!(
             "{}-{}-{}",
@@ -129,7 +131,7 @@ impl<Tz: chrono::TimeZone> From<chrono::DateTime<Tz>> for HumanParseableDateTime
     /// Converts a [`chrono::DateTime`] with any timezone to a HumanParseableDateTime
     /// by converting the DateTime to UTC and wrapping it.
     fn from(value: chrono::DateTime<Tz>) -> Self {
-        Self(value.with_timezone(&chrono::Utc))
+        Self(super::datetime_as_utc(&value))
     }
 }
 
@@ -175,8 +177,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "2023-03-19 11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -187,8 +189,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "2023-03-19 11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -199,8 +201,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "19/03/2023 11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -211,8 +213,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "19/03/2023 11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -220,13 +222,13 @@ mod tests {
 
         #[test]
         fn parses_dd_mm_hh_mm_ss_with_current_year() {
-            let year = chrono::Utc::now().year();
+            let year = brazil_now().year();
 
             let parsed: HumanParseableDateTime = "19/03 11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(year, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -234,13 +236,13 @@ mod tests {
 
         #[test]
         fn parses_dd_mm_hh_mm_with_current_year_and_zero_seconds() {
-            let year = chrono::Utc::now().year();
+            let year = brazil_now().year();
 
             let parsed: HumanParseableDateTime = "19/03 11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(year, 3, 19, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, 3, 19, 11, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -253,8 +255,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29:30 2023-03-19".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -265,8 +267,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29 2023-03-19".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -277,8 +279,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29:30 19/03/2023".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -289,8 +291,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "11:29 19/03/2023".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -298,13 +300,13 @@ mod tests {
 
         #[test]
         fn parses_hh_mm_ss_dd_mm_with_current_year() {
-            let year = chrono::Utc::now().year();
+            let year = brazil_now().year();
 
             let parsed: HumanParseableDateTime = "11:29:30 19/03".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(year, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -312,13 +314,28 @@ mod tests {
 
         #[test]
         fn parses_hh_mm_dd_mm_with_current_year_and_zero_seconds() {
-            let year = chrono::Utc::now().year();
+            let year = brazil_now().year();
 
             let parsed: HumanParseableDateTime = "11:29 19/03".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(year, 3, 19, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, 3, 19, 11, 29, 0)
+                    .unwrap(),
+                parsed.0
+            )
+        }
+
+        #[test]
+        fn parses_hh_mm_with_current_date_and_zero_seconds_near_midnight() {
+            let today = brazil_now();
+            let (year, month, day) = (today.year(), today.month(), today.day());
+
+            let parsed: HumanParseableDateTime = "23:59".parse().unwrap();
+
+            assert_eq!(
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, month, day, 23, 59, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -326,14 +343,14 @@ mod tests {
 
         #[test]
         fn parses_hh_mm_ss_with_current_date() {
-            let today = chrono::Utc::now();
+            let today = brazil_now();
             let (year, month, day) = (today.year(), today.month(), today.day());
 
             let parsed: HumanParseableDateTime = "11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(year, month, day, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, month, day, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
@@ -341,14 +358,14 @@ mod tests {
 
         #[test]
         fn parses_hh_mm_with_current_date_and_zero_seconds() {
-            let today = chrono::Utc::now();
+            let today = brazil_now();
             let (year, month, day) = (today.year(), today.month(), today.day());
 
             let parsed: HumanParseableDateTime = "11:29".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(year, month, day, 14, 29, 0)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(year, month, day, 11, 29, 0)
                     .unwrap(),
                 parsed.0
             )
@@ -359,8 +376,8 @@ mod tests {
             let parsed: HumanParseableDateTime = "2023-03-19,,;;;  11:29:30".parse().unwrap();
 
             assert_eq!(
-                chrono::Utc
-                    .with_ymd_and_hms(2023, 3, 19, 14, 29, 30)
+                BRAZIL_TIMEZONE
+                    .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
                     .unwrap(),
                 parsed.0
             )
