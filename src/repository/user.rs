@@ -117,15 +117,15 @@ mod tests {
     use super::super::tests::init_db;
     use crate::{
         model::{DiscordId, NewUser},
-        repository::Repository,
+        repository::{Repository, UpdatableRepository},
     };
 
     #[tokio::test]
-    async fn test_get_insert() {
+    async fn test_user_get_insert_find_remove() {
         let db = init_db();
         let repo = db.user_repository();
 
-        let id = DiscordId(12345);
+        let id = DiscordId(1);
         let new_user = NewUser {
             discord_id: id,
             name: "Joseph".to_string(),
@@ -134,6 +134,50 @@ mod tests {
 
         assert_eq!(None, repo.get(id).await.unwrap());
         assert_eq!(new_user, repo.insert(&new_user).await.unwrap());
-        assert_eq!(Some(new_user), repo.get(id).await.unwrap());
+        assert_eq!(Some(&new_user), repo.get(id).await.unwrap().as_ref());
+        assert_eq!(
+            vec![&new_user],
+            repo.find_all().await.unwrap().iter().collect::<Vec<_>>()
+        );
+        assert_eq!(1, repo.remove(&new_user).await.unwrap());
+        assert_eq!(None, repo.get(id).await.unwrap().as_ref());
+    }
+
+    #[tokio::test]
+    async fn test_user_upsert_update() {
+        let db = init_db();
+        let repo = db.user_repository();
+
+        let id = DiscordId(2);
+        let new_user = NewUser {
+            discord_id: id,
+            name: "Joseph".to_string(),
+            bio: Some("I am myself".to_string()),
+        };
+        let other_user = NewUser {
+            bio: Some("johnson".to_string()), // seems to not overwrite on 'upsert' when 'None'
+            ..new_user.clone()
+        };
+        let third_user = NewUser {
+            name: "Andrew".to_string(),
+            ..other_user.clone()
+        };
+
+        assert_eq!(new_user, repo.upsert(&new_user).await.unwrap());
+        assert_eq!(other_user, repo.upsert(&other_user).await.unwrap());
+        assert_eq!(
+            Some(&other_user),
+            repo.get(new_user.discord_id).await.unwrap().as_ref()
+        );
+        assert_eq!(
+            third_user,
+            repo.update(&other_user, third_user.clone().into())
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            Some(&third_user),
+            repo.get(new_user.discord_id).await.unwrap().as_ref()
+        );
     }
 }
