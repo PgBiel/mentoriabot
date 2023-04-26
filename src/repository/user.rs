@@ -155,7 +155,7 @@ mod tests {
             bio: Some("I am myself".to_string()),
         };
         let other_user = NewUser {
-            bio: Some("johnson".to_string()), // seems to not overwrite on 'upsert' when 'None'
+            bio: None,
             ..new_user.clone()
         };
         let third_user = NewUser {

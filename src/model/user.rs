@@ -5,7 +5,7 @@ use crate::schema::*;
 
 /// Represents a registered User of our bot.
 #[derive(Queryable, Identifiable, Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
-#[diesel(primary_key(discord_id))]
+#[diesel(primary_key(discord_id), treat_none_as_null = true)]
 pub struct User {
     pub discord_id: DiscordId,
     pub name: String,

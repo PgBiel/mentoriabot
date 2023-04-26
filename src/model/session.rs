@@ -22,7 +22,7 @@ pub struct Session {
 
 /// Auxiliary struct for inserting a Session.
 #[derive(Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
-#[diesel(table_name = sessions)]
+#[diesel(table_name = sessions, treat_none_as_null = true)]
 pub struct NewSession {
     pub teacher_id: DiscordId,
     pub student_id: DiscordId,

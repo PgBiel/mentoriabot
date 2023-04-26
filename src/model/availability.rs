@@ -28,7 +28,7 @@ pub struct Availability {
 }
 
 #[derive(Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
-#[diesel(table_name = availability)]
+#[diesel(table_name = availability, treat_none_as_null = true)]
 pub struct NewAvailability {
     pub teacher_id: DiscordId,
     pub weekday: Weekday,

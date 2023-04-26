@@ -11,7 +11,7 @@ use crate::schema::*;
     Queryable, Identifiable, Insertable, AsChangeset, Associations, Debug, Clone, PartialEq, Eq,
 )]
 #[diesel(primary_key(user_id))]
-#[diesel(belongs_to(super::User, foreign_key = user_id))]
+#[diesel(belongs_to(super::User, foreign_key = user_id), treat_none_as_null = true)]
 pub struct Teacher {
     pub user_id: DiscordId,
     pub email: Option<String>,
