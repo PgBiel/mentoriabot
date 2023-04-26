@@ -60,3 +60,22 @@ impl From<Availability> for PartialAvailability {
         }
     }
 }
+
+impl From<Availability> for NewAvailability {
+    fn from(other: Availability) -> Self {
+        let Availability {
+            teacher_id,
+            weekday,
+            time_start,
+            time_end,
+            ..
+        } = other;
+
+        Self {
+            teacher_id,
+            weekday,
+            time_start,
+            time_end,
+        }
+    }
+}

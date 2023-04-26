@@ -37,6 +37,7 @@ pub struct NewSession {
 #[derive(AsChangeset, Debug, Default, Clone, PartialEq, Eq)]
 #[diesel(table_name = sessions)]
 pub struct PartialSession {
+    pub id: Option<i64>,
     pub teacher_id: Option<DiscordId>,
     pub student_id: Option<DiscordId>,
     pub name: Option<String>,
@@ -47,11 +48,12 @@ pub struct PartialSession {
     pub end_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl From<NewSession> for PartialSession {
-    /// Converts a [`NewSession`] into a [`PartialSession`]
-    /// by wrapping each Lecture field into a 'Some'.
-    fn from(session: NewSession) -> Self {
+impl From<Session> for PartialSession {
+    /// Converts a [`Session`] into a [`PartialSession`]
+    /// by wrapping each Session field into a 'Some'.
+    fn from(session: Session) -> Self {
         Self {
+            id: Some(session.id),
             teacher_id: Some(session.teacher_id),
             student_id: Some(session.student_id),
             name: Some(session.name),
@@ -60,6 +62,35 @@ impl From<NewSession> for PartialSession {
             availability_id: Some(session.availability_id),
             start_at: Some(session.start_at),
             end_at: Some(session.end_at),
+        }
+    }
+}
+
+impl From<Session> for NewSession {
+    /// Takes all of the [`Session`]'s fields, except
+    /// for `id`.
+    fn from(session: Session) -> Self {
+        let Session {
+            teacher_id,
+            student_id,
+            name,
+            description,
+            notified,
+            availability_id,
+            start_at,
+            end_at,
+            ..
+        } = session;
+
+        Self {
+            teacher_id,
+            student_id,
+            name,
+            description,
+            notified,
+            availability_id,
+            start_at,
+            end_at,
         }
     }
 }
