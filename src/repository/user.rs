@@ -116,12 +116,13 @@ impl UpdatableRepository for UserRepository {
 mod tests {
     use super::super::tests::init_db;
     use crate::{
+        error::Result,
         model::{DiscordId, NewUser},
         repository::{Repository, UpdatableRepository},
     };
 
     #[tokio::test]
-    async fn test_user_get_insert_find_remove() {
+    async fn test_user_get_insert_find_remove() -> Result<()> {
         let db = init_db();
         let repo = db.user_repository();
 
@@ -132,19 +133,21 @@ mod tests {
             bio: Some("I am myself".to_string()),
         };
 
-        assert_eq!(None, repo.get(id).await.unwrap());
-        assert_eq!(new_user, repo.insert(&new_user).await.unwrap());
-        assert_eq!(Some(&new_user), repo.get(id).await.unwrap().as_ref());
+        assert_eq!(None, repo.get(id).await?);
+        assert_eq!(new_user, repo.insert(&new_user).await?);
+        assert_eq!(Some(&new_user), repo.get(id).await?.as_ref());
         assert_eq!(
             vec![&new_user],
             repo.find_all().await.unwrap().iter().collect::<Vec<_>>()
         );
-        assert_eq!(1, repo.remove(&new_user).await.unwrap());
-        assert_eq!(None, repo.get(id).await.unwrap().as_ref());
+        assert_eq!(1, repo.remove(&new_user).await?);
+        assert_eq!(None, repo.get(id).await?.as_ref());
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_user_upsert_update() {
+    async fn test_user_upsert_update() -> Result<()> {
         let db = init_db();
         let repo = db.user_repository();
 
@@ -163,21 +166,48 @@ mod tests {
             ..other_user.clone()
         };
 
-        assert_eq!(new_user, repo.upsert(&new_user).await.unwrap());
-        assert_eq!(other_user, repo.upsert(&other_user).await.unwrap());
+        assert_eq!(new_user, repo.upsert(&new_user).await?);
+        assert_eq!(other_user, repo.upsert(&other_user).await?);
         assert_eq!(
             Some(&other_user),
-            repo.get(new_user.discord_id).await.unwrap().as_ref()
+            repo.get(new_user.discord_id).await?.as_ref()
         );
         assert_eq!(
             third_user,
-            repo.update(&other_user, third_user.clone().into())
-                .await
-                .unwrap()
+            repo.update(&other_user, third_user.clone().into()).await?
         );
         assert_eq!(
             Some(&third_user),
-            repo.get(new_user.discord_id).await.unwrap().as_ref()
+            repo.get(new_user.discord_id).await?.as_ref()
         );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_user_get_or_insert() -> Result<()> {
+        let db = init_db();
+        let repo = db.user_repository();
+
+        let id = DiscordId(3);
+        let new_user = NewUser {
+            discord_id: id,
+            name: "Robson".to_string(),
+            bio: Some("My bio".to_string()),
+        };
+        let other_user_with_same_id = NewUser {
+            discord_id: id,
+            name: "Jefferson".to_string(),
+            bio: Some("I have the same ID, but I won't be inserted!".to_string()),
+        };
+
+        assert_eq!(None, repo.get(id).await?);
+        assert_eq!(new_user, repo.get_or_insert(&new_user).await?);
+        assert_eq!(
+            new_user,
+            repo.get_or_insert(&other_user_with_same_id).await?
+        );
+
+        Ok(())
     }
 }
