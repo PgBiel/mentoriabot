@@ -1,11 +1,16 @@
 use std::sync::Arc;
 
 use diesel_async::{
+    pooled_connection::{deadpool::Pool, AsyncDieselConnectionManager},
+    AsyncPgConnection,
+};
+#[cfg(test)]
+use diesel_async::{
     pooled_connection::{
-        deadpool::{Hook, HookError, HookErrorCause, Pool},
-        AsyncDieselConnectionManager, PoolError,
+        deadpool::{Hook, HookError, HookErrorCause},
+        PoolError,
     },
-    AsyncConnection, AsyncPgConnection,
+    AsyncConnection,
 };
 
 use crate::{
@@ -17,6 +22,7 @@ use crate::{
 /// connection [`Pool`].
 #[derive(Clone)]
 pub struct DatabaseManager {
+    #[allow(dead_code)]
     pool: Arc<Pool<AsyncPgConnection>>,
     user_repository: UserRepository,
     session_repository: SessionRepository,
@@ -32,6 +38,7 @@ pub fn create_connection_pool(database_url: &str) -> Result<Pool<AsyncPgConnecti
 }
 
 /// Creates a test connection pool (which is rolled back when the connection is dropped).
+#[cfg(test)]
 pub fn create_test_connection_pool(database_url: &str) -> Result<Pool<AsyncPgConnection>> {
     let manager = AsyncDieselConnectionManager::new(database_url);
 

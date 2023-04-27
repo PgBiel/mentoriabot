@@ -5,7 +5,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use poise::{serenity_prelude as serenity, ApplicationContext};
 
-use crate::{error::Result, interaction::SelectValue, ContextualResult, FormState};
+use crate::{interaction::SelectValue, ContextualResult, FormState};
 
 pub mod button;
 pub mod reply;

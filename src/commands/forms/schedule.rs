@@ -12,7 +12,7 @@ use crate::{
         error::Result as FormResult, Buildable, CustomId, FormError, GenerateReply,
         InteractionForm, MessageFormComponent, SelectMenuOptionSpec, SelectMenuSpec, SelectValue,
     },
-    model::{Availability, DiscordId, Teacher, User},
+    model::{Availability, Teacher, User},
     util,
     util::{time::hour_minute_display, tr, BRAZIL_TIMEZONE},
 };

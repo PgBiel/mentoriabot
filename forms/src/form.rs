@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use poise::ApplicationContext;
 
-use crate::{error::Result, ContextualResult};
+use crate::ContextualResult;
 
 /// Represents a form of sequential Discord interactions.
 #[async_trait]

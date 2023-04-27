@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use diesel::{query_builder::AsQuery, sql_function};
+use diesel::query_builder::AsQuery;
 use diesel_async::{pooled_connection::deadpool, AsyncPgConnection};
 
 use crate::error::Result;

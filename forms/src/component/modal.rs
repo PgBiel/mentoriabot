@@ -1,10 +1,7 @@
 use async_trait::async_trait;
 use poise::{ApplicationContext, Modal as PoiseModal};
 
-use crate::{
-    error::{FormError, Result},
-    ContextualResult, FormState,
-};
+use crate::{error::FormError, ContextualResult, FormState};
 
 /// A Modal Component. This is blanket-implemented for all [`poise::Modal`] types,
 /// but you may wish to override its behavior (by default, the `Modal` is itself).

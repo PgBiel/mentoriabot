@@ -3,7 +3,6 @@ mod macros;
 
 pub use button::*;
 use proc_macro2::TokenStream;
-use quote::ToTokens;
 
 /// Allows for validation of attributes in model structs
 pub(crate) trait ValidateAttrs {

@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use minirustbot_forms::SelectMenuOptionSpec;
-use minirustbot_macros::SelectMenuComponent;
 use poise::serenity_prelude as serenity;
 
 use crate::{

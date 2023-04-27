@@ -1,7 +1,7 @@
 //! Implements the #[derive(InteractionForm)] derive macro
 use darling::{util::Flag, FromAttributes, FromDeriveInput};
 use proc_macro2::TokenStream;
-use quote::{quote, ToTokens, TokenStreamExt};
+use quote::{quote, ToTokens};
 
 use crate::{
     common::{FormContextInfo, FormData, FormDataAttr},
