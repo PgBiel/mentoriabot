@@ -137,3 +137,103 @@ impl UpdatableRepository for TeacherRepository {
         repo_update!(self; old_teacher => new_teacher)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::tests::init_db;
+    use crate::{
+        error::Result,
+        model::{DiscordId, NewTeacher, NewUser},
+        repository::{Repository, UpdatableRepository},
+    };
+
+    #[tokio::test]
+    async fn test_teacher_get_insert_find_remove() -> Result<()> {
+        let db = init_db();
+        let user_repo = db.user_repository();
+        let teacher_repo = db.teacher_repository();
+
+        let id = DiscordId(11);
+        let new_user = NewUser {
+            discord_id: id,
+            name: "The Teacher".to_string(),
+            bio: Some("The best teacher.".to_string()),
+        };
+        let new_teacher = NewTeacher {
+            user_id: id,
+            email: Some("aaa@bbb.com".to_string()),
+            specialty: "Math".to_string(),
+            company: Some("Mozilla Inc.".to_string()),
+            company_role: Some("CTO".to_string()),
+        };
+
+        user_repo.get_or_insert(&new_user).await?;
+
+        assert_eq!(None, teacher_repo.get(id).await?);
+        assert_eq!(new_teacher, teacher_repo.insert(&new_teacher).await?);
+        assert_eq!(Some(&new_teacher), teacher_repo.get(id).await?.as_ref());
+        assert_eq!(
+            vec![&new_teacher],
+            teacher_repo
+                .find_all()
+                .await
+                .unwrap()
+                .iter()
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(1, teacher_repo.remove(&new_teacher).await?);
+        assert_eq!(None, teacher_repo.get(id).await?.as_ref());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_user_upsert_update() -> Result<()> {
+        let db = init_db();
+        let user_repo = db.user_repository();
+        let teacher_repo = db.teacher_repository();
+
+        let id = DiscordId(12);
+        let new_user = NewUser {
+            discord_id: id,
+            name: "John Rust".to_string(),
+            bio: Some("I know Rust.".to_string()),
+        };
+        let new_teacher = NewTeacher {
+            user_id: id,
+            email: Some("rustacean@mozilla.org".to_string()),
+            specialty: "Rust".to_string(),
+            company: Some("Mozilla Inc.".to_string()),
+            company_role: Some("Programmer".to_string()),
+        };
+        let other_teacher = NewTeacher {
+            company: None,
+            ..new_teacher.clone()
+        };
+        let third_teacher = NewTeacher {
+            specialty: "Swift".to_string(),
+            ..other_teacher.clone()
+        };
+
+        user_repo.upsert(&new_user).await?;
+
+        assert_eq!(new_teacher, teacher_repo.upsert(&new_teacher).await?);
+        assert_eq!(other_teacher, teacher_repo.upsert(&other_teacher).await?);
+        assert_eq!(
+            Some(&other_teacher),
+            teacher_repo.get(new_teacher.user_id).await?.as_ref()
+        );
+        assert_eq!(
+            third_teacher,
+            teacher_repo
+                .update(&other_teacher, third_teacher.clone().into())
+                .await?
+        );
+        assert_eq!(
+            Some(&third_teacher),
+            teacher_repo.get(new_teacher.user_id).await?.as_ref()
+        );
+
+        Ok(())
+    }
+}
