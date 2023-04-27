@@ -4,8 +4,7 @@ use async_trait::async_trait;
 use chrono::{Datelike, TimeZone};
 use diesel::{
     dsl::{exists, not},
-    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, NullableExpressionMethods,
-    OptionalExtension, QueryDsl,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
 };
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
@@ -72,7 +71,7 @@ impl AvailabilityRepository {
             .filter(not(exists(
                 sessions::table.filter(
                     sessions::availability_id
-                        .eq(availability::id.nullable())
+                        .eq(availability::id)
                         .and(sessions::start_at.ge(utc)),
                 ),
             )))

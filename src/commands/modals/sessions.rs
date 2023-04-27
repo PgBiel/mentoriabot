@@ -11,20 +11,13 @@ pub struct SessionCreateModal {
     #[placeholder = "Creating a Class in C++"]
     #[min_length = 1]
     #[max_length = 100]
-    pub name: String,
+    pub summary: String,
 
     #[name = "Starting At (DD/MM, hh:mm)"]
     #[placeholder = "19/03, 19:30"]
     #[min_length = 5]
     #[max_length = 25]
     pub starts_at: String,
-
-    #[name = "Session Description"]
-    #[placeholder = "This lecture will teach you how to create a class in C++, from scratch."]
-    #[paragraph]
-    #[min_length = 1]
-    #[max_length = 200]
-    pub description: String,
 }
 
 /// Same as [`SessionCreateModal`], but in portuguese.
@@ -35,20 +28,13 @@ pub struct SessionCreatePortugueseModal {
     #[placeholder = "Criando uma Classe em C++"]
     #[min_length = 1]
     #[max_length = 100]
-    pub name: String,
+    pub summary: String,
 
     #[name = "Começando em (DIA/MÊS, hora:minuto)"]
     #[placeholder = "19/03, 19:30"]
     #[min_length = 5]
     #[max_length = 25]
     pub starts_at: String,
-
-    #[name = "Descrição da Aula"]
-    #[placeholder = "Esta aula irá te ensinar a criar uma classe em C++, do zero."]
-    #[paragraph]
-    #[min_length = 1]
-    #[max_length = 200]
-    pub description: String,
 }
 
 /// Groups together the two modals.
@@ -70,11 +56,11 @@ impl SessionCreateModals {
         })
     }
 
-    /// Gets the user's given Session name.
-    pub fn name(&self) -> &String {
+    /// Gets the user's given Session summary.
+    pub fn summary(&self) -> &String {
         match self {
-            Self::Regular(SessionCreateModal { name, .. }) => name,
-            Self::Portuguese(SessionCreatePortugueseModal { name, .. }) => name,
+            Self::Regular(SessionCreateModal { summary, .. }) => summary,
+            Self::Portuguese(SessionCreatePortugueseModal { summary, .. }) => summary,
         }
     }
 
@@ -83,14 +69,6 @@ impl SessionCreateModals {
         match self {
             Self::Regular(SessionCreateModal { starts_at, .. }) => starts_at,
             Self::Portuguese(SessionCreatePortugueseModal { starts_at, .. }) => starts_at,
-        }
-    }
-
-    /// Gets the user's given Session description.
-    pub fn description(&self) -> &String {
-        match self {
-            Self::Regular(SessionCreateModal { description, .. }) => description,
-            Self::Portuguese(SessionCreatePortugueseModal { description, .. }) => description,
         }
     }
 

@@ -1,5 +1,3 @@
-use chrono::{TimeZone, Timelike};
-
 use super::forms::schedule::ScheduleForm;
 use crate::{
     commands::forms::schedule::SelectMentorComponent,
@@ -11,7 +9,7 @@ use crate::{
     util,
     util::{
         time::{brazil_now, datetime_as_utc, datetime_with_time},
-        tr, BRAZIL_TIMEZONE,
+        tr,
     },
 };
 
@@ -32,7 +30,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
 
     let Availability {
         time_start,
-        time_end,
+        duration,
         ..
     } = selected_availability;
 
@@ -50,20 +48,18 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         })
         .await?;
 
+    let start_at = datetime_as_utc(
+        &datetime_with_time(brazil_now(), time_start)
+            .ok_or_else(|| Error::Other("failed to create session datetime object"))?,
+    );
+    let end_at = start_at + chrono::Duration::hours(duration as i64);
     let session = NewSession {
-        availability_id: Some(selected_availability.id),
         teacher_id: selected_mentor.user_id,
         student_id: ctx.author().id.into(),
-        name: "".to_string(),
-        description: "".to_string(),
-        start_at: datetime_as_utc(
-            &datetime_with_time(brazil_now(), time_start)
-                .ok_or_else(|| Error::Other("failed to create session datetime object"))?,
-        ),
-        end_at: datetime_as_utc(
-            &datetime_with_time(brazil_now(), time_end)
-                .ok_or_else(|| Error::Other("failed to create session datetime object"))?,
-        ),
+        availability_id: selected_availability.id,
+        summary: None,
+        start_at,
+        end_at,
         notified: false,
     };
 

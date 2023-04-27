@@ -5,7 +5,7 @@ use poise::serenity_prelude as serenity;
 use crate::{
     commands::modals::sessions::SessionCreateModals,
     common::{ApplicationContext, Context},
-    error::Result,
+    error::{Error, Result},
     model::{NewSession, NewUser, Session, User},
     repository::Repository,
     util,
@@ -79,8 +79,7 @@ async fn create(
         return Ok(());
     }
 
-    let name = modal.name().clone();
-    let description = modal.description().clone();
+    let summary = modal.summary().clone();
     let end_at = start_at.add(chrono::Duration::hours(hours));
 
     let author = ctx.author();
@@ -103,9 +102,8 @@ async fn create(
         .db
         .session_repository()
         .insert(&NewSession {
-            name,
-            description,
-            availability_id: None, // TODO
+            summary: Some(summary),
+            availability_id: 1, // TODO
             teacher_id: author_id,
             student_id: author_id,
             notified: false,
@@ -116,22 +114,25 @@ async fn create(
 
     let Session {
         id: inserted_id,
-        name: inserted_name,
+        summary: inserted_summary,
         ..
     } = res;
+
+    let inserted_summary =
+        inserted_summary.ok_or_else(|| Error::Other("summary missing for inserted session"))?;
 
     ctx.send(|b| {
         b.content(if ctx.locale() == Some("pt-BR") {
             format!(
                 "Aula '{}' criada com sucesso. \
                 (Veja mais informações usando '/aulas obter {}'.) 👍",
-                inserted_name, inserted_id,
+                inserted_summary, inserted_id,
             )
         } else {
             format!(
                 "Session '{}' created successfully. \
                 (View more info with '/sessions get {}'.) 👍",
-                inserted_name, inserted_id,
+                inserted_summary, inserted_id,
             )
         })
     })
@@ -158,8 +159,8 @@ pub async fn get(
     let session_and_teacher = db.session_repository().get_with_teacher(id).await?;
     if let Some((session, teacher)) = session_and_teacher {
         let Session {
-            name,
-            description,
+            id,
+            summary,
             teacher_id,
             start_at,
             end_at,
@@ -171,6 +172,9 @@ pub async fn get(
         } = db.user_repository().find_by_teacher(&teacher).await?;
         let teacher_mention = teacher_id.as_user_mention();
 
+        let summary = summary
+            .map(|s| format!("\"{}\"", s))
+            .unwrap_or("".to_string());
         let start_at = start_at.with_timezone(&*BRAZIL_TIMEZONE);
         let duration = end_at.signed_duration_since(start_at);
 
@@ -179,7 +183,7 @@ pub async fn get(
                 if ctx.locale() == Some("pt-BR") {
                     let duration =
                         util::locale::convert_chrono_duration_to_brazilian_string(duration);
-                    f.title(format!("Sessão '{}'", name))
+                    f.title(format!("Sessão #{}", id))
                         .field(
                             "Mentor",
                             format!("{teacher_name} ({teacher_mention})"),
@@ -187,11 +191,11 @@ pub async fn get(
                         )
                         .field("Começa em", start_at.to_string(), false)
                         .field("Duração", duration, true)
-                        .description(format!("\"{}\"", description))
+                        .description(summary)
                         .color(serenity::Colour::BLITZ_BLUE)
                 } else {
                     let duration = util::locale::convert_chrono_duration_to_string(duration);
-                    f.title(format!("Session '{}'", name))
+                    f.title(format!("Session #{}", id))
                         .field(
                             "Mentor",
                             format!("{teacher_name} ({teacher_mention})"),
@@ -199,7 +203,7 @@ pub async fn get(
                         )
                         .field("Starts at", start_at.to_string(), false)
                         .field("Duration", duration, true)
-                        .description(format!("\"{}\"", description))
+                        .description(summary)
                         .color(serenity::Colour::BLITZ_BLUE)
                 }
             })
@@ -234,7 +238,7 @@ pub async fn remove(
 
         let removed_msg = format!(
             "Successfully removed session '{}' from the database.",
-            session.name
+            session.summary.unwrap_or_else(|| "Unnamed".to_string())
         );
         ctx.send(|b| b.content(removed_msg).ephemeral(true)).await?;
     } else {

@@ -12,10 +12,9 @@ pub struct Session {
     pub id: i64,
     pub teacher_id: DiscordId,
     pub student_id: DiscordId,
-    pub name: String,
-    pub description: String,
+    pub availability_id: i64,
+    pub summary: Option<String>,
     pub notified: bool,
-    pub availability_id: Option<i64>,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -26,10 +25,9 @@ pub struct Session {
 pub struct NewSession {
     pub teacher_id: DiscordId,
     pub student_id: DiscordId,
-    pub name: String,
-    pub description: String,
+    pub availability_id: i64,
+    pub summary: Option<String>,
     pub notified: bool,
-    pub availability_id: Option<i64>,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -40,10 +38,9 @@ pub struct PartialSession {
     pub id: Option<i64>,
     pub teacher_id: Option<DiscordId>,
     pub student_id: Option<DiscordId>,
-    pub name: Option<String>,
-    pub description: Option<String>,
+    pub availability_id: Option<i64>,
+    pub summary: Option<Option<String>>,
     pub notified: Option<bool>,
-    pub availability_id: Option<Option<i64>>,
     pub start_at: Option<chrono::DateTime<chrono::Utc>>,
     pub end_at: Option<chrono::DateTime<chrono::Utc>>,
 }
@@ -56,10 +53,9 @@ impl From<Session> for PartialSession {
             id: Some(session.id),
             teacher_id: Some(session.teacher_id),
             student_id: Some(session.student_id),
-            name: Some(session.name),
-            description: Some(session.description),
-            notified: Some(session.notified),
             availability_id: Some(session.availability_id),
+            summary: Some(session.summary),
+            notified: Some(session.notified),
             start_at: Some(session.start_at),
             end_at: Some(session.end_at),
         }
@@ -73,10 +69,9 @@ impl From<Session> for NewSession {
         let Session {
             teacher_id,
             student_id,
-            name,
-            description,
-            notified,
             availability_id,
+            summary,
+            notified,
             start_at,
             end_at,
             ..
@@ -85,10 +80,9 @@ impl From<Session> for NewSession {
         Self {
             teacher_id,
             student_id,
-            name,
-            description,
-            notified,
             availability_id,
+            summary,
+            notified,
             start_at,
             end_at,
         }

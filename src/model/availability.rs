@@ -24,7 +24,8 @@ pub struct Availability {
     pub teacher_id: DiscordId,
     pub weekday: Weekday,
     pub time_start: chrono::NaiveTime,
-    pub time_end: chrono::NaiveTime,
+    pub expired: bool,
+    pub duration: i16,
 }
 
 #[derive(Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
@@ -33,7 +34,8 @@ pub struct NewAvailability {
     pub teacher_id: DiscordId,
     pub weekday: Weekday,
     pub time_start: chrono::NaiveTime,
-    pub time_end: chrono::NaiveTime,
+    pub expired: bool,
+    pub duration: i16,
 }
 
 /// A Partial Availability, in order to specify certain fields to update.
@@ -44,7 +46,8 @@ pub struct PartialAvailability {
     pub teacher_id: Option<DiscordId>,
     pub weekday: Option<Weekday>,
     pub time_start: Option<chrono::NaiveTime>,
-    pub time_end: Option<chrono::NaiveTime>,
+    pub expired: Option<bool>,
+    pub duration: Option<i16>,
 }
 
 impl From<Availability> for PartialAvailability {
@@ -56,7 +59,8 @@ impl From<Availability> for PartialAvailability {
             teacher_id: Some(other.teacher_id),
             weekday: Some(other.weekday),
             time_start: Some(other.time_start),
-            time_end: Some(other.time_end),
+            expired: Some(other.expired),
+            duration: Some(other.duration),
         }
     }
 }
@@ -67,7 +71,8 @@ impl From<Availability> for NewAvailability {
             teacher_id,
             weekday,
             time_start,
-            time_end,
+            expired,
+            duration,
             ..
         } = other;
 
@@ -75,7 +80,8 @@ impl From<Availability> for NewAvailability {
             teacher_id,
             weekday,
             time_start,
-            time_end,
+            expired,
+            duration,
         }
     }
 }

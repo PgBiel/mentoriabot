@@ -7,7 +7,6 @@ use diesel_async::{
     },
     AsyncConnection, AsyncPgConnection,
 };
-use poise::futures_util::TryFutureExt;
 
 use crate::{
     error::Result,
