@@ -4,7 +4,14 @@ macro_rules! validate_attr {
             return ::core::result::Result::Err(
                 ::syn::Error::new(
                     ::proc_macro2::Span::call_site(),
-                    "$name: Cannot specify attributes '$attr1' and '$attr2' at the same time.",
+                    concat!(
+                        stringify!($name),
+                        ": Cannot specify attributes '",
+                        stringify!($attr1),
+                        "' and '",
+                        stringify!($attr2),
+                        "' at the same time."
+                    ),
                 )
                 .into(),
             );
@@ -15,7 +22,14 @@ macro_rules! validate_attr {
             return ::core::result::Result::Err(
                 ::syn::Error::new(
                     ::proc_macro2::Span::call_site(),
-                    "$name: Must specify at least one of '$attr1' and '$attr2'.",
+                    concat!(
+                        stringify!($name),
+                        ": Must specify at least one of '",
+                        stringify!($attr1),
+                        "' and '",
+                        stringify!($attr2),
+                        "'."
+                    ),
                 )
                 .into(),
             );
@@ -26,7 +40,14 @@ macro_rules! validate_attr {
             return ::core::result::Result::Err(
                 ::syn::Error::new(
                     ::proc_macro2::Span::call_site(),
-                    "$name: Cannot specify attributes '$attr1' and '$attr2' at the same time.",
+                    concat!(
+                        stringify!($name),
+                        ": Cannot specify attributes '",
+                        stringify!($attr1),
+                        "' and '",
+                        stringify!($attr2),
+                        "' at the same time."
+                    ),
                 )
                 .into(),
             );

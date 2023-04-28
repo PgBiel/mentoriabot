@@ -13,6 +13,13 @@ use crate::{
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
+struct ButtonBaseAttrs {
+    /// The button's specs.
+    button: ButtonSpecRepr,
+}
+
+#[derive(Debug, Clone, darling::FromMeta)]
+#[darling(allow_unknown_fields)]
 struct InteractionAttr {
     /// Marks this field as the receiver of the returned MessageComponentInteraction
     /// object.
@@ -23,9 +30,10 @@ struct InteractionAttr {
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let button_attrs: ButtonSpecRepr = util::get_darling_attrs(&input.attrs)?;
+    let struct_attrs: ButtonBaseAttrs = util::get_darling_attrs(&input.attrs)?;
     let form_data = FormDataAttr::from_attributes(&input.attrs)?;
 
+    let button_attrs = struct_attrs.button;
     button_attrs.validate_attrs()?;
 
     // ---

@@ -16,6 +16,7 @@ use crate::{
 struct ReplyAttrs {
     /// The content of the message to be sent, as an expression
     /// (in context: `context` and `data`)
+    #[darling(map = "util::parse_expr")]
     content: syn::Expr,
 
     /// A function that takes a `&mut poise::CreateReply`, context, `&Data` and adds attachments to

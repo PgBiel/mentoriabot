@@ -48,6 +48,7 @@ struct SelectOptionAttributes {
 struct FieldAttributes {
     /// The default value for this field when being initialized.
     /// Otherwise, will default to Default::default().
+    #[darling(map = "util::parse_option_expr")]
     initializer: Option<syn::Expr>,
 }
 

@@ -60,6 +60,29 @@ where
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ParsedExpr(syn::Expr);
+
+impl darling::FromMeta for ParsedExpr {
+    fn from_expr(expr: &syn::Expr) -> darling::Result<Self> {
+        Ok(Self(expr.clone()))
+    }
+}
+
+/// Parses an optionally present expression.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct OptionParsedExpr(Option<syn::Expr>);
+
+impl darling::FromMeta for OptionParsedExpr {
+    fn from_none() -> Option<Self> {
+        Some(Self(None))
+    }
+
+    fn from_expr(expr: &syn::Expr) -> darling::Result<Self> {
+        Ok(Self(Some(expr.clone())))
+    }
+}
+
 /// Utility function to add to `#[darling(map = ...)]`
 /// to parse attribute arguments as `#[attr(argument_without_quotes)]`
 /// instead of `#[attr = "argument_must_have_quotes_which_is_annoying"]`
@@ -75,6 +98,16 @@ pub(crate) fn parse_option<T>(parsed: OptionParsed1<T>) -> Option<T> {
 /// Same as [parse] but for tuples of two arguments
 pub(crate) fn parse2<T, U, R: From<(T, U)>>(parsed: Parsed2<T, U>) -> R {
     (parsed.0, parsed.1).into()
+}
+
+/// Same as [parse] but for expressions (taking strings as literal strings).
+pub(crate) fn parse_expr(parsed: ParsedExpr) -> syn::Expr {
+    parsed.0
+}
+
+/// Same as [parse_expr] but for optionally present expressions.
+pub(crate) fn parse_option_expr(parsed: OptionParsedExpr) -> Option<syn::Expr> {
+    parsed.0
 }
 
 /// Holds either a type or `Self`.

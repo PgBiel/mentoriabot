@@ -35,12 +35,14 @@ struct SelectAttributes {
 
     /// This select menu's options. If unspecified,
     /// will attempt to rely on a field marked with `#[field(selected_options)]`.
+    #[darling(map = "util::parse_option_expr")]
     options: Option<syn::Expr>,
 
     /// Code to run when an interaction is received. Must evaluate to a "Self",
     /// or `return` an error.
     /// If not given, `#[field(selected_options)]` will be initialized if possible.
     /// Otherwise, `Default::default()` will be attempted.
+    #[darling(map = "util::parse_option_expr")]
     on_interaction: Option<syn::Expr>,
 }
 
@@ -55,6 +57,7 @@ struct SelectFieldAttributes {
     selected_options: Flag,
 
     /// The initializer of any extra fields. Defaults to "Default::default()".
+    #[darling(map = "util::parse_option_expr")]
     initializer: Option<syn::Expr>,
 }
 
