@@ -11,7 +11,6 @@ use crate::{
 /// Representation of the struct attributes
 #[derive(Debug, darling::FromDeriveInput)]
 #[darling(supports(struct_named), attributes(component))]
-#[darling(allow_unknown_fields)]
 struct ComponentStruct {
     ident: syn::Ident,
 

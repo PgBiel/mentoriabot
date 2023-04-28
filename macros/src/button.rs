@@ -1,25 +1,15 @@
 //! Implements the #[derive(ButtonComponent)] derive macro
-use darling::util::Flag;
+use darling::{util::Flag, FromAttributes};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
 
 use crate::{
-    common::{FormContextInfo, FormData},
+    common::{FormContextInfo, FormData, FormDataAttr},
     model::{ButtonSpecRepr, ToSpec, ValidateAttrs},
     util,
 };
-
-#[derive(Debug, Clone, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
-struct ButtonBaseAttributes {
-    /// Form type parameters
-    form_data: FormData,
-
-    /// Button attributes
-    button: ButtonSpecRepr,
-}
 
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
@@ -33,8 +23,8 @@ struct InteractionAttr {
 }
 
 pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
-    let struct_attrs: ButtonBaseAttributes = util::get_darling_attrs(&input.attrs)?;
-    let button_attrs = &struct_attrs.button;
+    let button_attrs: ButtonSpecRepr = util::get_darling_attrs(&input.attrs)?;
+    let form_data = FormDataAttr::from_attributes(&input.attrs)?;
 
     button_attrs.validate_attrs()?;
 
@@ -45,7 +35,7 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             data: ctx_data,
             error: ctx_error,
         },
-    } = &struct_attrs.form_data;
+    } = &form_data.form_data;
 
     let button_spec = button_attrs.to_spec();
     let create_with_interaction = single_button_create_with_interaction_code(&input)?

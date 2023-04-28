@@ -1,8 +1,8 @@
 mod darling_types;
 
 pub use darling_types::*;
-use proc_macro2::Span;
-use quote::ToTokens;
+use proc_macro2::{Span, TokenStream};
+use quote::{quote, ToTokens};
 use syn::spanned::Spanned;
 
 /// Converts a string to ident (which can be inserted without quotes)
@@ -30,23 +30,25 @@ pub fn empty_tuple_type() -> syn::Type {
 pub fn get_darling_attrs<T: darling::FromMeta>(
     attrs: &[syn::Attribute],
 ) -> Result<T, darling::Error> {
-    let mapped_attrs = attrs
-        .iter()
-        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
-        .collect::<Result<Vec<_>, _>>()?;
+    let mapped_attrs = attrs.iter()
+        .map(ToTokens::into_token_stream)
+        .fold(TokenStream::new(), |acc, item| quote!{#acc #item});
 
-    <T as darling::FromMeta>::from_list(&mapped_attrs)
+    darling::FromMeta::from_list(
+        &darling::ast::NestedMeta::parse_meta_list(mapped_attrs)?
+    )
 }
 
 pub fn get_darling_attrs_ref<T: darling::FromMeta>(
     attrs: &[&syn::Attribute],
 ) -> Result<T, darling::Error> {
-    let mapped_attrs = attrs
-        .iter()
-        .map(|attr| attr.parse_meta().map(syn::NestedMeta::Meta))
-        .collect::<Result<Vec<_>, _>>()?;
+    let mapped_attrs = attrs.iter()
+        .map(ToTokens::into_token_stream)
+        .fold(TokenStream::new(), |acc, item| quote!{#acc #item});
 
-    <T as darling::FromMeta>::from_list(&mapped_attrs)
+    darling::FromMeta::from_list(
+        &darling::ast::NestedMeta::parse_meta_list(mapped_attrs)?
+    )
 }
 
 pub fn get_darling_attrs_filtered<T: darling::FromMeta>(
@@ -57,7 +59,7 @@ pub fn get_darling_attrs_filtered<T: darling::FromMeta>(
         &attrs
             .iter()
             .filter(|attr| {
-                attr.path
+                attr.path()
                     .segments
                     .first()
                     .map(|p| filter_by.contains(&&*p.ident.to_string()))

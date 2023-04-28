@@ -1,12 +1,11 @@
 //! Implements the #[derive(SelectComponent)] derive macro
 #![allow(dead_code)] // temporary
 
-use darling::FromAttributes;
+use darling::{util::Flag, FromAttributes, FromDeriveInput, FromField};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{quote, ToTokens};
 use syn::spanned::Spanned;
-use synthez::ParseAttrs;
 
 use crate::{
     common::{FormContextInfo, FormData, FormDataAttr},
@@ -14,56 +13,48 @@ use crate::{
 };
 
 /// Representation of the struct attributes
-#[derive(Debug, Default, Clone, synthez::ParseAttrs)]
+#[derive(Debug, Default, Clone, darling::FromDeriveInput)]
+#[darling(allow_unknown_fields, attributes(select))]
 struct SelectAttributes {
     /// The menu's fixed custom ID; if unspecified,
     /// it is auto-generated.
-    #[parse(value)]
-    custom_id: Option<syn::LitStr>,
+    custom_id: Option<String>,
 
     /// Minimum amount of options the user must select.
-    #[parse(value)]
-    min_values: Option<syn::LitInt>,
+    min_values: Option<u8>,
 
     /// Maximum amount of options the user can select.
-    #[parse(value)]
-    max_values: Option<syn::LitInt>,
+    max_values: Option<u8>,
 
     /// If this menu is disabled and cannot be clicked
-    #[parse(ident)]
-    disabled: Option<syn::Ident>,
+    disabled: Flag,
 
     /// Function that determines if this menu is disabled
     /// (takes context and &Data, returns bool)
-    #[parse(value)]
     disabled_function: Option<syn::Path>,
 
     /// This select menu's options. If unspecified,
     /// will attempt to rely on a field marked with `#[field(selected_options)]`.
-    #[parse(value)]
     options: Option<syn::Expr>,
 
     /// Code to run when an interaction is received. Must evaluate to a "Self",
     /// or `return` an error.
     /// If not given, `#[field(selected_options)]` will be initialized if possible.
     /// Otherwise, `Default::default()` will be attempted.
-    #[parse(value)]
     on_interaction: Option<syn::Expr>,
 }
 
-#[derive(Debug, Default, Clone, synthez::ParseAttrs)]
+#[derive(Debug, Default, Clone, darling::FromField)]
+#[darling(allow_unknown_fields, attributes(field))]
 struct SelectFieldAttributes {
     /// Marks a field as receiving the response interaction object.
-    #[parse(ident)]
-    interaction: Option<syn::Ident>,
+    interaction: Flag,
 
     /// Marks a field as receiving the selected option(s) by the user.
     /// Its type also specifies the options that will be presented.
-    #[parse(ident)]
-    selected_options: Option<syn::Ident>,
+    selected_options: Flag,
 
     /// The initializer of any extra fields. Defaults to "Default::default()".
-    #[parse(value, validate = util::require_token)]
     initializer: Option<syn::Expr>,
 }
 
@@ -85,7 +76,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
     };
 
     let form_data = FormDataAttr::from_attributes(&input.attrs)?;
-    let select_attrs: SelectAttributes = SelectAttributes::parse_attrs("select", &input)?;
+    let select_attrs: SelectAttributes = SelectAttributes::from_derive_input(&input)?;
 
     validate_select_attrs(&select_attrs, &input)?;
 
@@ -100,7 +91,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     let fields_with_attrs = fields
         .iter()
-        .map(|f| (f, SelectFieldAttributes::parse_attrs("field", f)))
+        .map(|f| (f, SelectFieldAttributes::from_field(f)))
         .flat_map(|(f, attrs)| {
             attrs.map(|a| vec![(f, a)]).unwrap_or(vec![]) // remove empty optional attrs
         })
@@ -108,7 +99,7 @@ pub fn select(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     let selected_fields = fields_with_attrs
         .iter()
-        .filter(|(_, attrs)| attrs.selected_options.is_some())
+        .filter(|(_, attrs)| attrs.selected_options.is_present())
         .collect::<Vec<&(&syn::Field, SelectFieldAttributes)>>();
 
     if selected_fields.len() > 1 {
@@ -168,7 +159,7 @@ fn validate_select_attrs(
     select_attrs: &SelectAttributes,
     input: &syn::DeriveInput,
 ) -> Result<(), darling::Error> {
-    if select_attrs.disabled.is_some() && select_attrs.disabled_function.is_some() {
+    if select_attrs.disabled.is_present() && select_attrs.disabled_function.is_some() {
         return Err(syn::Error::new(
             input.ident.span(),
             "Cannot specify #[disabled] and #[disabled_function] at the same time.",
@@ -193,9 +184,9 @@ fn create_build_with_interaction(
     for (field, attrs) in fields_with_attrs {
         let field_ident = field.ident.as_ref().expect("Expected named field");
 
-        if attrs.interaction.is_some() {
+        if attrs.interaction.is_present() {
             field_initializers.push(quote! { #field_ident: interaction.into(), });
-        } else if attrs.selected_options.is_some() {
+        } else if attrs.selected_options.is_present() {
             field_initializers.push(quote! {
                 #field_ident: interaction.data.values.into_iter().map(From::from).collect().into(),
             })
@@ -228,7 +219,7 @@ fn create_select_spec(select_attrs: &SelectAttributes, options: TokenStream2) ->
     let disabled = if let Some(disabled_function) = select_attrs.disabled_function.as_ref() {
         quote! { #disabled_function(context, data).await?.into() }
     } else {
-        let disabled = select_attrs.disabled.is_some();
+        let disabled = select_attrs.disabled.is_present();
         quote! { #disabled }
     };
 

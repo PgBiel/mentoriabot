@@ -7,7 +7,7 @@ use quote::ToTokens;
 pub(crate) struct Parsed1<T>(pub T);
 
 impl<T: syn::parse::Parse> darling::FromMeta for Parsed1<T> {
-    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         Ok(match items {
             [a] => Self(syn::parse2(a.into_token_stream())?),
             _ => {
@@ -26,7 +26,7 @@ impl<T: syn::parse::Parse> darling::FromMeta for Parsed1<T> {
 pub(crate) struct OptionParsed1<T>(pub Option<T>);
 
 impl<T: syn::parse::Parse> darling::FromMeta for OptionParsed1<T> {
-    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         Ok(match items {
             [a] => Self(Some(syn::parse2::<T>(a.into_token_stream())?)),
             _ => Self(None),
@@ -43,7 +43,7 @@ where
     T: syn::parse::Parse,
     U: syn::parse::Parse,
 {
-    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         Ok(match items {
             [a, b] => Self(
                 syn::parse2(a.into_token_stream())?,
@@ -110,7 +110,7 @@ impl syn::fold::Fold for AllLifetimesToStatic {
 #[allow(dead_code)]
 pub(crate) struct List<T>(pub Vec<T>);
 impl<T: darling::FromMeta> darling::FromMeta for List<T> {
-    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         items
             .iter()
             .map(|item| T::from_nested_meta(item))
@@ -132,7 +132,7 @@ where
     T: darling::FromMeta,
     U: darling::FromMeta,
 {
-    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         Ok(match items {
             [a, b] => Self(T::from_nested_meta(a)?, U::from_nested_meta(b)?),
             _ => {

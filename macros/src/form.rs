@@ -1,21 +1,18 @@
 //! Implements the #[derive(InteractionForm)] derive macro
-use darling::util::Flag;
+use darling::{util::Flag, FromAttributes, FromDeriveInput};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
 use crate::{
-    common::{FormContextInfo, FormData},
+    common::{FormContextInfo, FormData, FormDataAttr},
     util::{self, parse_option},
 };
 
 /// Representation of the struct attributes
-#[derive(Debug, darling::FromMeta)]
-#[darling(allow_unknown_fields)]
+#[derive(Debug, darling::FromDeriveInput)]
+#[darling(attributes(forms))]
 struct StructAttributes {
-    /// Gather form type parameters.
-    form_data: FormData,
-
     /// name of the function to run when the form is finished.
     /// It must take a single ApplicationContext object.
     #[darling(map = "parse_option")]
@@ -36,6 +33,8 @@ struct FieldAttributes {
 }
 
 pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
+    let struct_attrs = StructAttributes::from_derive_input(&input)?;
+    let form_data = FormDataAttr::from_attributes(&input.attrs)?;
     let fields = match input.data {
         syn::Data::Struct(syn::DataStruct {
             fields: syn::Fields::Named(fields),
@@ -52,15 +51,13 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         }
     };
 
-    let struct_attrs: StructAttributes = util::get_darling_attrs(&input.attrs)?;
-
     let FormData {
         data: data_type,
         ctx: FormContextInfo {
             data: ctx_data,
             error: ctx_error,
         },
-    } = &struct_attrs.form_data;
+    } = &form_data.form_data;
 
     let mut components = Vec::new();
     let mut create_fields = Vec::new();
