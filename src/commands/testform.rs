@@ -52,13 +52,12 @@ pub struct TestFormModal {
 //     },
 // }
 
-fn label_function(ctx: ApplicationContext<'_>, _: &()) -> String {
-    format!("I am {}", ctx.author().name)
-}
-
 #[derive(ButtonComponent, GenerateReply, Clone, Debug)]
 #[form_data(ctx(Data, Error))]
-#[button(label_function = "label_function", danger)]
+#[button(
+    label = { format!("I am {}", context.author().name) },
+    danger
+)]
 #[reply(content = "bruh", ephemeral)]
 pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
 

@@ -4,27 +4,21 @@ use quote::quote;
 
 use crate::{
     model::{impl_to_tokens_from_spec, macros::validate_attr, ToSpec, ValidateAttrs},
-    util,
-    util::macros::{
-        take_attribute_optional, take_attribute_or_its_function_optional,
-        take_attribute_or_its_function_required,
-    },
+    util::{self, macros::take_attribute_optional},
 };
 
 /// Representation of button attributes.
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
 pub struct ButtonSpecRepr {
-    /// The button's literal label (please specify this, or a `label_function`)
-    label: Option<String>,
-
-    /// Path to a function (accepting &Data, as specified by `#[data = "Data"]`)
-    /// that returns the button's label as a Into<String> (specify this or `label`).
-    label_function: Option<syn::Path>,
+    /// The button's literal label (required)
+    #[darling(map = "util::parse_expr")]
+    label: syn::Expr,
 
     /// The button's fixed custom ID; if unspecified,
     /// it is auto-generated.
-    custom_id: Option<String>,
+    #[darling(map = "util::parse_option_expr")]
+    custom_id: Option<syn::Expr>,
 
     primary: Flag,
     secondary: Flag,
@@ -33,17 +27,12 @@ pub struct ButtonSpecRepr {
 
     /// Makes the button lead to the given link
     /// NOTE: Such a button cannot be awaited for.
-    link: Option<String>,
-
-    /// Function takes &Data, and returns the link the button leads to (Into<String>).
-    link_function: Option<syn::Path>,
+    #[darling(map = "util::parse_option_expr")]
+    link: Option<syn::Expr>,
 
     /// An optional single emoji to display near the label
-    emoji: Option<char>,
-
-    /// Function that returns the emoji to display near the button label
-    /// (takes &Data, returns Into<ReactionType>)
-    emoji_function: Option<syn::Path>,
+    #[darling(map = "util::parse_option_expr")]
+    emoji: Option<syn::Expr>,
 
     /// If this button is disabled and cannot be clicked
     disabled: Flag,
@@ -55,10 +44,6 @@ pub struct ButtonSpecRepr {
 
 impl ValidateAttrs for ButtonSpecRepr {
     fn validate_attrs(&self) -> Result<(), syn::Error> {
-        validate_attr!(self (button): @not_both_some(label, label_function));
-        validate_attr!(self (button): @not_both_none(label, label_function));
-        validate_attr!(self (button): @not_both_some(emoji, emoji_function));
-        validate_attr!(self (button): @not_both_some(link, link_function));
         validate_attr!(self (button): @not_both_some(@flag disabled, disabled_function));
 
         Ok(())
@@ -67,10 +52,10 @@ impl ValidateAttrs for ButtonSpecRepr {
 
 impl ToSpec for ButtonSpecRepr {
     fn to_spec(&self) -> TokenStream {
-        let label = take_attribute_or_its_function_required!(self; label, label_function);
+        let label = &self.label;
         let custom_id = take_attribute_optional!(self; custom_id);
-        let link = take_attribute_or_its_function_optional!(self; link, link_function);
-        let emoji = take_attribute_or_its_function_optional!(self; emoji, emoji_function);
+        let link = take_attribute_optional!(self; link);
+        let emoji = take_attribute_optional!(self; emoji);
 
         let disabled = if let Some(disabled_function) = &self.disabled_function {
             quote! { #disabled_function(context, data).into() }
