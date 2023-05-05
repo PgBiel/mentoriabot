@@ -1,15 +1,17 @@
 use darling::util::Flag;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::model::select_option::SelectOptionSpecRepr;
-use crate::model::ToSpec;
+use syn::Error;
 
-use crate::util;
+use crate::{
+    model::{macros::validate_attr, select_option::SelectOptionSpecRepr, ToSpec, ValidateAttrs},
+    util,
+};
 
 /// Representation of a select menu component spec.
 #[derive(Debug, Default, Clone, darling::FromDeriveInput)]
 #[darling(allow_unknown_fields, attributes(select))]
-pub(crate) struct SelectSpecRepr {
+pub(crate) struct SelectMenuSpecRepr {
     /// The menu's fixed custom ID; if unspecified,
     /// it is auto-generated.
     #[darling(map = "util::parse_option_expr")]
@@ -21,7 +23,7 @@ pub(crate) struct SelectSpecRepr {
     /// Maximum amount of options the user can select, or `min_values`.
     max_values: Option<syn::Expr>,
 
-    /// If this menu is disabled and cannot be clicked
+    /// If this menu is disabled and cannot be clicked (exclusive with `disabled_expr`)
     disabled: Flag,
 
     /// Expression that determines if this menu is disabled
@@ -37,13 +39,22 @@ pub(crate) struct SelectSpecRepr {
     option: Vec<SelectOptionSpecRepr>,
 }
 
-impl ToSpec for SelectSpecRepr {
+impl ValidateAttrs for SelectMenuSpecRepr {
+    fn validate_attrs(&self) -> Result<(), Error> {
+        validate_attr!(self (selectmenu): @not_both_some(@vec option, options));
+        validate_attr!(self (selectmenu): @not_both_some(@flag disabled, disabled_expr));
+
+        Ok(())
+    }
+}
+
+impl ToSpec for SelectMenuSpecRepr {
     fn to_spec(&self) -> TokenStream {
         let custom_id = util::wrap_option_into(&self.custom_id);
         let min_values = util::wrap_option_into(&self.min_values);
         let max_values = util::wrap_option_into(&self.max_values);
 
-        let options = if let Some(options) = self.options.as_ref() { 
+        let options = if let Some(options) = self.options.as_ref() {
             quote! { #options }
         } else {
             let options = self.option.iter().map(ToSpec::to_spec).collect::<Vec<_>>();
