@@ -5,6 +5,8 @@ mod select_option;
 
 pub(crate) use button::ButtonSpecRepr;
 use proc_macro2::TokenStream;
+pub(crate) use select::SelectSpecRepr;
+pub(crate) use select_option::SelectOptionSpecRepr;
 
 /// Allows for validation of attributes in model structs
 pub(crate) trait ValidateAttrs {
