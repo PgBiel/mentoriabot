@@ -7,10 +7,10 @@ use crate::{
     util::{self, macros::take_attribute_optional},
 };
 
-/// Representation of button attributes.
+/// Representation of a button component spec.
 #[derive(Debug, Clone, darling::FromMeta)]
 #[darling(allow_unknown_fields)]
-pub struct ButtonSpecRepr {
+pub(crate) struct ButtonSpecRepr {
     /// The button's literal label (required)
     #[darling(map = "util::parse_expr")]
     label: syn::Expr,

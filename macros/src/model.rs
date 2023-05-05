@@ -3,7 +3,7 @@ mod macros;
 mod select;
 mod select_option;
 
-pub use button::*;
+pub(crate) use button::ButtonSpecRepr;
 use proc_macro2::TokenStream;
 
 /// Allows for validation of attributes in model structs
