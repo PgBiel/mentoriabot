@@ -61,17 +61,7 @@ pub fn form(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(
     MessageFormComponent,
-    attributes(
-        forms,
-        field,
-        form_data,
-        wait_for_response,
-        on_response,
-        button,
-        buttons,
-        select,
-        initializer
-    )
+    attributes(forms, field, form_data, component, initializer)
 )]
 pub fn component(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);

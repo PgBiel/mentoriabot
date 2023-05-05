@@ -61,9 +61,9 @@ pub struct TestFormModal {
 #[reply(content = "bruh", ephemeral)]
 pub struct Button(#[interaction] Arc<serenity::MessageComponentInteraction>);
 
-#[derive(MessageFormComponent, GenerateReply, Clone, Debug)]
+#[derive(MessageFormComponent, Clone, Debug)]
 #[form_data(ctx(Data, Error))]
-#[reply(content = "hey", ephemeral)]
+#[component(reply(content = "hey", ephemeral))]
 pub struct MyButtonComponent {
     #[field(button)]
     my_button: Option<Button>,
