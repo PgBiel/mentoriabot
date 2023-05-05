@@ -9,8 +9,8 @@ use crate::{
 };
 
 /// Representation of a select menu component spec.
-#[derive(Debug, Default, Clone, darling::FromDeriveInput)]
-#[darling(allow_unknown_fields, attributes(select))]
+#[derive(Debug, Default, Clone, darling::FromMeta)]
+#[darling(allow_unknown_fields)]
 pub(crate) struct SelectMenuSpecRepr {
     /// The menu's fixed custom ID; if unspecified,
     /// it is auto-generated.
