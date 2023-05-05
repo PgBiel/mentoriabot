@@ -14,9 +14,13 @@ use crate::{
 struct ComponentStruct {
     ident: syn::Ident,
 
-    /// The struct's fields
-    ///                      vvvvvvvvvvvvvvvvvvvvvv No enum variants allowed!
+    // The struct's fields
+    //                       vvvvvvvvvvvvvvvvvvvvvv No enum variants allowed!
     data: darling::ast::Data<darling::util::Ignored, SubcomponentField>,
+
+    /// Optional code to run before the component is sent to Discord
+    /// (before any subcomponents are evaluated).
+    prepare: Option<syn::Expr>,
 
     /// Optionally, an async function with the same signature
     /// as `wait_for_response` to override.
@@ -123,6 +127,8 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
     // pop from stack in the reverse order of pushing
     subcomponent_create_from_interaction_ifs.reverse();
 
+    let prepare = component_struct.prepare.as_ref().map(|e| quote! { #e;});
+
     // 'wait_for_response' override, if any
     let wait_for_response = component_struct.wait_for_response_func(ctx_data, ctx_error, data_type);
 
@@ -137,7 +143,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 data: &mut ::minirustbot_forms::FormState<#data_type>,
             ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>, #ctx_error> {
-
+                #prepare
                 data.subcomponent_id_stack.clear();
                 let mut __custom_ids = ::std::vec::Vec::new();
 
