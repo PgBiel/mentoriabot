@@ -5,6 +5,7 @@ use quote::{quote, ToTokens};
 
 use crate::{
     common::{FormContextInfo, FormData, FormDataAttr},
+    model::{ReplySpecRepr, ToSpec},
     util::{self, parse_option},
 };
 
@@ -35,6 +36,9 @@ struct ComponentStruct {
     /// while returning `Some(Self)` will advance the form.
     #[darling(map = "parse_option")]
     on_response: Option<syn::Path>,
+
+    /// How the message sending these components should be formatted.
+    reply: ReplySpecRepr,
 
     /// Indicates this whole struct is a single button row.
     button: Flag,
@@ -128,6 +132,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
     subcomponent_create_from_interaction_ifs.reverse();
 
     let prepare = component_struct.prepare.as_ref().map(|e| quote! { #e;});
+    let reply_spec = component_struct.reply.to_spec();
 
     // 'wait_for_response' override, if any
     let wait_for_response = component_struct.wait_for_response_func(ctx_data, ctx_error, data_type);
@@ -149,14 +154,14 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
 
                 #(#subcomponent_buildables_sections)*
 
-                let __reply = <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(context, data).await?;
+                let __reply = #reply_spec;
 
                 context.send(|f|
                     <::minirustbot_forms::ReplySpec as ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
                         .components(|mut f| f
                             #(#subcomponent_row_creators)*)).await?;
 
-                Ok(__custom_ids) //.into_iter().map(::core::clone::Clone::clone).collect())
+                Ok(__custom_ids)
             }
 
             #wait_for_response
