@@ -3,5 +3,16 @@
     "guild_ids": [12345, 67890],
     "database_url": "postgres://username:password@localhost/minirustbot_test",
     "admin_userids": [1234, 5678],
+    "google_calendar_oauth2_secret": {
+        "client_id": "something",
+        "client_secret": "something",
+        "token_uri": "something",
+        "auth_uri": "something",
+        "redirect_uris": [],
+        "project_id": "something",
+        "client_email": "something",
+        "auth_provider_x509_cert_url": "something",
+        "client_x509_cert_url": "something"
+    },
     "default_logging_level": "info"
 }
