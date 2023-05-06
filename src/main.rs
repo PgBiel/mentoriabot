@@ -9,6 +9,7 @@ mod connection;
 mod error;
 mod events;
 mod model;
+mod notification;
 mod repository;
 mod schema;
 mod util;
@@ -200,6 +201,7 @@ config.example.json structure.",
         guild_ids,
         admin_userids,
         default_logging_level,
+        ..
     } = parsed_config;
 
     let subscriber = tracing_subscriber::FmtSubscriber::builder()
