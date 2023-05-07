@@ -41,6 +41,16 @@ pub enum Error {
     /// [`PoolError`]: deadpool::PoolError
     DeadpoolPool(deadpool::PoolError),
 
+    /// A Google Calendar [`Error`] occurred.
+    ///
+    /// [`Error`]: google_calendar3::Error
+    Calendar(google_calendar3::Error),
+
+    /// An [I/O `Error`] occurred.
+    ///
+    /// [I/O `Error`]: std::io::Error
+    Io(std::io::Error),
+
     /// Indicates a [`HumanParseableDateTime`] failed to parse.
     ///
     /// [`HumanParseableDateTime`]: crate::util::HumanParseableDateTime
@@ -77,6 +87,8 @@ impl_from_error!(diesel::result::Error => Diesel);
 impl_from_error!(diesel::result::ConnectionError => DieselConnection);
 impl_from_error!(deadpool::BuildError => DeadpoolBuild);
 impl_from_error!(deadpool::PoolError => DeadpoolPool);
+impl_from_error!(google_calendar3::Error => Calendar);
+impl_from_error!(std::io::Error => Io);
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -88,6 +100,8 @@ impl Display for Error {
             Self::DieselConnection(inner) => Display::fmt(&inner, f),
             Self::DeadpoolBuild(inner) => Display::fmt(&inner, f),
             Self::DeadpoolPool(inner) => Display::fmt(&inner, f),
+            Self::Calendar(inner) => Display::fmt(&inner, f),
+            Self::Io(inner) => Display::fmt(&inner, f),
             Self::DateTimeParse => write!(f, "Failed to parse the given date expression"),
             Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
@@ -106,6 +120,8 @@ impl std::error::Error for Error {
             Self::DieselConnection(inner) => Some(inner),
             Self::DeadpoolBuild(inner) => Some(inner),
             Self::DeadpoolPool(inner) => Some(inner),
+            Self::Calendar(inner) => Some(inner),
+            Self::Io(inner) => Some(inner),
             Self::Generic(inner) => Some(&**inner),
             _ => None,
         }
