@@ -19,6 +19,9 @@ pub(crate) struct MiniRustBotConfig {
     /// Google calendar API OAuth2 secret info, including client secret and client ID.
     pub(crate) google_calendar_oauth2_secret: google_calendar3::oauth2::ApplicationSecret,
 
+    /// ID of the calendar to use for Google Calendar operations.
+    pub(crate) google_calendar_id: String,
+
     /// The default logging level for the application
     /// (e.g. "info").
     #[serde(default = "info_variant")]

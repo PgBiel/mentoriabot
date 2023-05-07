@@ -14,5 +14,6 @@
         "auth_provider_x509_cert_url": "something",
         "client_x509_cert_url": "something"
     },
+    "google_calendar_id": "calendar-id@blabla.com",
     "default_logging_level": "info"
 }
