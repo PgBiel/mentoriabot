@@ -31,7 +31,7 @@ pub fn hour_minute_display(time: chrono::NaiveTime) -> impl Display {
 }
 
 /// Displays a date as DAY/MONTH.
-pub fn day_month_display(datetime: chrono::NaiveDate) -> impl Display {
+pub fn day_month_display(datetime: &chrono::NaiveDate) -> impl Display {
     datetime.format("%d/%m")
 }
 

@@ -8,7 +8,7 @@ use crate::{
     repository::Repository,
     util,
     util::{
-        time::{brazil_now, datetime_as_utc, datetime_with_time},
+        time::{datetime_as_utc, datetime_with_time},
         tr,
     },
 };
@@ -22,6 +22,9 @@ use crate::{
 )]
 pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     let form = *ScheduleForm::execute(ctx).await?;
+    let initial_datetime = form
+        .form_start_datetime
+        .ok_or_else(|| Error::Other("could not get the form's starting datetime"))?;
     let SelectMentorComponent {
         selected_availability,
         selected_mentor,
@@ -31,6 +34,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     let Availability {
         time_start,
         duration,
+        weekday,
         ..
     } = selected_availability;
 
@@ -48,8 +52,9 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         })
         .await?;
 
+    let start_at = weekday.next_day_with_this_weekday(&initial_datetime);
     let start_at = datetime_as_utc(
-        &datetime_with_time(brazil_now(), time_start)
+        &datetime_with_time(start_at, time_start)
             .ok_or_else(|| Error::Other("failed to create session datetime object"))?,
     );
     let end_at = start_at + chrono::Duration::hours(duration as i64);
