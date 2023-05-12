@@ -16,6 +16,7 @@ use crate::{
     error::Result,
     model::{Availability, NewAvailability, PartialAvailability, Session, Teacher, Weekday},
     schema::{availability, sessions},
+    util::time::datetime_as_utc,
 };
 
 /// Manages Availability instances.
@@ -50,6 +51,58 @@ impl AvailabilityRepository {
             .await
             .optional()
             .map(|v: Option<(Availability, Session)>| v.map(|x| x.0))
+            .map_err(From::from)
+    }
+
+    /// Checks if the given availability exists and is taken by a Session
+    /// which starts after the given date.
+    pub async fn check_is_taken_at(
+        &self,
+        id: i64,
+        datetime: chrono::DateTime<chrono::FixedOffset>,
+    ) -> Result<bool> {
+        let utc = datetime_as_utc(&datetime);
+
+        availability::table
+            .select(availability::id)
+            .find(id)
+            .filter(not(exists(
+                sessions::table.filter(
+                    sessions::availability_id
+                        .eq(availability::id)
+                        .and(sessions::start_at.ge(utc)),
+                ),
+            )))
+            .execute(&mut self.lock_connection().await?)
+            .await
+            .map(|c| c > 0)
+            .map_err(From::from)
+    }
+
+    /// Finds all non-taken availabilities within a week of the given datetime.
+    /// It is assumed that availability times stored
+    /// in the DB are in UTC-3.
+    pub async fn find_nontaken_within_a_week_of_date(
+        &self,
+        datetime: chrono::DateTime<chrono::FixedOffset>,
+    ) -> Result<Vec<Availability>> {
+        let utc = chrono::Utc.from_utc_datetime(&datetime.naive_utc());
+        let weekday: Weekday = datetime.naive_local().weekday().into();
+
+        // get all 'Availability' which occur later today (same weekday)
+        // except for those linked to sessions
+        availability::table
+            .select(availability::all_columns)
+            .filter(availability::weekday.eq_any(weekday.next_7_days()))
+            .filter(not(exists(
+                sessions::table.filter(
+                    sessions::availability_id
+                        .eq(availability::id)
+                        .and(sessions::start_at.ge(utc)),
+                ),
+            )))
+            .get_results(&mut self.lock_connection().await?)
+            .await
             .map_err(From::from)
     }
 
