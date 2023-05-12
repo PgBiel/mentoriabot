@@ -40,11 +40,22 @@ commands:
     no_modal_response: Failed to receive your response to the modal form; please try running this command again.
     cancelled: Operation cancelled.
   schedule:
-    please_select_time_one: There is one mentor available today. Please 
+    please_select_weekday_one: There is one mentor available this week. Please
+      select below the day you wish to schedule at to view available options at that day.
+    please_select_weekday_n: There are %{total_sessions_amount} available mentorship session times in the next 7 days.
+      Please select below the time you day to schedule at to view available options at that day.
+    no_mentors_available_week: There are no more mentors available in the following 7 days. Sorry!
+    one_time: "1 mentorship session time available"
+    n_times: "%{amount} mentorship session times available"
+    please_select_time_one_today: There is one mentor available today. Please 
       select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_n: There are %{total_mentor_amount} mentors available today. Please 
+    please_select_time_n_today: There are %{total_mentor_amount} mentors available today. Please 
       select below the time you wish to schedule at to view available mentors at that time.
-    no_mentors_available: There are no more mentors available today. Sorry!
+    please_select_time_one: There is one mentor available at %{day} (%{weekday}). Please 
+      select below the time you wish to schedule at to view available mentors at that time.
+    please_select_time_n: There are %{total_mentor_amount} mentors available at %{day} (%{weekday}). Please 
+      select below the time you wish to schedule at to view available mentors at that time.
+    no_mentors_available_time: There are no more mentors available at the selected date. Sorry!
     one_mentor: "1 mentor available"
     n_mentors: "%{amount} mentors available"
     please_select_mentor: "**Selected time: %{time}**\nPlease pick a mentor:"
