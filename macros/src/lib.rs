@@ -49,7 +49,10 @@ use proc_macro::TokenStream;
 ///     buttons: MyButtonsComponent, // then this
 /// }
 /// ```
-#[proc_macro_derive(InteractionForm, attributes(form_data, on_finish, modal, component))]
+#[proc_macro_derive(
+    InteractionForm,
+    attributes(form_data, on_finish, modal, component, from_data_field)
+)]
 pub fn form(input: TokenStream) -> TokenStream {
     let struct_ = syn::parse_macro_input!(input as syn::DeriveInput);
 

@@ -30,6 +30,9 @@ struct FieldAttributes {
     /// Indicates this field will store a MessageFormComponent (and assumes it will assign itself
     /// to it)
     component: Flag,
+
+    /// Indicates this field will be taken from the corresponding form data field.
+    from_data_field: Option<syn::Ident>,
 }
 
 pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
@@ -102,6 +105,8 @@ pub fn form(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                 ctx_error,
             ));
             create_fields.push(quote! { #field_name });
+        } else if let Some(data_field) = field_attrs.from_data_field {
+            create_fields.push(quote! { #field_name: __component_data.data.#data_field.into() })
         } else {
             create_fields.push(quote! { #field_name: Default::default() });
         }
