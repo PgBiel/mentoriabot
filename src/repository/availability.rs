@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use chrono::{Datelike, TimeZone};
 use diesel::{
-    dsl::{exists, not},
+    dsl::{count, exists, not},
     BelongingToDsl, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
 };
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
@@ -59,24 +59,26 @@ impl AvailabilityRepository {
     pub async fn check_is_taken_at(
         &self,
         id: i64,
-        datetime: chrono::DateTime<chrono::FixedOffset>,
+        datetime: &chrono::DateTime<chrono::FixedOffset>,
     ) -> Result<bool> {
-        let utc = datetime_as_utc(&datetime);
+        let utc = datetime_as_utc(datetime);
 
-        availability::table
-            .select(availability::id)
-            .find(id)
-            .filter(not(exists(
-                sessions::table.filter(
-                    sessions::availability_id
-                        .eq(availability::id)
-                        .and(sessions::start_at.ge(utc)),
-                ),
-            )))
-            .execute(&mut self.lock_connection().await?)
-            .await
-            .map(|c| c > 0)
-            .map_err(From::from)
+        RunQueryDsl::get_result(
+            availability::table
+                .select(count(availability::id))
+                .filter(availability::id.eq(id))
+                .filter(exists(
+                    sessions::table.filter(
+                        sessions::availability_id
+                            .eq(availability::id)
+                            .and(sessions::start_at.ge(utc)),
+                    ),
+                )),
+            &mut self.lock_connection().await?,
+        )
+        .await
+        .map(|c: i64| c > 0)
+        .map_err(From::from)
     }
 
     /// Finds all non-taken availabilities within a week of the given datetime.
