@@ -67,4 +67,6 @@ commands:
     one_mentor: "1 mentor disponível"
     n_mentors: "%{amount} mentores disponíveis"
     please_select_mentor: "**Horário selecionado:** %{time}\nPor favor, selecione um mentor:"
+    time_already_taken: "**Erro:** Parece que alguém tomou esse horário de mentoria antes de você concluir esse
+      formulário. Foi mal!"
     success: Você agendou com sucesso uma sessão no horário de %{time} com o mentor %{mentor}.

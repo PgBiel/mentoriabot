@@ -59,4 +59,6 @@ commands:
     one_mentor: "1 mentor available"
     n_mentors: "%{amount} mentors available"
     please_select_mentor: "**Selected time: %{time}**\nPlease pick a mentor:"
+    time_already_taken: "**Error:** It seems someone took this mentorship session time before you finished this
+      form. Sorry!"
     success: You have successfully scheduled a session at %{time} with the mentor %{mentor}.

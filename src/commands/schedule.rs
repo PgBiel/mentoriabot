@@ -32,6 +32,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     } = form.select_mentor;
 
     let Availability {
+        id: avail_id,
         time_start,
         duration,
         weekday,
@@ -40,6 +41,18 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
 
     let author = ctx.author();
     let author_id: DiscordId = author.id.into();
+
+    if ctx
+        .data
+        .db
+        .availability_repository()
+        .check_is_taken_at(avail_id, &initial_datetime)
+        .await?
+    {
+        ctx.send(|b| b.content(tr!("commands.schedule.time_already_taken", ctx = ctx)))
+            .await?;
+        return Ok(());
+    }
 
     // Insert Student into database first
     ctx.data()
