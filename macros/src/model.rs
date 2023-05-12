@@ -1,14 +1,14 @@
 mod button;
 mod macros;
+mod reply;
 mod select;
 mod select_option;
-mod reply;
 
 pub(crate) use button::ButtonSpecRepr;
 use proc_macro2::TokenStream;
+pub(crate) use reply::ReplySpecRepr;
 pub(crate) use select::SelectMenuSpecRepr;
 pub(crate) use select_option::SelectOptionSpecRepr;
-pub(crate) use reply::ReplySpecRepr;
 
 /// Allows for validation of attributes in model structs
 pub(crate) trait ValidateAttrs {
