@@ -47,11 +47,11 @@ impl CalendarManager {
             // FIXME: use translations
             description: "Mentoria".to_string().into(),
             start: Some(EventDateTime {
-                date_time: Some(session.start_at.clone()),
+                date_time: Some(session.start_at),
                 ..Default::default()
             }),
             end: Some(EventDateTime {
-                date_time: Some(session.end_at.clone()),
+                date_time: Some(session.end_at),
                 ..Default::default()
             }),
             ..Default::default()

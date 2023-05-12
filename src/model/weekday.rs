@@ -79,7 +79,7 @@ impl Weekday {
         // + all weekdays are always returned in ".next_7_days()", so shouldn't panic
         let delta = next_weekdays.iter().position(|w| w == self).unwrap();
 
-        return initial_day.clone() + chrono::Duration::days(delta.try_into().unwrap());
+        *initial_day + chrono::Duration::days(delta.try_into().unwrap())
     }
 }
 

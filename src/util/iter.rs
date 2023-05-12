@@ -10,7 +10,7 @@ pub fn group_by_count<'a, T: 'a, U: Eq + Hash>(
 ) -> HashMap<U, usize> {
     let mut result: HashMap<U, usize> = HashMap::new();
     for object in objects.into_iter() {
-        let key = key(&object);
+        let key = key(object);
         if let Some(amount) = result.get_mut(&key) {
             *amount = amount.saturating_add(1usize);
         } else {
@@ -27,7 +27,7 @@ pub fn group_by<'a, T, U: Eq + Hash>(
 ) -> HashMap<U, Vec<&'a T>> {
     let mut result: HashMap<U, Vec<&'a T>> = HashMap::new();
     for object in objects.into_iter() {
-        let key = key(&object);
+        let key = key(object);
         if let Some(vec) = result.get_mut(&key) {
             vec.push(object);
         } else {

@@ -93,7 +93,7 @@ async fn select_time_reply_content(
     let selected_weekday = data.availabilities.first().map(|avail| avail.weekday);
     let (selected_weekday, selected_date) = selected_weekday
         .zip(data.form_start_datetime.as_ref())
-        .map(|(weekday, initial_date)| (weekday, weekday.next_day_with_this_weekday(&initial_date)))
+        .map(|(weekday, initial_date)| (weekday, weekday.next_day_with_this_weekday(initial_date)))
         .ok_or_else(|| Error::Other("Couldn't get the selected date at 'schedule' form."))?;
     let date_string = util::time::day_month_display(&selected_date.date_naive());
     let weekday_string = selected_weekday
@@ -235,7 +235,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectWeekdayCompon
 
         // parse into int then back into weekday, if possible
         let Some(selected) =
-            selected.parse::<i16>().ok().map(Weekday::try_from).map(Result::ok).flatten()
+            selected.parse::<i16>().ok().map(Weekday::try_from).and_then(Result::ok)
         else {
             return Err(FormError::InvalidUserResponse.into());
         };

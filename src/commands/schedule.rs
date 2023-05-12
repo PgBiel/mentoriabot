@@ -59,7 +59,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .db
         .user_repository()
         .insert_if_not_exists(&NewUser {
-            discord_id: author_id.clone(),
+            discord_id: author_id,
             name: author.name.clone(),
             bio: None,
         })
