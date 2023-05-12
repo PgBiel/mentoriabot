@@ -76,10 +76,8 @@ impl Weekday {
         let initial_weekday = Self::from(initial_day.weekday());
         let next_weekdays = initial_weekday.next_7_days();
         // 0 <= delta <= 6
-        let delta = next_weekdays
-            .iter()
-            .position(|w| *w == initial_weekday)
-            .unwrap(); // all weekdays are in ".next_7_days()", so shouldn't panic
+        // + all weekdays are always returned in ".next_7_days()", so shouldn't panic
+        let delta = next_weekdays.iter().position(|w| w == self).unwrap();
 
         return initial_day.clone() + chrono::Duration::days(delta.try_into().unwrap());
     }
@@ -178,6 +176,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use chrono::{Datelike, TimeZone};
     use Weekday::*;
 
     use super::*;
@@ -187,6 +186,24 @@ mod tests {
         assert_eq!(
             [Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, Monday],
             Tuesday.next_7_days()
+        )
+    }
+
+    #[test]
+    fn test_next_tuesday_from_wed_10_05_2023_is_tue_16_05_2023() {
+        let utc_offset = chrono::FixedOffset::west_opt(0).unwrap();
+        let wed_10_05_2023 = utc_offset
+            .with_ymd_and_hms(2023, 5, 12, 0, 0, 0)
+            .single()
+            .unwrap();
+        let tue_16_05_2023 = utc_offset
+            .with_ymd_and_hms(2023, 5, 16, 0, 0, 0)
+            .single()
+            .unwrap();
+
+        assert_eq!(
+            tue_16_05_2023,
+            Tuesday.next_day_with_this_weekday(&wed_10_05_2023)
         )
     }
 }
