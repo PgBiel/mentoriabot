@@ -1,7 +1,7 @@
 //! Manages access to the Google Calendar API
 
 use google_calendar3::{
-    api::{Calendar, Event, EventDateTime},
+    api::{Event, EventDateTime},
     hyper, hyper_rustls, oauth2, CalendarHub,
 };
 
@@ -15,7 +15,10 @@ pub struct CalendarManager {
 
 impl CalendarManager {
     /// Connects to the Google Calendar API, creating a new CalendarManager instance.
-    async fn connect(secret: oauth2::ApplicationSecret, calendar_id: &str) -> Result<Self> {
+    pub(super) async fn connect(
+        secret: oauth2::ApplicationSecret,
+        calendar_id: &str,
+    ) -> Result<Self> {
         let auth = oauth2::InstalledFlowAuthenticator::builder(
             secret,
             oauth2::InstalledFlowReturnMethod::HTTPRedirect,
@@ -41,7 +44,7 @@ impl CalendarManager {
         })
     }
 
-    /// Creates a Google Calendar given a Session object.
+    /// Creates a Google Calendar event, given a Session object.
     async fn create_event_for_session(&self, session: &Session) -> Result<Event> {
         let event = Event {
             // FIXME: use translations
