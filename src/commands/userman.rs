@@ -2,9 +2,11 @@ use poise::{serenity_prelude as serenity, Modal};
 
 use crate::{
     common::ApplicationContext,
-    lib::error::Result,
-    model::NewUser,
-    repository::{Repository, UpdatableRepository},
+    lib::{
+        error::Result,
+        model::NewUser,
+        repository::{Repository, UpdatableRepository},
+    },
 };
 
 #[derive(Default, Modal)]

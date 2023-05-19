@@ -5,13 +5,13 @@ use crate::{
     forms::InteractionForm,
     lib::{
         error::{Error, Result},
+        model::{Availability, DiscordId, NewSession, NewUser},
+        repository::Repository,
         util::{
             time::{datetime_as_utc, datetime_with_time},
             tr,
         },
     },
-    model::{Availability, DiscordId, NewSession, NewUser},
-    repository::Repository,
 };
 
 /// Schedules a session with a Mentor

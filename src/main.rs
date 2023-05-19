@@ -5,18 +5,13 @@ use tracing::{error, info, warn};
 mod commands;
 mod common;
 mod config;
-mod connection;
 mod events;
-mod model;
-mod notification;
-mod repository;
-mod schema;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
 use minirustbot_forms::FormError;
 
-use crate::{common::FrameworkError, error::Error, util::tr};
+use crate::{common::FrameworkError, lib::{error::Error, util::{self, tr}}};
 
 pub mod forms {
     pub use minirustbot_forms::*;

@@ -7,10 +7,10 @@ use crate::{
     common::{ApplicationContext, Context},
     lib::{
         error::{Error, Result},
+        model::{NewSession, NewUser, Session, User},
+        repository::Repository,
         util::{self, tr, BRAZIL_TIMEZONE},
     },
-    model::{NewSession, NewUser, Session, User},
-    repository::Repository,
 };
 
 /// Manages sessions with mentors.

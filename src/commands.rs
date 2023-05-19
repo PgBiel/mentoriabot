@@ -1,4 +1,4 @@
-use crate::{common::Data, error::Error};
+use crate::{common::Data, lib::error::Error};
 
 mod forms;
 mod modal;

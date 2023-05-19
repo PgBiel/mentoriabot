@@ -13,13 +13,13 @@ use crate::{
     },
     lib::{
         error::Error,
+        model::{Availability, Teacher, User, Weekday},
         util::{
             self,
             time::{brazil_now, hour_minute_display},
             tr,
         },
     },
-    model::{Availability, Teacher, User, Weekday},
 };
 
 #[derive(Debug, InteractionForm)]

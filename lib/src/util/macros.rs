@@ -56,4 +56,4 @@ macro_rules! tr {
     };
 }
 
-pub use tr;
+pub(crate) use tr;
