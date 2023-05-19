@@ -11,7 +11,14 @@ use common::Data;
 use config::MiniRustBotConfig as Config;
 use minirustbot_forms::FormError;
 
-use crate::{common::FrameworkError, lib::{error::Error, util::{self, tr}}};
+use crate::{
+    common::FrameworkError,
+    lib::{
+        connection,
+        error::Error,
+        util::{self, tr},
+    },
+};
 
 pub mod forms {
     pub use minirustbot_forms::*;
