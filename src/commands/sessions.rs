@@ -6,9 +6,9 @@ use crate::{
     commands::modals::sessions::SessionCreateModals,
     common::{ApplicationContext, Context},
     lib::{
+        db::Repository,
         error::{Error, Result},
         model::{NewSession, NewUser, Session, User},
-        repository::Repository,
         util::{self, tr, BRAZIL_TIMEZONE},
     },
 };

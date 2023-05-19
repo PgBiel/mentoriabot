@@ -3,9 +3,9 @@ use poise::{serenity_prelude as serenity, Modal};
 use crate::{
     common::ApplicationContext,
     lib::{
+        db::{Repository, UpdatableRepository},
         error::Result,
         model::NewUser,
-        repository::{Repository, UpdatableRepository},
     },
 };
 

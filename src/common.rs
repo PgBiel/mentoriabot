@@ -1,6 +1,6 @@
 use crate::{
     forms,
-    lib::{connection::DatabaseManager, error::Error},
+    lib::{db::DatabaseManager, error::Error},
 };
 
 /// Global command data, which is stored and accessible in all command invocations

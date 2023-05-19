@@ -14,7 +14,7 @@ use minirustbot_forms::FormError;
 use crate::{
     common::FrameworkError,
     lib::{
-        connection,
+        db,
         error::Error,
         util::{self, tr},
     },
@@ -214,8 +214,8 @@ config.example.json structure.",
     tracing::subscriber::set_global_default(subscriber)
         .expect("Setting default logging level failed.");
 
-    let db = connection::DatabaseManager::new(&database_url)
-        .expect("Failed to connect to the bot's database.");
+    let db =
+        db::DatabaseManager::new(&database_url).expect("Failed to connect to the bot's database.");
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
