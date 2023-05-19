@@ -89,7 +89,7 @@ mod tests {
     use diesel::Connection;
     use diesel_migrations::MigrationHarness;
 
-    use crate::connection::DatabaseManager;
+    use super::super::connection::DatabaseManager;
 
     /// Initializes the database for testing.
     pub(super) fn init_db() -> DatabaseManager {

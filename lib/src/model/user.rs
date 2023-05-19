@@ -1,7 +1,7 @@
 use diesel::{AsChangeset, Identifiable, Insertable, Queryable};
 
 use super::DiscordId;
-use crate::schema::*;
+use crate::db::schema::*;
 
 /// Represents a registered User of our bot.
 #[derive(Queryable, Identifiable, Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]

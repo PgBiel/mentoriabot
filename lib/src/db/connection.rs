@@ -13,10 +13,10 @@ use diesel_async::{
     AsyncConnection,
 };
 
-use crate::{
-    error::Result,
-    repository::{AvailabilityRepository, SessionRepository, TeacherRepository, UserRepository},
+use super::repository::{
+    AvailabilityRepository, SessionRepository, TeacherRepository, UserRepository,
 };
+use crate::error::Result;
 
 /// Manages database Connection and Repository objects, using a
 /// connection [`Pool`].

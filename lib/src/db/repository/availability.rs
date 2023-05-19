@@ -9,13 +9,13 @@ use diesel::{
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
+    super::schema::{availability, sessions},
     repo_find_all, repo_get, repo_insert, repo_remove, repo_update, repo_upsert, Repository,
     UpdatableRepository,
 };
 use crate::{
     error::Result,
     model::{Availability, NewAvailability, PartialAvailability, Session, Teacher, Weekday},
-    schema::{availability, sessions},
     util::time::datetime_as_utc,
 };
 

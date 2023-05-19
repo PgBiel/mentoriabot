@@ -1,7 +1,7 @@
 use diesel::{AsChangeset, Associations, Identifiable, Insertable, Queryable, QueryableByName};
 
 use super::DiscordId;
-use crate::{model::Weekday, schema::*};
+use crate::{db::schema::*, model::Weekday};
 
 /// Represents a certain time of the week when a Teacher can initiate a Session
 /// with students, which may "claim" one of them for the current week.

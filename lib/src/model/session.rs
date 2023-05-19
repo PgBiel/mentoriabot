@@ -1,7 +1,7 @@
 use diesel::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::DiscordId;
-use crate::schema::*;
+use crate::db::schema::*;
 
 /// Represents a session between a teacher and its student(s).
 #[derive(

@@ -18,3 +18,8 @@ chrono = "0.4.24"
 google-calendar3 = "5"
 once_cell = "1.17.1"
 minirustbot_forms = { path = "../forms" }
+
+[dev-dependencies]
+dotenvy = "0.15.6"
+diesel = { version = "2.0.4", features = ["chrono", "postgres"] }
+diesel_migrations = "2.0.0"

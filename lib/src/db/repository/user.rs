@@ -5,13 +5,12 @@ use diesel::{OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
-    repo_find_all, repo_get, repo_insert, repo_remove, repo_update, repo_upsert, Repository,
-    UpdatableRepository,
+    super::schema::users, repo_find_all, repo_get, repo_insert, repo_remove, repo_update,
+    repo_upsert, Repository, UpdatableRepository,
 };
 use crate::{
     error::{Error, Result},
     model::{DiscordId, NewUser, PartialUser, Session, Teacher, User},
-    schema::users,
 };
 
 /// Manages User instances.

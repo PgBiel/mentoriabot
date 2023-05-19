@@ -5,13 +5,13 @@ use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
+    super::schema::{sessions, teachers, users},
     repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, repo_update, repo_upsert,
     Repository, UpdatableRepository,
 };
 use crate::{
     error::Result,
     model::{DiscordId, NewSession, PartialSession, Session, Teacher, User},
-    schema::{sessions, teachers, users},
 };
 
 /// Manages Session instances.
