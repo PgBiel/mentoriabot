@@ -1,4 +1,4 @@
-use crate::{connection::DatabaseManager, error::Error, forms};
+use crate::{connection::DatabaseManager, forms, lib::error::Error};
 
 /// Global command data, which is stored and accessible in all command invocations
 #[derive(Clone)]

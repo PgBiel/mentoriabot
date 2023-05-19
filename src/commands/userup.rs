@@ -1,6 +1,6 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{common::ApplicationContext, error::Error, forms::interaction};
+use crate::{common::ApplicationContext, forms::interaction, lib::error::Error};
 
 /// Displays your or another user's account creation date
 #[poise::command(slash_command, owners_only)]

@@ -1,9 +1,8 @@
 use std::fmt::{Display, Formatter};
 
 use diesel_async::pooled_connection::deadpool;
+use minirustbot_forms as forms;
 use poise::serenity_prelude as serenity;
-
-use crate::forms;
 
 /// An error in MiniRustBot.
 #[derive(Debug)]

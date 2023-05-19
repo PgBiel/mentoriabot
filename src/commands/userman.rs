@@ -2,7 +2,7 @@ use poise::{serenity_prelude as serenity, Modal};
 
 use crate::{
     common::ApplicationContext,
-    error::Result,
+    lib::error::Result,
     model::NewUser,
     repository::{Repository, UpdatableRepository},
 };

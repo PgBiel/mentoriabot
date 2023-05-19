@@ -5,11 +5,12 @@ use poise::serenity_prelude as serenity;
 use crate::{
     commands::modals::sessions::SessionCreateModals,
     common::{ApplicationContext, Context},
-    error::{Error, Result},
+    lib::{
+        error::{Error, Result},
+        util::{self, tr, BRAZIL_TIMEZONE},
+    },
     model::{NewSession, NewUser, Session, User},
     repository::Repository,
-    util,
-    util::{tr, BRAZIL_TIMEZONE},
 };
 
 /// Manages sessions with mentors.

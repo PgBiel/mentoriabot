@@ -2,15 +2,16 @@ use super::forms::schedule::ScheduleForm;
 use crate::{
     commands::forms::schedule::SelectMentorComponent,
     common::ApplicationContext,
-    error::{Error, Result},
     forms::InteractionForm,
+    lib::{
+        error::{Error, Result},
+        util::{
+            time::{datetime_as_utc, datetime_with_time},
+            tr,
+        },
+    },
     model::{Availability, DiscordId, NewSession, NewUser},
     repository::Repository,
-    util,
-    util::{
-        time::{datetime_as_utc, datetime_with_time},
-        tr,
-    },
 };
 
 /// Schedules a session with a Mentor

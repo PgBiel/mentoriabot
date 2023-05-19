@@ -7,17 +7,19 @@ use poise::serenity_prelude::MessageComponentInteraction;
 
 use crate::{
     common::{ApplicationContext, ContextualResult, Data},
-    error::Error,
     forms::{
         error::Result as FormResult, Buildable, CustomId, FormError, GenerateReply,
         InteractionForm, MessageFormComponent, SelectMenuOptionSpec, SelectMenuSpec, SelectValue,
     },
-    model::{Availability, Teacher, User, Weekday},
-    util,
-    util::{
-        time::{brazil_now, hour_minute_display},
-        tr,
+    lib::{
+        error::Error,
+        util::{
+            self,
+            time::{brazil_now, hour_minute_display},
+            tr,
+        },
     },
+    model::{Availability, Teacher, User, Weekday},
 };
 
 #[derive(Debug, InteractionForm)]

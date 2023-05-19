@@ -1,7 +1,7 @@
 use poise::Modal;
 
 use super::modals::modal::TestModal;
-use crate::{common::ApplicationContext, error::Error};
+use crate::{common::ApplicationContext, lib::error::Error};
 
 /// Modal command.
 #[poise::command(slash_command, owners_only)]

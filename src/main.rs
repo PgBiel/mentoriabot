@@ -6,13 +6,11 @@ mod commands;
 mod common;
 mod config;
 mod connection;
-mod error;
 mod events;
 mod model;
 mod notification;
 mod repository;
 mod schema;
-mod util;
 
 use common::Data;
 use config::MiniRustBotConfig as Config;
@@ -22,6 +20,9 @@ use crate::{common::FrameworkError, error::Error, util::tr};
 
 pub mod forms {
     pub use minirustbot_forms::*;
+}
+pub mod lib {
+    pub use minirustbot_lib::*;
 }
 
 const CONFIG_FILE: &str = "config.json";

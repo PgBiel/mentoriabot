@@ -1,6 +1,9 @@
 use poise::Modal;
 
-use crate::{common::ApplicationContext, error::Result, util::HumanParseableDateTime};
+use crate::{
+    common::ApplicationContext,
+    lib::{error::Result, util::HumanParseableDateTime},
+};
 
 /// Represents a Session creation modal,
 /// asking for its text data.

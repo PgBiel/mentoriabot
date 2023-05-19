@@ -1,4 +1,4 @@
-use crate::{common::Context, error::Error};
+use crate::{common::Context, lib::error::Error};
 
 /// Displays your or another user's account creation date
 #[poise::command(slash_command)]

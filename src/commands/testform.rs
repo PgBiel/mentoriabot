@@ -5,8 +5,8 @@ use poise::serenity_prelude as serenity;
 
 use crate::{
     common::{ApplicationContext, Data},
-    error::Error,
     forms::{ButtonComponent, GenerateReply, InteractionForm, MessageFormComponent},
+    lib::error::Error,
 };
 
 #[derive(Debug, Default, Clone, poise::Modal)]
