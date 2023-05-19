@@ -1,3 +1,4 @@
+//! Contains structs and functions related to connecting to the database.
 use std::sync::Arc;
 
 use diesel_async::{

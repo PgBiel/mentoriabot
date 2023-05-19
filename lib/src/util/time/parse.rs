@@ -1,3 +1,4 @@
+//! Utilities for parsing time strings.
 use std::{
     fmt::{Display, Formatter},
     ops::{Deref, DerefMut},

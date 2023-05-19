@@ -9,6 +9,8 @@ use diesel::{
 
 use crate::error::Error;
 
+/// Represents a diesel-compatible weekday and provides several
+/// utilities for working with weekdays.
 #[derive(
     FromSqlRow,
     AsExpression,

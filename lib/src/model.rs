@@ -1,3 +1,4 @@
+//! Model structs used in the bot, usually interfacing with the DB.
 mod availability;
 mod discordid;
 mod session;

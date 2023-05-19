@@ -1,3 +1,5 @@
+/// Macro wrapper of rust_i18n's `t!` with locale defaulting if the locale isn't known,
+/// and also taking [`poise::Context`] instances as possible locale sources.
 #[macro_export]
 macro_rules! tr {
     // t!("foo")

@@ -1,3 +1,4 @@
+//! Utility functions for the bot.
 pub mod iter;
 pub mod locale;
 pub mod macros;

@@ -1,4 +1,4 @@
-/// Converts a certain duration to a human-readable String.
+/// Converts a certain [`std::time::Duration`] to a human-readable [`String`].
 ///
 /// Displays, at most, the amount of days. Otherwise, uses smaller units (the largest possible).
 pub fn convert_duration_to_string(duration: std::time::Duration) -> String {
@@ -11,7 +11,7 @@ pub fn convert_duration_to_string(duration: std::time::Duration) -> String {
     }
 }
 
-/// Converts a certain duration to a human-readable String in Portuguese.
+/// Converts a certain [`std::time::Duration`] to a human-readable [`String`] in Portuguese.
 ///
 /// Displays, at most, the amount of days. Otherwise, uses smaller units (the largest possible).
 pub fn convert_duration_to_brazilian_string(duration: std::time::Duration) -> String {
@@ -24,7 +24,7 @@ pub fn convert_duration_to_brazilian_string(duration: std::time::Duration) -> St
     }
 }
 
-/// Converts a Chrono duration to a string.
+/// Converts a [`chrono::Duration`] to a string.
 pub fn convert_chrono_duration_to_string(duration: chrono::Duration) -> String {
     if duration.num_minutes() < 1 {
         let seconds = duration.num_seconds();
@@ -55,7 +55,7 @@ pub fn convert_chrono_duration_to_string(duration: chrono::Duration) -> String {
     }
 }
 
-/// Converts a Chrono duration to a string in Brazilian Portuguese.
+/// Converts a [`chrono::Duration`] to a string in Brazilian Portuguese.
 pub fn convert_chrono_duration_to_brazilian_string(duration: chrono::Duration) -> String {
     if duration.num_minutes() < 1 {
         let seconds = duration.num_seconds();

@@ -1,3 +1,5 @@
+//! Contains structs implementing [`Repository`], acting as CRUD interfaces
+//! with the database.
 use std::sync::Arc;
 
 use async_trait::async_trait;

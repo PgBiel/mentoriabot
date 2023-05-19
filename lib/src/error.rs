@@ -1,3 +1,4 @@
+//! Contains the [`Error`] enum.
 use std::fmt::{Display, Formatter};
 
 use diesel_async::pooled_connection::deadpool;

@@ -1,3 +1,13 @@
+//! Macros for the "default definitions" of the [`Repository`] trait's methods.
+//! Macros were needed as writing the Rust code directly imposes a huge amount
+//! of trait restrictions, which are automatically resolved when using concrete
+//! code, but which must be outlined in a method's `where` when in a generic
+//! context, which is very hard to get right (and painful to maintain).
+//! Macros were a simpler solution as they generate concrete code directly
+//! (using some sort of "duck-typed" generics).
+//!
+//! [`Repository`]: super::Repository
+
 macro_rules! repo_get {
     ($self:ident, $table:expr; $pk:expr) => {
         $table

@@ -1,3 +1,4 @@
+//! Module for time and [`chrono`] utilities
 use std::fmt::Display;
 
 use chrono::{TimeZone, Timelike};
