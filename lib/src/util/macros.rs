@@ -1,3 +1,4 @@
+#[macro_export]
 macro_rules! tr {
     // t!("foo")
     ($key:expr) => {
@@ -56,4 +57,4 @@ macro_rules! tr {
     };
 }
 
-pub(crate) use tr;
+pub use tr;

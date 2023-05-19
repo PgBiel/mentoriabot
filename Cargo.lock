@@ -995,7 +995,9 @@ dependencies = [
 name = "minirustbot"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
+ "google-calendar3",
  "minirustbot_forms",
  "minirustbot_lib",
  "minirustbot_macros",
@@ -1030,6 +1032,7 @@ dependencies = [
  "google-calendar3",
  "minirustbot_forms",
  "once_cell",
+ "poise",
  "serde",
  "serde_json",
  "strum",
