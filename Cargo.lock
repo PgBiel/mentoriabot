@@ -1163,6 +1163,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "tempfile",
+ "tokio",
 ]
 
 [[package]]

@@ -143,7 +143,7 @@ mod tests {
     use crate::{
         error::Result,
         model::{DiscordId, NewTeacher, NewUser},
-        repository::{Repository, UpdatableRepository},
+        db::{Repository, UpdatableRepository},
     };
 
     #[tokio::test]
