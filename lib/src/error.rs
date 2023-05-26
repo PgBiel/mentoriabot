@@ -60,6 +60,12 @@ pub enum Error {
     /// if the user has a certain role).
     CommandCheck(&'static str),
 
+    /// Indicates authentication failed.
+    /// See [`Error`].
+    ///
+    /// [`Error`]: google_apis_common::oauth2::Error
+    Auth(google_apis_common::oauth2::Error),
+
     #[allow(dead_code)]
     Generic(Box<dyn std::error::Error + Send + Sync>),
 
@@ -89,6 +95,7 @@ impl_from_error!(deadpool::BuildError => DeadpoolBuild);
 impl_from_error!(deadpool::PoolError => DeadpoolPool);
 impl_from_error!(google_calendar3::Error => Calendar);
 impl_from_error!(std::io::Error => Io);
+impl_from_error!(google_apis_common::oauth2::Error => Auth);
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -102,6 +109,7 @@ impl Display for Error {
             Self::DeadpoolPool(inner) => Display::fmt(&inner, f),
             Self::Calendar(inner) => Display::fmt(&inner, f),
             Self::Io(inner) => Display::fmt(&inner, f),
+            Self::Auth(inner) => Display::fmt(&inner, f),
             Self::DateTimeParse => write!(f, "Failed to parse the given date expression"),
             Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
@@ -122,6 +130,7 @@ impl std::error::Error for Error {
             Self::DeadpoolPool(inner) => Some(inner),
             Self::Calendar(inner) => Some(inner),
             Self::Io(inner) => Some(inner),
+            Self::Auth(inner) => Some(inner),
             Self::Generic(inner) => Some(&**inner),
             _ => None,
         }
