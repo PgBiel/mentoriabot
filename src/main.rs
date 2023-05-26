@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 use serenity::GuildId;
 use tracing::{error, info, warn};
 
+mod authenticate;
 mod commands;
 mod common;
 mod config;
