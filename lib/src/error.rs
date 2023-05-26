@@ -72,6 +72,10 @@ pub enum Error {
     /// Some other error
     #[allow(dead_code)]
     Other(&'static str),
+
+    /// Some other error (string)
+    #[allow(dead_code)]
+    String(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -96,6 +100,7 @@ impl_from_error!(deadpool::PoolError => DeadpoolPool);
 impl_from_error!(google_calendar3::Error => Calendar);
 impl_from_error!(std::io::Error => Io);
 impl_from_error!(google_apis_common::oauth2::Error => Auth);
+impl_from_error!(String => String);
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -114,6 +119,7 @@ impl Display for Error {
             Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
             Self::Other(message) => write!(f, "{}", message),
+            Self::String(message) => write!(f, "{}", message),
         }
     }
 }

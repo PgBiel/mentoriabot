@@ -1,7 +1,6 @@
 use google_apis_common::oauth2::{
     self as yup_oauth2,
     authenticator_delegate::{DefaultInstalledFlowDelegate, InstalledFlowDelegate},
-    ApplicationSecret,
 };
 
 use crate::lib::error::{Error, Result};
@@ -22,7 +21,7 @@ impl Authenticator {
     pub async fn authenticate() -> Result<Self> {
         let secret = yup_oauth2::read_application_secret(APPLICATION_SECRET_PATH)
             .await
-            .map_err(|_| Error::Other("Failed to get the client secret; ensure there is a secrets/client-secret.json file."))?;
+            .map_err(|e| Error::String(format!("Failed to get the client secret; ensure there is a {APPLICATION_SECRET_PATH} file: {e}")))?;
 
         let authenticator = yup_oauth2::InstalledFlowAuthenticator::builder(
             secret,
