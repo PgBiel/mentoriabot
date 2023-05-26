@@ -178,7 +178,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use chrono::{Datelike, TimeZone};
+    use chrono::TimeZone;
     use Weekday::*;
 
     use super::*;

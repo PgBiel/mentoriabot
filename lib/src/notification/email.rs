@@ -1,6 +1,6 @@
 //! Manages access to the Google Gmail API
 
-use google_gmail1::{api as gmail, hyper, hyper_rustls, oauth2, Gmail};
+use google_gmail1::{api as gmail, hyper, hyper_rustls, Gmail};
 
 use crate::{
     error::{Error, Result},
@@ -78,7 +78,7 @@ impl GmailManager {
             ..Default::default()
         };
 
-        let mut message_buffer =
+        let message_buffer =
             tempfile::tempfile().map_err(|_| Error::Other("failed to create tempfile"))?;
         const EMAIL_MIMETYPE: &str = "message/rfc822";
 

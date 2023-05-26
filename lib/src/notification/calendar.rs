@@ -2,7 +2,7 @@
 
 use google_calendar3::{
     api::{Event, EventDateTime},
-    hyper, hyper_rustls, oauth2, CalendarHub,
+    hyper, hyper_rustls, CalendarHub,
 };
 
 use crate::{error::Result, model::Session};

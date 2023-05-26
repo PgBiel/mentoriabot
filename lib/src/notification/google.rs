@@ -1,5 +1,3 @@
-use google_calendar3::oauth2;
-
 use super::{calendar::CalendarManager, email::GmailManager};
 use crate::error::Result;
 
