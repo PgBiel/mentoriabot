@@ -91,7 +91,7 @@ impl InstalledFlowDelegate for AuthDelegate {
         } else {
             panic!(
                 "No OAuth2 token cache found.
-                    Please specify the MRB_OAUTH=1 environment variable to specify it interactively,
+                    Please specify the {AUTH_VAR}=1 environment variable to specify it interactively,
                     or add it to the file {OAUTH_TOKEN_CACHE_PATH}."
             );
         }
