@@ -1,12 +1,13 @@
 use google_apis_common::oauth2::{
     self as yup_oauth2,
     authenticator_delegate::{DefaultInstalledFlowDelegate, InstalledFlowDelegate},
-    AccessToken, ApplicationSecret,
+    ApplicationSecret,
 };
 
 use crate::lib::error::{Error, Result};
 
 const AUTH_VAR: &str = "MRB_AUTH";
+const APPLICATION_SECRET_PATH: &str = "secrets/client-secret.json";
 const OAUTH_TOKEN_CACHE_PATH: &str = "secrets/oauth-token-cache.json";
 
 /// Authenticates the user by providing an authentication link (if MRB_AUTH=1 is enabled).
@@ -18,7 +19,8 @@ pub struct Authenticator {
 }
 
 impl Authenticator {
-    pub async fn authenticate(secret: ApplicationSecret) -> Result<Self> {
+    pub async fn authenticate() -> Result<Self> {
+        let secret = yup_oauth2::read_application_secret(APPLICATION_SECRET_PATH).await?;
         let authenticator = yup_oauth2::InstalledFlowAuthenticator::builder(
             secret,
             yup_oauth2::InstalledFlowReturnMethod::Interactive,

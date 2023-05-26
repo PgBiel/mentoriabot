@@ -7,6 +7,8 @@ Testing a mini Rust bot.
 Copy `config.example.json` to `config.json`, replacing your bot's token and main guild ID
 (where slash commands will be registered).
 
+Add Google API secrets (`client-secret.json`) to the `secrets/` folder.
+
 ## Building & Running
 
 Use `cargo run`.

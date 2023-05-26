@@ -206,7 +206,6 @@ config.example.json structure.",
         guild_ids,
         admin_userids,
         default_logging_level,
-        google_oauth2_secret,
         ..
     } = parsed_config;
 
@@ -220,8 +219,10 @@ config.example.json structure.",
     let db =
         db::DatabaseManager::new(&database_url).expect("Failed to connect to the bot's database.");
 
+    let auth = authenticate::Authenticator::authenticate().await.unwrap();
+
     // FIXME: Google Calendar ID
-    let google = notification::GoogleApiManager::connect(google_oauth2_secret, "", "me")
+    let google = notification::GoogleApiManager::connect(auth, "", "me")
         .await
         .expect("Failed to connect to the Google API.");
 
