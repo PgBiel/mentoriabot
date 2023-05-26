@@ -20,7 +20,10 @@ pub struct Authenticator {
 
 impl Authenticator {
     pub async fn authenticate() -> Result<Self> {
-        let secret = yup_oauth2::read_application_secret(APPLICATION_SECRET_PATH).await?;
+        let secret = yup_oauth2::read_application_secret(APPLICATION_SECRET_PATH)
+            .await
+            .map_err(|_| Error::Other("Failed to get the client secret; ensure there is a secrets/client-secret.json file."))?;
+
         let authenticator = yup_oauth2::InstalledFlowAuthenticator::builder(
             secret,
             yup_oauth2::InstalledFlowReturnMethod::Interactive,
