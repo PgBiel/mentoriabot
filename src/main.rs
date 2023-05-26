@@ -16,6 +16,7 @@ use crate::{
     lib::{
         db,
         error::Error,
+        notification,
         util::{self, tr},
     },
 };
@@ -204,6 +205,7 @@ config.example.json structure.",
         guild_ids,
         admin_userids,
         default_logging_level,
+        google_calendar_oauth2_secret,
         ..
     } = parsed_config;
 
@@ -216,6 +218,11 @@ config.example.json structure.",
 
     let db =
         db::DatabaseManager::new(&database_url).expect("Failed to connect to the bot's database.");
+
+    // FIXME: Google Calendar ID
+    let google = notification::GoogleApiManager::connect(google_calendar_oauth2_secret, "", "me")
+        .await
+        .expect("Failed to connect to the Google API.");
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -243,7 +250,7 @@ config.example.json structure.",
                     .await?;
                 }
                 info!("Registered");
-                Ok(Data::new(db, admin_userids))
+                Ok(Data::new(db, admin_userids, google))
             })
         });
 

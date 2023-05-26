@@ -7,6 +7,7 @@ use crate::{
     util,
 };
 
+#[derive(Clone)]
 pub struct GmailManager {
     gmail: Gmail<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>,
     user_id: String,

@@ -1,6 +1,6 @@
 use crate::{
     forms,
-    lib::{db::DatabaseManager, error::Error},
+    lib::{db::DatabaseManager, error::Error, notification::GoogleApiManager},
 };
 
 /// Global command data, which is stored and accessible in all command invocations
@@ -8,11 +8,16 @@ use crate::{
 pub struct Data {
     pub db: DatabaseManager,
     pub admin_userids: Vec<u64>,
+    pub google: GoogleApiManager,
 }
 
 impl Data {
-    pub fn new(db: DatabaseManager, admin_userids: Vec<u64>) -> Self {
-        Self { db, admin_userids }
+    pub fn new(db: DatabaseManager, admin_userids: Vec<u64>, google: GoogleApiManager) -> Self {
+        Self {
+            db,
+            admin_userids,
+            google,
+        }
     }
 
     pub fn user_is_admin(&self, user_id: u64) -> bool {

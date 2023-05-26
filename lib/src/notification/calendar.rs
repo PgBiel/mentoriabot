@@ -8,6 +8,7 @@ use google_calendar3::{
 use crate::{error::Result, model::Session};
 
 /// Manages Google Calendar operations.
+#[derive(Clone)]
 pub struct CalendarManager {
     hub: CalendarHub<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>,
     calendar_id: String,
