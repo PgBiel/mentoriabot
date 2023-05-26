@@ -141,9 +141,9 @@ impl UpdatableRepository for TeacherRepository {
 mod tests {
     use super::super::tests::init_db;
     use crate::{
+        db::{Repository, UpdatableRepository},
         error::Result,
         model::{DiscordId, NewTeacher, NewUser},
-        db::{Repository, UpdatableRepository},
     };
 
     #[tokio::test]

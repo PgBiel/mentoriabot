@@ -115,9 +115,9 @@ impl UpdatableRepository for UserRepository {
 mod tests {
     use super::super::tests::init_db;
     use crate::{
+        db::{Repository, UpdatableRepository},
         error::Result,
         model::{DiscordId, NewUser},
-        db::{Repository, UpdatableRepository},
     };
 
     #[tokio::test]
