@@ -1118,7 +1118,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
- "google-calendar3",
+ "google-apis-common",
  "minirustbot_forms",
  "minirustbot_lib",
  "minirustbot_macros",
