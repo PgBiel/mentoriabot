@@ -17,16 +17,9 @@ pub struct CalendarManager {
 impl CalendarManager {
     /// Connects to the Google Calendar API, creating a new CalendarManager instance.
     pub(super) async fn connect(
-        secret: oauth2::ApplicationSecret,
+        auth: impl google_apis_common::GetToken + 'static,
         calendar_id: &str,
     ) -> Result<Self> {
-        let auth = oauth2::InstalledFlowAuthenticator::builder(
-            secret,
-            oauth2::InstalledFlowReturnMethod::HTTPRedirect,
-        )
-        .build()
-        .await?;
-
         let hub = CalendarHub::new(
             hyper::Client::builder().build(
                 hyper_rustls::HttpsConnectorBuilder::new()

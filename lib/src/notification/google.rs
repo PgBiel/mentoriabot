@@ -11,16 +11,16 @@ pub struct GoogleApiManager {
 }
 
 impl GoogleApiManager {
-    /// Connects to the Google API with the given secret; more specifically, to Google Calendar
-    /// (with the given calendar ID) and to Gmail (with the given user ID).
+    /// Connects to the Google API with the given authenticator; more specifically, to Google
+    /// Calendar (with the given calendar ID) and to Gmail (with the given user ID).
     pub async fn connect(
-        secret: oauth2::ApplicationSecret,
+        auth: impl google_apis_common::GetToken + Clone + 'static,
         calendar_id: &str,
         user_id: &str,
     ) -> Result<Self> {
         Ok(Self {
-            calendar: CalendarManager::connect(secret.clone(), calendar_id).await?,
-            email: GmailManager::connect(secret, user_id).await?,
+            calendar: CalendarManager::connect(auth.clone(), calendar_id).await?,
+            email: GmailManager::connect(auth, user_id).await?,
         })
     }
 }

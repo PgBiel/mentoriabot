@@ -14,15 +14,11 @@ pub struct GmailManager {
 }
 
 impl GmailManager {
-    /// Connects to the Gmail API with the given secret.
-    pub(super) async fn connect(secret: oauth2::ApplicationSecret, user_id: &str) -> Result<Self> {
-        let auth = oauth2::InstalledFlowAuthenticator::builder(
-            secret,
-            oauth2::InstalledFlowReturnMethod::HTTPRedirect,
-        )
-        .build()
-        .await?;
-
+    /// Connects to the Gmail API with the given authenticator.
+    pub(super) async fn connect(
+        auth: impl google_apis_common::GetToken + 'static,
+        user_id: &str,
+    ) -> Result<Self> {
         let gmail = Gmail::new(
             hyper::Client::builder().build(
                 hyper_rustls::HttpsConnectorBuilder::new()
