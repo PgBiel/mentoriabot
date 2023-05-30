@@ -4,8 +4,8 @@ use crate::error::Result;
 /// Manages Google API-related structs.
 #[derive(Clone)]
 pub struct GoogleApiManager {
-    calendar: CalendarManager,
-    email: GmailManager,
+    pub calendar: CalendarManager,
+    pub email: GmailManager,
 }
 
 impl GoogleApiManager {

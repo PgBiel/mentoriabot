@@ -23,6 +23,7 @@ use crate::{
     description_localized("pt-BR", "Marca uma sessão com um mentor.")
 )]
 pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
+    ctx.defer_ephemeral().await?;
     let form = *ScheduleForm::execute(ctx).await?;
     let initial_datetime = form
         .form_start_datetime
@@ -57,10 +58,11 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     }
 
     // Insert Student into database first
-    ctx.data()
+    let student = ctx
+        .data()
         .db
         .user_repository()
-        .insert_if_not_exists(&NewUser {
+        .get_or_insert(&NewUser {
             discord_id: author_id,
             name: author.name.clone(),
             bio: None,
@@ -84,7 +86,13 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     };
 
     // Now insert the Session between the Teacher and the Student.
-    ctx.data.db.session_repository().insert(&session).await?;
+    let session = ctx.data.db.session_repository().insert(&session).await?;
+
+    ctx.data
+        .google
+        .email
+        .send_emails_for_session(&selected_mentor, &student, &session)
+        .await?;
 
     ctx.send(|b| {
         b.content(tr!(

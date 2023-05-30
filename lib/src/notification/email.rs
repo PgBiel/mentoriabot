@@ -1,9 +1,13 @@
 //! Manages access to the Google Gmail API
 
+use std::ops::Deref;
+
 use google_gmail1::{api as gmail, hyper, hyper_rustls, Gmail};
+use tokio::sync::OnceCell;
 
 use crate::{
     error::{Error, Result},
+    model::{Session, Teacher, User},
     util,
 };
 
@@ -11,6 +15,7 @@ use crate::{
 pub struct GmailManager {
     gmail: Gmail<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>,
     user_id: String,
+    sender: OnceCell<String>,
 }
 
 impl GmailManager {
@@ -94,5 +99,49 @@ impl GmailManager {
             .await?;
 
         Ok(())
+    }
+
+    /// Send an e-mail to the teacher and to the student notifying that their session
+    /// was scheduled - if possible.
+    pub async fn send_emails_for_session(
+        &self,
+        teacher: &Teacher,
+        user: &User,
+        session: &Session,
+    ) -> Result<()> {
+        if let Some(teacher_email) = &teacher.email {
+            let sender = self.resolve_sender().await?;
+            let start_at = session.start_at;
+            let start_at_dm = util::time::day_month_display(&start_at.date_naive());
+            let start_at_hm = util::time::hour_minute_display(start_at.time());
+
+            self.send_to(
+                sender,
+                [&**teacher_email],
+                "Monitoria Marcada",
+                &format!(
+                    "Sua monitoria com o aluno {} foi agendada para {} às {}!",
+                    user.name, start_at_dm, start_at_hm
+                ),
+            )
+            .await
+        } else {
+            // just ignore it if they can't receive e-mails
+            Ok(())
+        }
+    }
+
+    async fn resolve_sender(&self) -> Result<&String> {
+        self.sender
+            .get_or_try_init(|| {
+                Box::pin(async move {
+                    let response = self.gmail.users().get_profile(&self.user_id).doit().await?;
+                    response
+                        .1
+                        .email_address
+                        .ok_or_else(|| Error::Other("Could not fetch sender e-mail address."))
+                })
+            })
+            .await
     }
 }
