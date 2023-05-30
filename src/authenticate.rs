@@ -6,6 +6,7 @@ use google_apis_common::oauth2::{
 use crate::lib::error::{Error, Result};
 
 const AUTH_VAR: &str = "MRB_AUTH";
+const AUTH_CLEAN_VAR: &str = "MRB_AUTH_CLEAN";
 const APPLICATION_SECRET_PATH: &str = "secrets/client-secret.json";
 const OAUTH_TOKEN_CACHE_PATH: &str = "secrets/oauth-token-cache.json";
 
@@ -19,6 +20,12 @@ pub struct Authenticator {
 
 impl Authenticator {
     pub async fn authenticate() -> Result<Self> {
+        if std::env::var(AUTH_CLEAN_VAR).map_or(false, |s| s == "1") {
+            let Ok(_) = std::fs::remove_file(OAUTH_TOKEN_CACHE_PATH)
+                else {
+                    panic!("Could not remove the cache file at {OAUTH_TOKEN_CACHE_PATH}.");
+                };
+        }
         let secret = yup_oauth2::read_application_secret(APPLICATION_SECRET_PATH)
             .await
             .map_err(|e| Error::String(format!("Failed to get the client secret; ensure there is a {APPLICATION_SECRET_PATH} file: {e}")))?;
