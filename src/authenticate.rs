@@ -46,6 +46,7 @@ impl Authenticator {
             "https://www.googleapis.com/auth/calendar.calendars.readonly",
             "https://www.googleapis.com/auth/calendar.events",
             "https://www.googleapis.com/auth/gmail.send",
+            "https://www.googleapis.com/auth/gmail.metadata",
         ];
 
         let token = authenticator.token(scopes).await?;
