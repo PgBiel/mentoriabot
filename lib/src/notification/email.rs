@@ -1,7 +1,4 @@
 //! Manages access to the Google Gmail API
-
-use std::ops::Deref;
-
 use google_gmail1::{api as gmail, hyper, hyper_rustls, Gmail};
 use tokio::sync::OnceCell;
 
@@ -39,6 +36,7 @@ impl GmailManager {
         Ok(Self {
             gmail,
             user_id: user_id.to_string(),
+            sender: Default::default(),
         })
     }
 
@@ -50,36 +48,38 @@ impl GmailManager {
         subject: &str,
         content: &str,
     ) -> Result<()> {
-        let headers = recipients
-            .into_iter()
-            .map(|recipient| gmail::MessagePartHeader {
-                name: Some("To".to_string()),
-                value: Some(recipient.to_string()),
-            })
-            .chain(
-                vec![
-                    gmail::MessagePartHeader {
-                        name: Some("Subject".to_string()),
-                        value: Some(subject.to_string()),
-                    },
-                    gmail::MessagePartHeader {
-                        name: Some("From".to_string()),
-                        value: Some(sender.to_string()),
-                    },
-                ]
-                .into_iter(),
-            )
-            .collect();
-
-        let message = gmail::Message {
-            payload: Some(gmail::MessagePart {
-                body: Some(gmail::MessagePartBody {
-                    data: Some(util::bases::base64_encode_bytes(content.as_bytes()).into_bytes()),
-                    ..Default::default()
+        let headers = vec![
+            gmail::MessagePartHeader {
+                name: Some("Subject".to_string()),
+                value: Some(subject.to_string()),
+            },
+            gmail::MessagePartHeader {
+                name: Some("From".to_string()),
+                value: Some(sender.to_string()),
+            },
+        ]
+        .into_iter()
+        .chain(
+            recipients
+                .into_iter()
+                .map(|recipient| gmail::MessagePartHeader {
+                    name: Some("To".to_string()),
+                    value: Some(recipient.to_string()),
                 }),
-                headers: Some(headers),
+        )
+        .collect();
+
+        let payload = gmail::MessagePart {
+            body: Some(gmail::MessagePartBody {
+                data: Some(util::bases::base64_encode_bytes(content.as_bytes()).into_bytes()),
                 ..Default::default()
             }),
+            headers: Some(headers),
+            ..Default::default()
+        };
+
+        let message = gmail::Message {
+            payload: Some(payload),
             ..Default::default()
         };
 
