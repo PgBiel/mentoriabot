@@ -5,7 +5,7 @@ use tokio::sync::OnceCell;
 use crate::{
     error::{Error, Result},
     model::{Session, Teacher, User},
-    util,
+    util::{self, BRAZIL_TIMEZONE},
 };
 
 #[derive(Clone)]
@@ -95,7 +95,7 @@ impl GmailManager {
     ) -> Result<()> {
         if let Some(teacher_email) = &teacher.email {
             let sender = self.resolve_sender().await?;
-            let start_at = session.start_at;
+            let start_at = session.start_at.with_timezone(&*BRAZIL_TIMEZONE);
             let start_at_dm = util::time::day_month_display(&start_at.date_naive());
             let start_at_hm = util::time::hour_minute_display(start_at.time());
 
