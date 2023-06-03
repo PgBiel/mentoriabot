@@ -48,38 +48,22 @@ impl GmailManager {
         subject: &str,
         content: &str,
     ) -> Result<()> {
-        let headers = vec![
-            gmail::MessagePartHeader {
-                name: Some("Subject".to_string()),
-                value: Some(subject.to_string()),
-            },
-            gmail::MessagePartHeader {
-                name: Some("From".to_string()),
-                value: Some(sender.to_string()),
-            },
-        ]
-        .into_iter()
-        .chain(
-            recipients
-                .into_iter()
-                .map(|recipient| gmail::MessagePartHeader {
-                    name: Some("To".to_string()),
-                    value: Some(recipient.to_string()),
-                }),
-        )
-        .collect();
+        let from = lettre::message::Mailbox::new(Some("mentoria".into()), sender.parse()?);
+        let mut to = lettre::message::Mailboxes::new();
 
-        let payload = gmail::MessagePart {
-            body: Some(gmail::MessagePartBody {
-                data: Some(util::bases::base64_encode_bytes(content.as_bytes()).into_bytes()),
-                ..Default::default()
-            }),
-            headers: Some(headers),
-            ..Default::default()
-        };
+        for recipient in recipients {
+            to.push(lettre::message::Mailbox::new(None, recipient.parse()?))
+        }
+        let to: lettre::message::header::To = to.into();
+
+        let message = lettre::Message::builder()
+            .subject(subject)
+            .from(from)
+            .mailbox(to) // workaround to specify multiple recipients
+            .body(content.to_string())?;
 
         let message = gmail::Message {
-            payload: Some(payload),
+            raw: Some(message.formatted()),
             ..Default::default()
         };
 

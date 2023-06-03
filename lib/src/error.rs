@@ -66,6 +66,18 @@ pub enum Error {
     /// [`Error`]: google_apis_common::oauth2::Error
     Auth(google_apis_common::oauth2::Error),
 
+    /// Indicates [lettre] failed to parse an [`Address`].
+    /// Holds an [`AddressError`].
+    ///
+    /// [`Address`]: lettre::address::Address
+    /// [`AddressError`]: lettre::address::AddressError
+    LettreAddress(lettre::address::AddressError),
+
+    /// Holds a [lettre `Error`].
+    ///
+    /// [lettre `Error`]: lettre::error::Error
+    Lettre(lettre::error::Error),
+
     #[allow(dead_code)]
     Generic(Box<dyn std::error::Error + Send + Sync>),
 
@@ -100,6 +112,8 @@ impl_from_error!(deadpool::PoolError => DeadpoolPool);
 impl_from_error!(google_calendar3::Error => Calendar);
 impl_from_error!(std::io::Error => Io);
 impl_from_error!(google_apis_common::oauth2::Error => Auth);
+impl_from_error!(lettre::address::AddressError => LettreAddress);
+impl_from_error!(lettre::error::Error => Lettre);
 impl_from_error!(String => String);
 
 impl Display for Error {
@@ -115,6 +129,8 @@ impl Display for Error {
             Self::Calendar(inner) => Display::fmt(&inner, f),
             Self::Io(inner) => Display::fmt(&inner, f),
             Self::Auth(inner) => Display::fmt(&inner, f),
+            Self::LettreAddress(inner) => Display::fmt(&inner, f),
+            Self::Lettre(inner) => Display::fmt(&inner, f),
             Self::DateTimeParse => write!(f, "Failed to parse the given date expression"),
             Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
