@@ -31,7 +31,7 @@ pub mod lib {
 
 const CONFIG_FILE: &str = "config.json";
 
-rust_i18n::i18n!("locales");
+rust_i18n::i18n!("locales", fallback = "pt-BR");
 
 fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
     Box::pin(async move {
