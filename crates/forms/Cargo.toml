@@ -1,9 +1,9 @@
 [package]
 name = "minirustbot_forms"
-version = "0.1.0"
-authors = ["PgBiel"]
-edition = "2021"
-license = "MIT"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
 
 
 [dependencies]

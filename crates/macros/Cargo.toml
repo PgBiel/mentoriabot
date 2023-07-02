@@ -1,10 +1,10 @@
 [package]
 name = "minirustbot_macros"
-version = "0.1.0"
-authors = ["PgBiel"]
-edition = "2021"
 description = "Macro implementation crate for Mini Rust Bot"
-license = "MIT"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
 
 [lib]
 proc-macro = true
