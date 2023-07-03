@@ -8,7 +8,7 @@ use crate::{
     lib::{
         db::Repository,
         error::{Error, Result},
-        model::{NewSession, NewUser, Session, User},
+        model::{NewSession, Session, User},
         util::{self, tr, BRAZIL_TIMEZONE},
     },
 };
@@ -88,15 +88,19 @@ async fn create(
 
     ctx.defer_ephemeral().await?;
 
-    ctx.data()
+    if ctx.data()
         .db
         .user_repository()
-        .insert_if_not_exists(&NewUser {
-            discord_id: author_id,
-            name: author.name.clone(),
-            bio: None,
-        })
-        .await?;
+        .get(author_id)
+        .await?
+        .is_none() {
+            ctx.send(|b| {
+                b
+                    .content("The user is not registered in the database!")
+                    .ephemeral(true)
+            }).await?;
+            return Ok(());
+    }
 
     let res = ctx
         .data()

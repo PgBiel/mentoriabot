@@ -1,4 +1,4 @@
-use super::forms::schedule::ScheduleForm;
+use super::{forms::schedule::ScheduleForm, modals::register::RegisterModals};
 use crate::{
     commands::forms::schedule::SelectMentorComponent,
     common::ApplicationContext,
@@ -24,6 +24,41 @@ use crate::{
 )]
 pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     ctx.defer_ephemeral().await?;
+    let author = ctx.author();
+    let author_id: DiscordId = author.id.into();
+
+    // Insert Student into database first
+    let student = {
+        let student = ctx
+            .data()
+            .db
+            .user_repository()
+            .get(author_id)
+            .await?;
+
+        if let Some(student) = student {
+            student
+        } else {
+            // User not in DB => call registration modal
+            if let Some(register) = RegisterModals::execute_based_on_locale(ctx).await? {
+                ctx
+                    .data()
+                    .db
+                    .user_repository()
+                    .insert(&NewUser {
+                        discord_id: author_id,
+                        name: register.name().clone(),
+                        email: register.email().clone(),
+                        bio: None
+                    })
+                    .await?
+            } else {
+                // modal cancelled
+                return Ok(());
+            }
+        }
+    };
+
     let form = *ScheduleForm::execute(ctx).await?;
     let initial_datetime = form
         .form_start_datetime
@@ -42,9 +77,6 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         ..
     } = selected_availability;
 
-    let author = ctx.author();
-    let author_id: DiscordId = author.id.into();
-
     if ctx
         .data
         .db
@@ -56,18 +88,6 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
             .await?;
         return Ok(());
     }
-
-    // Insert Student into database first
-    let student = ctx
-        .data()
-        .db
-        .user_repository()
-        .get_or_insert(&NewUser {
-            discord_id: author_id,
-            name: author.name.clone(),
-            bio: None,
-        })
-        .await?;
 
     let start_at = weekday.next_day_with_this_weekday(&initial_datetime);
     let start_at = datetime_as_utc(

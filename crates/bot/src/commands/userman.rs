@@ -17,6 +17,11 @@ struct UserModal {
     #[max_length = 150]
     name: String,
 
+    #[name = "Email"]
+    #[min_length = 3]
+    #[max_length = 128]
+    email: String,
+
     #[name = "Bio"]
     #[max_length = 1000]
     #[paragraph]
@@ -42,6 +47,7 @@ pub async fn add(
         let new_user = NewUser {
             discord_id: user.id.into(),
             name: modal_data.name,
+            email: modal_data.email,
             bio: modal_data.bio,
         };
         let inserted_user = ctx.data.db.user_repository().upsert(&new_user).await?;

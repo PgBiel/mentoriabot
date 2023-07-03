@@ -9,6 +9,7 @@ use crate::db::schema::*;
 pub struct User {
     pub discord_id: DiscordId,
     pub name: String,
+    pub email: String,
     pub bio: Option<String>,
 }
 
@@ -20,6 +21,7 @@ pub type NewUser = User; // same fields
 pub struct PartialUser {
     pub discord_id: Option<DiscordId>,
     pub name: Option<String>,
+    pub email: Option<String>,
     pub bio: Option<Option<String>>,
 }
 
@@ -30,6 +32,7 @@ impl From<User> for PartialUser {
         Self {
             discord_id: Some(user.discord_id),
             name: Some(user.name),
+            email: Some(user.email),
             bio: Some(user.bio),
         }
     }

@@ -156,6 +156,7 @@ mod tests {
         let new_user = NewUser {
             discord_id: id,
             name: "The Teacher".to_string(),
+            email: "aaa@bbb.com".to_string(),
             bio: Some("The best teacher.".to_string()),
         };
         let new_teacher = NewTeacher {
@@ -196,6 +197,7 @@ mod tests {
         let new_user = NewUser {
             discord_id: id,
             name: "John Rust".to_string(),
+            email: "john.rust@gmail.com".to_string(),
             bio: Some("I know Rust.".to_string()),
         };
         let new_teacher = NewTeacher {

@@ -129,6 +129,7 @@ mod tests {
         let new_user = NewUser {
             discord_id: id,
             name: "Joseph".to_string(),
+            email: "joseph@gmail.com".to_string(),
             bio: Some("I am myself".to_string()),
         };
 
@@ -154,6 +155,7 @@ mod tests {
         let new_user = NewUser {
             discord_id: id,
             name: "Joseph".to_string(),
+            email: "joseph@gmail.com".to_string(),
             bio: Some("I am myself".to_string()),
         };
         let other_user = NewUser {
@@ -192,11 +194,13 @@ mod tests {
         let new_user = NewUser {
             discord_id: id,
             name: "Robson".to_string(),
+            email: "robson@gmail.com".to_string(),
             bio: Some("My bio".to_string()),
         };
         let other_user_with_same_id = NewUser {
             discord_id: id,
             name: "Jefferson".to_string(),
+            email: "jefferson@gmail.com".to_string(),
             bio: Some("I have the same ID, but I won't be inserted!".to_string()),
         };
 
