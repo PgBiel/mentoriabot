@@ -2,22 +2,10 @@ mod darling_types;
 
 pub use darling_types::*;
 use proc_macro2::Span;
-use quote::ToTokens;
-use syn::spanned::Spanned;
 
 /// Converts a string to ident (which can be inserted without quotes)
 pub fn string_to_ident(s: &str) -> syn::Ident {
     syn::Ident::new(s, Span::call_site())
-}
-
-/// Workaround to have required Option<> attributes in synthez
-pub fn require_token<T: ToTokens>(o: &Option<T>) -> Result<&Option<T>, syn::Error> {
-    o.is_some().then_some(o).ok_or_else(|| {
-        syn::Error::new(
-            o.span(),
-            "at least one expression must be provided for the attribute",
-        )
-    })
 }
 
 pub fn empty_tuple_type() -> syn::Type {
@@ -125,6 +113,7 @@ pub(crate) mod macros {
         };
     }
 
+    #[allow(unused_macros)]
     macro_rules! take_attribute_or_its_function_required {
         ($attrs:expr; $attr_name:ident, $func_name:ident) => {
             if let Some($func_name) = $attrs.$func_name.as_ref() {
@@ -137,6 +126,7 @@ pub(crate) mod macros {
         };
     }
 
+    #[allow(unused_macros)]
     macro_rules! take_attribute_or_its_function_optional {
         ($attrs:expr; $attr_name:ident, $func_name:ident) => {{
             if let Some($func_name) = $attrs.$func_name.as_ref() {
@@ -160,6 +150,10 @@ pub(crate) mod macros {
     }
 
     pub(crate) use take_attribute_optional;
+
+    #[allow(unused_imports)]
     pub(crate) use take_attribute_or_its_function_optional;
+
+    #[allow(unused_imports)]
     pub(crate) use take_attribute_or_its_function_required;
 }

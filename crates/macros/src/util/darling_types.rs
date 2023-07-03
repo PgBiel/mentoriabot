@@ -96,6 +96,7 @@ pub(crate) fn parse_option<T>(parsed: OptionParsed1<T>) -> Option<T> {
 }
 
 /// Same as [parse] but for tuples of two arguments
+#[allow(dead_code)]
 pub(crate) fn parse2<T, U, R: From<(T, U)>>(parsed: Parsed2<T, U>) -> R {
     (parsed.0, parsed.1).into()
 }

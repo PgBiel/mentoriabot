@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::Timelike;
@@ -29,12 +29,15 @@ pub(crate) struct ScheduleForm {
     pub(crate) form_start_datetime: Option<chrono::DateTime<chrono::FixedOffset>>,
 
     #[component]
+    #[allow(dead_code)]
     pub(crate) select_weekday: SelectWeekdayComponent,
 
     #[component]
+    #[allow(dead_code)]
     pub(crate) select_time: SelectTimeComponent,
 
     #[component]
+    #[allow(dead_code)]
     pub(crate) select_mentor: SelectMentorComponent,
 }
 

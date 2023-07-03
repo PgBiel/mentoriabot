@@ -7,7 +7,10 @@ mod select_option;
 pub(crate) use button::ButtonSpecRepr;
 use proc_macro2::TokenStream;
 pub(crate) use reply::ReplySpecRepr;
+
+#[allow(unused_imports)]
 pub(crate) use select::SelectMenuSpecRepr;
+#[allow(unused_imports)]
 pub(crate) use select_option::SelectOptionSpecRepr;
 
 /// Allows for validation of attributes in model structs

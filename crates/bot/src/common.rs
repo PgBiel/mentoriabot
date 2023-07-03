@@ -19,10 +19,6 @@ impl Data {
             google,
         }
     }
-
-    pub fn user_is_admin(&self, user_id: u64) -> bool {
-        self.admin_userids.contains(&user_id)
-    }
 }
 
 /// The bot's custom general Command Context type

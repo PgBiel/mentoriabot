@@ -64,6 +64,7 @@ macro_rules! repo_remove {
     }};
 }
 
+#[allow(unused_macros)]
 macro_rules! repo_find_by_first {
     ($self:ident, $table:expr; $column:expr; $value:expr) => {
         $table

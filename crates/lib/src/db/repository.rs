@@ -22,6 +22,7 @@ pub use teacher::TeacherRepository;
 
 pub mod macros;
 
+#[allow(unused_imports)]
 pub(crate) use macros::{
     repo_find_all, repo_find_by, repo_find_by_first, repo_get, repo_insert, repo_remove,
     repo_update, repo_upsert,
