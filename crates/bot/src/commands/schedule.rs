@@ -29,27 +29,21 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
 
     // Insert Student into database first
     let student = {
-        let student = ctx
-            .data()
-            .db
-            .user_repository()
-            .get(author_id)
-            .await?;
+        let student = ctx.data().db.user_repository().get(author_id).await?;
 
         if let Some(student) = student {
             student
         } else {
             // User not in DB => call registration modal
             if let Some(register) = RegisterModals::execute_based_on_locale(ctx).await? {
-                ctx
-                    .data()
+                ctx.data()
                     .db
                     .user_repository()
                     .insert(&NewUser {
                         discord_id: author_id,
                         name: register.name().clone(),
                         email: register.email().clone(),
-                        bio: None
+                        bio: None,
                     })
                     .await?
             } else {

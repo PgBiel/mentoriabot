@@ -88,18 +88,20 @@ async fn create(
 
     ctx.defer_ephemeral().await?;
 
-    if ctx.data()
+    if ctx
+        .data()
         .db
         .user_repository()
         .get(author_id)
         .await?
-        .is_none() {
-            ctx.send(|b| {
-                b
-                    .content("The user is not registered in the database!")
-                    .ephemeral(true)
-            }).await?;
-            return Ok(());
+        .is_none()
+    {
+        ctx.send(|b| {
+            b.content("The user is not registered in the database!")
+                .ephemeral(true)
+        })
+        .await?;
+        return Ok(());
     }
 
     let res = ctx
