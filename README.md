@@ -16,7 +16,9 @@ This bot is responsible for assigning students to mentors / teachers using the `
 Copy `config.example.json` to `config.json`, replacing your bot's token and main guild ID
 (where slash commands will be registered).
 
-Add Google API secrets (`client-secret.json`) to the `secrets/` folder.
+Add Google API secrets (`client-secret.json`) to the `secrets/` folder. Then, when the bot runs for the
+first time, it will ask you to specify `MRB_AUTH=1` as an environment variable in order to log into
+the Google Account representing the bot.
 
 ### Database
 
