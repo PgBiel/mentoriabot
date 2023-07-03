@@ -94,6 +94,23 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .send_emails_for_session(&selected_mentor, &student, &session)
         .await?;
 
+    let event = ctx
+        .data
+        .google
+        .calendar
+        .create_event_for_session(&selected_mentor, &session)
+        .await?;
+
+    if event
+        .conference_data
+        .and_then(|conf| conf.create_request)
+        .and_then(|req| req.status)
+        .and_then(|status| status.status_code)
+        .map_or(false, |status| status == "failure")
+    {
+        eprintln!("Creating conference failed!");
+    }
+
     ctx.send(|b| {
         b.content(tr!(
             "commands.schedule.success",

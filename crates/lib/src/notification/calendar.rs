@@ -1,11 +1,17 @@
 //! Manages access to the Google Calendar API
 
 use google_calendar3::{
-    api::{Event, EventDateTime},
+    api::{
+        ConferenceData, ConferenceSolutionKey, CreateConferenceRequest, Event, EventAttendee,
+        EventDateTime,
+    },
     hyper, hyper_rustls, CalendarHub,
 };
 
-use crate::{error::Result, model::Session};
+use crate::{
+    error::Result,
+    model::{Session, Teacher},
+};
 
 /// Manages Google Calendar operations.
 #[derive(Clone)]
@@ -39,9 +45,14 @@ impl CalendarManager {
     }
 
     /// Creates a Google Calendar event, given a Session object.
-    async fn create_event_for_session(&self, session: &Session) -> Result<Event> {
+    pub async fn create_event_for_session(
+        &self,
+        teacher: &Teacher,
+        session: &Session,
+    ) -> Result<Event> {
         let event = Event {
             // FIXME: use translations
+            summary: "Mentoria".to_string().into(),
             description: "Mentoria".to_string().into(),
             start: Some(EventDateTime {
                 date_time: Some(session.start_at),
@@ -51,6 +62,22 @@ impl CalendarManager {
                 date_time: Some(session.end_at),
                 ..Default::default()
             }),
+            // create Google Meet conference
+            conference_data: Some(ConferenceData {
+                create_request: Some(CreateConferenceRequest {
+                    conference_solution_key: Some(ConferenceSolutionKey {
+                        type_: Some("hangoutsMeet".to_string()),
+                    }),
+                    request_id: None,
+                    status: None,
+                }),
+                ..Default::default()
+            }),
+            attendees: Some(vec![EventAttendee {
+                email: teacher.email.clone(),
+                response_status: Some("needsAction".to_string()),
+                ..Default::default()
+            }]),
             ..Default::default()
         };
 

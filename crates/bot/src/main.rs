@@ -222,7 +222,7 @@ config.example.json structure.",
     let auth = authenticate::Authenticator::authenticate().await.unwrap();
 
     // FIXME: Google Calendar ID
-    let google = notification::GoogleApiManager::connect(auth, "", "me")
+    let google = notification::GoogleApiManager::connect(auth, "primary", "me")
         .await
         .expect("Failed to connect to the Google API.");
 
