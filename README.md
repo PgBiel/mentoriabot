@@ -5,18 +5,24 @@ This bot is responsible for assigning students to mentors / teachers using the `
 ## Table of Contents
 
 - [Configuration](#configuration)
+    - [Google API](#google-api)
     - [Database](#database)
 - [Building & Running](#building--running)
 - [Formatting](#formatting)
 - [Compatibility](#compatibility)
 - [Structure](#structure)
+- [Functionality](#functionality)
 
 ## Configuration
 
 Copy `config.example.json` to `config.json`, replacing your bot's token and main guild ID
 (where slash commands will be registered).
 
-Add Google API secrets (`client-secret.json`) to the `secrets/` folder. Then, when the bot runs for the
+### Google API
+
+A Google Account is required to run the bot.
+
+Add Google API OAuth2 secrets (`client-secret.json`) to the `secrets/` folder. Then, when the bot runs for the
 first time, it will ask you to specify `MRB_AUTH=1` as an environment variable in order to log into
 the Google Account representing the bot.
 
@@ -55,3 +61,13 @@ Use `cargo +nightly fmt --all` (installing Rust nightly is required for this com
 - The `migrations/` folder contains database migration SQL files.
 - The `secrets/` folder (not in the repository) is used for Google API secrets, as specified in [Configuration](#configuration).
 - The `target/` folder (not in the repository) is where Rust will output the build results.
+
+## Functionality
+
+- **Commands:**
+    - `/schedule` (PT-BR: `/marcar`): Executed by a student to schedule a session with a mentor.
+        - This will add the session to the database (`Session` model), and requires a pre-existing `User` model
+        for the student and a pre-existing `Teacher` (which requires `User`) model for the mentor.
+        - This will automatically create a Google Calendar event, associated with a Google Meet call
+        (with an invite sent to both the student and the mentor).
+        - This will also send an e-mail to both the student and the mentor.
