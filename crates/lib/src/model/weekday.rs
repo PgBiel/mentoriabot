@@ -157,7 +157,8 @@ where
     /// Allows usage of Weekday with diesel, with SmallInt fields.
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, diesel::pg::Pg>) -> diesel::serialize::Result {
         let converted_self: i16 = self.into();
-        <i16 as ToSql<SmallInt, diesel::pg::Pg>>::to_sql(&converted_self, &mut out.reborrow()) // see ToSql docs regarding temp values
+        <i16 as ToSql<SmallInt, diesel::pg::Pg>>::to_sql(&converted_self, &mut out.reborrow())
+        // see ToSql docs regarding temp values
     }
 }
 

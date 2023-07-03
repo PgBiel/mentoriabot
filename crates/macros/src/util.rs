@@ -150,10 +150,8 @@ pub(crate) mod macros {
     }
 
     pub(crate) use take_attribute_optional;
-
     #[allow(unused_imports)]
     pub(crate) use take_attribute_or_its_function_optional;
-
     #[allow(unused_imports)]
     pub(crate) use take_attribute_or_its_function_required;
 }

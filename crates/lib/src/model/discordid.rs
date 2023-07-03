@@ -103,7 +103,8 @@ where
     /// Allows usage of DiscordId with diesel, with VarChar fields.
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
         let converted_self = self.to_string();
-        <String as ToSql<VarChar, diesel::pg::Pg>>::to_sql(&converted_self, &mut out.reborrow()) // see ToSql docs regarding temp values
+        <String as ToSql<VarChar, diesel::pg::Pg>>::to_sql(&converted_self, &mut out.reborrow())
+        // see ToSql docs regarding temp values
     }
 }
 
