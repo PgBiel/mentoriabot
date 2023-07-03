@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// The bot's parsed config file.
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub(crate) struct MiniRustBotConfig {
+pub(crate) struct MentoriaBotConfig {
     /// This bot's token.
     pub(crate) token: String,
 

@@ -1147,6 +1147,72 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
+name = "mentoriabot"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "google-apis-common",
+ "mentoriabot_forms",
+ "mentoriabot_lib",
+ "mentoriabot_macros",
+ "once_cell",
+ "poise",
+ "rust-i18n",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "mentoriabot_forms"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "mentoriabot_macros",
+ "poise",
+ "tokio",
+]
+
+[[package]]
+name = "mentoriabot_lib"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "base64 0.21.0",
+ "chrono",
+ "diesel",
+ "diesel-async",
+ "diesel_migrations",
+ "dotenvy",
+ "google-apis-common",
+ "google-calendar3",
+ "google-gmail1",
+ "lettre",
+ "mentoriabot_forms",
+ "once_cell",
+ "poise",
+ "serde",
+ "serde_json",
+ "strum",
+ "strum_macros",
+ "tempfile",
+ "tokio",
+]
+
+[[package]]
+name = "mentoriabot_macros"
+version = "0.1.0"
+dependencies = [
+ "darling 0.20.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.15",
+]
+
+[[package]]
 name = "migrations_internals"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1188,72 +1254,6 @@ name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "minirustbot"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "chrono",
- "google-apis-common",
- "minirustbot_forms",
- "minirustbot_lib",
- "minirustbot_macros",
- "once_cell",
- "poise",
- "rust-i18n",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "minirustbot_forms"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "minirustbot_macros",
- "poise",
- "tokio",
-]
-
-[[package]]
-name = "minirustbot_lib"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "base64 0.21.0",
- "chrono",
- "diesel",
- "diesel-async",
- "diesel_migrations",
- "dotenvy",
- "google-apis-common",
- "google-calendar3",
- "google-gmail1",
- "lettre",
- "minirustbot_forms",
- "once_cell",
- "poise",
- "serde",
- "serde_json",
- "strum",
- "strum_macros",
- "tempfile",
- "tokio",
-]
-
-[[package]]
-name = "minirustbot_macros"
-version = "0.1.0"
-dependencies = [
- "darling 0.20.1",
- "proc-macro2",
- "quote",
- "syn 2.0.15",
-]
 
 [[package]]
 name = "miniz_oxide"

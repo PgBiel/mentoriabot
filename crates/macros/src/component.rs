@@ -143,11 +143,11 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
 
     let result = quote! { const _: () = {
         #[::async_trait::async_trait]
-        impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::mentoriabot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             async fn send_component(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>,
-            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>,
+            ) -> ::mentoriabot_forms::error::ContextualResult<::std::vec::Vec<::mentoriabot_forms::interaction::CustomId>, #ctx_error> {
                 #prepare
                 data.subcomponent_id_stack.clear();
                 let mut __custom_ids = ::std::vec::Vec::new();
@@ -157,7 +157,7 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
                 let __reply = #reply_spec;
 
                 context.send(|f|
-                    <::minirustbot_forms::ReplySpec as ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
+                    <::mentoriabot_forms::ReplySpec as ::mentoriabot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
                         .components(|mut f| f
                             #(#subcomponent_row_creators)*)).await?;
 
@@ -169,11 +169,11 @@ pub fn component(input: syn::DeriveInput) -> Result<TokenStream, darling::Error>
             async fn on_response(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>
-            ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>
+            ) -> ::mentoriabot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>, #ctx_error> {
                 #(#subcomponent_create_from_interaction_ifs)*
 
-                ::core::result::Result::Err(::minirustbot_forms::error::FormError::InvalidUserResponse.into())
+                ::core::result::Result::Err(::mentoriabot_forms::error::FormError::InvalidUserResponse.into())
             }
         }
     };
@@ -214,8 +214,8 @@ impl SubcomponentField {
         let custom_ids_var = util::string_to_ident(&format!("__custom_ids{}", count));
 
         quote! {
-            let #buildables_var = <#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
-            let mut #custom_ids_var = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&#buildables_var).into_iter().map(::core::clone::Clone::clone).collect::<Vec<_>>();
+            let #buildables_var = <#ty as ::mentoriabot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
+            let mut #custom_ids_var = ::mentoriabot_forms::util::id_vec_from_has_custom_ids(&#buildables_var).into_iter().map(::core::clone::Clone::clone).collect::<Vec<_>>();
 
             data.subcomponent_id_stack.push(::core::clone::Clone::clone(&#custom_ids_var));
             __custom_ids.append(&mut #custom_ids_var);
@@ -230,7 +230,7 @@ impl SubcomponentField {
             quote! {
                 .create_action_row(|b| {
                     let buildable = &#buildables_var.at(0);
-                    ::minirustbot_forms::Buildable::<::poise::serenity_prelude::CreateActionRow>::on_build(buildable, b)
+                    ::mentoriabot_forms::Buildable::<::poise::serenity_prelude::CreateActionRow>::on_build(buildable, b)
                 })
             }
         } else {
@@ -251,7 +251,7 @@ impl SubcomponentField {
             quote! {
                 .create_action_row(|mut f| {
                     for buildable in &#buildables_var {
-                        f = f.#func(|b| ::minirustbot_forms::Buildable::<#buildable_type>::on_build(buildable, b));
+                        f = f.#func(|b| ::mentoriabot_forms::Buildable::<#buildable_type>::on_build(buildable, b));
                     }
                     f
                 })
@@ -270,7 +270,7 @@ impl SubcomponentField {
         let ty = &self.ty;
         let return_expr = if self.is_self {
             let result = quote! {
-                <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
+                <Self as ::mentoriabot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
                         .await?
             };
             let result = component_struct.on_response_wrapper(result);
@@ -279,7 +279,7 @@ impl SubcomponentField {
             }
         } else {
             let result = quote! {
-                (*<#ty as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
+                (*<#ty as ::mentoriabot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
                         .await?).into()
             };
             let result = component_struct.on_response_wrapper(result);
@@ -293,7 +293,7 @@ impl SubcomponentField {
         // Pop this component's IDs from the ID stack
         // (Should be in order!)
         quote! {
-            if data.subcomponent_id_stack.pop().ok_or(::minirustbot_forms::error::FormError::InvalidUserResponse)?.contains(&::minirustbot_forms::CustomId(interaction.data.custom_id.clone())) {
+            if data.subcomponent_id_stack.pop().ok_or(::mentoriabot_forms::error::FormError::InvalidUserResponse)?.contains(&::mentoriabot_forms::CustomId(interaction.data.custom_id.clone())) {
                 #return_expr
             }
         }
@@ -329,9 +329,9 @@ impl ComponentStruct {
             quote! {
                 async fn wait_for_response(
                     context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                    data: &mut ::minirustbot_forms::FormState<#data_type>,
-                    custom_ids: &::std::vec::Vec<::minirustbot_forms::CustomId>,
-                ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>>, #ctx_error> {
+                    data: &mut ::mentoriabot_forms::FormState<#data_type>,
+                    custom_ids: &::std::vec::Vec<::mentoriabot_forms::CustomId>,
+                ) -> ::mentoriabot_forms::error::ContextualResult<::core::option::Option<::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>>, #ctx_error> {
                     #func(context, data, custom_ids)
                 }
             }

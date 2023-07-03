@@ -1,12 +1,13 @@
 #![allow(dead_code)]
 use std::sync::Arc;
 
-use minirustbot_forms::SelectMenuOptionSpec;
 use poise::serenity_prelude as serenity;
 
 use crate::{
     common::{ApplicationContext, Data},
-    forms::{ButtonComponent, GenerateReply, InteractionForm, MessageFormComponent},
+    forms::{
+        ButtonComponent, GenerateReply, InteractionForm, MessageFormComponent, SelectMenuOptionSpec,
+    },
     lib::error::Error,
 };
 

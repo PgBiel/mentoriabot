@@ -33,7 +33,7 @@ use proc_macro::TokenStream;
 /// Usage:
 ///
 /// ```
-/// use minirustbot_macros::InteractionForm;
+/// use mentoriabot_macros::InteractionForm;
 ///
 /// #[derive(InteractionForm)]
 /// #[form_data(data(MyDataType), ctx(Data, Error))]

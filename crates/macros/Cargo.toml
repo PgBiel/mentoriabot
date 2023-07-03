@@ -1,6 +1,6 @@
 [package]
-name = "minirustbot_macros"
-description = "Macro implementation crate for Mini Rust Bot"
+name = "mentoriabot_macros"
+description = "Macro implementation crate for Mentoria Bot"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

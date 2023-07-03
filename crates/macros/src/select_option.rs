@@ -101,21 +101,21 @@ pub fn select_option(input: syn::DeriveInput) -> Result<TokenStream, darling::Er
 
     Ok(quote! {
         #[::async_trait::async_trait]
-        impl #impl_generics ::minirustbot_forms::SelectOption<#ctx_data, #ctx_error, #data_type> for #enum_ident #ty_generics #where_clause {
+        impl #impl_generics ::mentoriabot_forms::SelectOption<#ctx_data, #ctx_error, #data_type> for #enum_ident #ty_generics #where_clause {
             /// Generates the specs(/buildables) of all possible options, based on the context
             /// and data.
             async fn generate_options(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>
-            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::SelectMenuOptionSpec>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>
+            ) -> ::mentoriabot_forms::error::ContextualResult<::std::vec::Vec<::mentoriabot_forms::SelectMenuOptionSpec>, #ctx_error> {
                 Ok(#option_specs)
             }
 
             async fn build_from_selected_value(
-                value: ::minirustbot_forms::interaction::SelectValue,
+                value: ::mentoriabot_forms::interaction::SelectValue,
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>
-            ) -> ::minirustbot_forms::error::ContextualResult<Self, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>
+            ) -> ::mentoriabot_forms::error::ContextualResult<Self, #ctx_error> {
                 #from_select_value
             }
         }
@@ -187,12 +187,12 @@ fn create_select_option_specs(
         let value_key = value_key.as_ref().expect("Missing value key");
 
         specs.push(quote! {
-            ::minirustbot_forms::SelectMenuOptionSpec {
+            ::mentoriabot_forms::SelectMenuOptionSpec {
                 label: #label,
 
                 label_function: #label_function,
 
-                value_key: ::minirustbot_forms::interaction::SelectValue(#value_key.into()),
+                value_key: ::mentoriabot_forms::interaction::SelectValue(#value_key.into()),
 
                 description: #description,
 
@@ -268,7 +268,7 @@ fn from_select_value(
     }
 
     // catch-all: error.
-    variant_match_arms.push(quote! { _ => return ::core::result::Result::Err(::minirustbot_forms::error::FormError::InvalidUserResponse.into()) });
+    variant_match_arms.push(quote! { _ => return ::core::result::Result::Err(::mentoriabot_forms::error::FormError::InvalidUserResponse.into()) });
 
     Ok(quote! {
         ::core::result::Result::Ok(match value.0.as_str() {

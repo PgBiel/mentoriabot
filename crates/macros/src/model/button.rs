@@ -81,7 +81,7 @@ impl ToSpec for ButtonSpecRepr {
         let style = util::wrap_option_into(&style);
 
         quote! {
-            ::minirustbot_forms::ButtonSpec {
+            ::mentoriabot_forms::ButtonSpec {
                 label: #label,
                 custom_id: #custom_id,
                 style: #style,

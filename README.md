@@ -1,4 +1,4 @@
-# mini-rust-bot-test
+# Mentoria Bot
 
 This bot is responsible for assigning students to mentors / teachers using the `/schedule` slash command, and to take care of the backend work to make it happen.
 

@@ -67,7 +67,7 @@ impl ToSpec for ReplySpecRepr {
             });
 
         quote! {
-            ::minirustbot_forms::ReplySpec {
+            ::mentoriabot_forms::ReplySpec {
                 content: #content.into(),
                 attachment_function: #attachment_function,
                 allowed_mentions_function: #allowed_mentions_function,

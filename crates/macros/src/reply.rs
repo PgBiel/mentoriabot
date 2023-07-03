@@ -65,13 +65,13 @@ pub fn reply(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     Ok(quote! {
         #[::async_trait::async_trait]
-        impl #impl_generics ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
-            type ReplyBuilder = ::minirustbot_forms::ReplySpec;
+        impl #impl_generics ::mentoriabot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+            type ReplyBuilder = ::mentoriabot_forms::ReplySpec;
 
             async fn create_reply(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &::minirustbot_forms::FormState<#data_type>,
-            ) -> ::minirustbot_forms::error::ContextualResult<Self::ReplyBuilder, #ctx_error> {
+                data: &::mentoriabot_forms::FormState<#data_type>,
+            ) -> ::mentoriabot_forms::error::ContextualResult<Self::ReplyBuilder, #ctx_error> {
                 Ok(#reply_spec)
             }
         }
@@ -97,7 +97,7 @@ fn create_reply_spec(attrs: &ReplyAttrs) -> TokenStream2 {
         });
 
     quote! {
-        ::minirustbot_forms::ReplySpec {
+        ::mentoriabot_forms::ReplySpec {
             content: #content.into(),
             attachment_function: #attachment_function,
             allowed_mentions_function: #allowed_mentions_function,

@@ -36,7 +36,7 @@ pub use interaction::{CustomId, HasCustomId, SelectValue};
 pub use state::FormState;
 
 pub mod macros {
-    pub use minirustbot_macros::*;
+    pub use mentoriabot_macros::*;
 }
 
 pub use macros::{

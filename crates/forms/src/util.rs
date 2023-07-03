@@ -9,7 +9,7 @@ pub fn generate_custom_id() -> String {
         .duration_since(time::UNIX_EPOCH)
         .expect("Time is broken");
 
-    format!("minirustbot-{}", timestamp.as_millis())
+    format!("mentoriabot-{}", timestamp.as_millis())
 }
 
 /// Extracts Custom IDs from a Vec

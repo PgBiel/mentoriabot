@@ -9,8 +9,8 @@ mod config;
 mod events;
 
 use common::Data;
-use config::MiniRustBotConfig as Config;
-use minirustbot_forms::FormError;
+use config::MentoriaBotConfig as Config;
+use mentoriabot_forms::FormError;
 
 use crate::{
     common::FrameworkError,
@@ -23,10 +23,10 @@ use crate::{
 };
 
 pub mod forms {
-    pub use minirustbot_forms::*;
+    pub use mentoriabot_forms::*;
 }
 pub mod lib {
-    pub use minirustbot_lib::*;
+    pub use mentoriabot_lib::*;
 }
 
 const CONFIG_FILE: &str = "config.json";

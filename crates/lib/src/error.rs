@@ -2,10 +2,10 @@
 use std::fmt::{Display, Formatter};
 
 use diesel_async::pooled_connection::deadpool;
-use minirustbot_forms as forms;
+use mentoriabot_forms as forms;
 use poise::serenity_prelude as serenity;
 
-/// An error in MiniRustBot.
+/// An error in Mentoria Bot.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {

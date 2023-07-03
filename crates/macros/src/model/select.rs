@@ -69,7 +69,7 @@ impl ToSpec for SelectMenuSpecRepr {
         };
 
         quote! {
-            ::minirustbot_forms::SelectMenuSpec {
+            ::mentoriabot_forms::SelectMenuSpec {
                 custom_id: #custom_id,
                 options: #options,
                 min_values: #min_values,

@@ -52,9 +52,9 @@ impl ToSpec for SelectOptionSpecRepr {
         let is_default = is_default.is_present();
 
         quote! {
-            ::minirustbot_forms::SelectMenuOptionSpec {
+            ::mentoriabot_forms::SelectMenuOptionSpec {
                 label: (#label).into(),
-                value_key: ::minirustbot_forms::interaction::SelectValue(#value_key.into()),
+                value_key: ::mentoriabot_forms::interaction::SelectValue(#value_key.into()),
                 description: (#description).into(),
                 emoji: #emoji,
                 is_default: #is_default,

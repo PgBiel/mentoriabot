@@ -54,45 +54,45 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
 
     Ok(quote! {
         #[::async_trait::async_trait]
-        impl #impl_generics ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::mentoriabot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             type BuilderType = ::poise::serenity_prelude::CreateButton;
-            type ReturnedBuildable = ::minirustbot_forms::ButtonSpec;
+            type ReturnedBuildable = ::mentoriabot_forms::ButtonSpec;
             async fn generate_buildables(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>,
-            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<Self::ReturnedBuildable>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>,
+            ) -> ::mentoriabot_forms::error::ContextualResult<::std::vec::Vec<Self::ReturnedBuildable>, #ctx_error> {
                 Ok(::std::vec![ #button_spec ])
             }
 
             async fn build_from_interaction(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>,
-            ) -> ::minirustbot_forms::error::ContextualResult<::std::boxed::Box<Self>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>,
+            ) -> ::mentoriabot_forms::error::ContextualResult<::std::boxed::Box<Self>, #ctx_error> {
                 ::core::result::Result::Ok(::std::boxed::Box::new(#create_with_interaction))
             }
         }
 
-        // impl #impl_generics ::minirustbot_forms::Buildable<>
+        // impl #impl_generics ::mentoriabot_forms::Buildable<>
 
         #[::async_trait::async_trait]
-        impl #impl_generics ::minirustbot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::mentoriabot_forms::MessageFormComponent<#ctx_data, #ctx_error, #data_type> for #struct_ident #ty_generics #where_clause {
             async fn send_component(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>,
-            ) -> ::minirustbot_forms::error::ContextualResult<::std::vec::Vec<::minirustbot_forms::interaction::CustomId>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>,
+            ) -> ::mentoriabot_forms::error::ContextualResult<::std::vec::Vec<::mentoriabot_forms::interaction::CustomId>, #ctx_error> {
 
-                let __buildables = <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
-                let __custom_ids = ::minirustbot_forms::util::id_vec_from_has_custom_ids(&__buildables);
+                let __buildables = <Self as ::mentoriabot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::generate_buildables(context, data).await?;
+                let __custom_ids = ::mentoriabot_forms::util::id_vec_from_has_custom_ids(&__buildables);
 
-                let __reply = <Self as ::minirustbot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(context, data).await?;
+                let __reply = <Self as ::mentoriabot_forms::GenerateReply<#ctx_data, #ctx_error, #data_type>>::create_reply(context, data).await?;
 
                 context.send(|f|
-                    <::minirustbot_forms::ReplySpec as ::minirustbot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
+                    <::mentoriabot_forms::ReplySpec as ::mentoriabot_forms::Buildable<::poise::CreateReply>>::on_build(&__reply, f)
                         .components(|f| f
                             .create_action_row(|mut f| {
                                 for buildable in &__buildables {
-                                    f = f.create_button(|b| ::minirustbot_forms::Buildable::<::poise::serenity_prelude::CreateButton>::on_build(buildable, b));
+                                    f = f.create_button(|b| ::mentoriabot_forms::Buildable::<::poise::serenity_prelude::CreateButton>::on_build(buildable, b));
                                 }
                                 f
                             }))).await?;
@@ -103,10 +103,10 @@ pub fn button(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
             async fn on_response(
                 context: ::poise::ApplicationContext<'_, #ctx_data, #ctx_error>,
                 interaction: ::std::sync::Arc<::poise::serenity_prelude::MessageComponentInteraction>,
-                data: &mut ::minirustbot_forms::FormState<#data_type>,
-            ) -> ::minirustbot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>, #ctx_error> {
+                data: &mut ::mentoriabot_forms::FormState<#data_type>,
+            ) -> ::mentoriabot_forms::error::ContextualResult<::core::option::Option<::std::boxed::Box<Self>>, #ctx_error> {
                 ::core::result::Result::Ok(::core::option::Option::Some(
-                    <Self as ::minirustbot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
+                    <Self as ::mentoriabot_forms::Subcomponent<#ctx_data, #ctx_error, #data_type>>::build_from_interaction(context, interaction, data)
                         .await?
                 ))
             }

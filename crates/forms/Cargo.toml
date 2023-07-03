@@ -1,5 +1,5 @@
 [package]
-name = "minirustbot_forms"
+name = "mentoriabot_forms"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -10,4 +10,4 @@ license.workspace = true
 poise = "0.5.2"
 tokio = { version = "1.25.0", features = ["full"] }
 async-trait = "0.1.64"
-minirustbot_macros = { path = "../macros" }
+mentoriabot_macros = { path = "../macros" }
