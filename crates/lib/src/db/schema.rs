@@ -27,7 +27,7 @@ diesel::table! {
 diesel::table! {
     teachers (user_id) {
         user_id -> Varchar,
-        email -> Nullable<Varchar>,
+        email -> Varchar,
         specialty -> Varchar,
         company -> Nullable<Varchar>,
         company_role -> Nullable<Varchar>,

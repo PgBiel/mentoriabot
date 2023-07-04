@@ -1,7 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE teachers (
   user_id VARCHAR PRIMARY KEY REFERENCES users (discord_id),
-  email VARCHAR UNIQUE,
+  email VARCHAR UNIQUE NOT NULL,
   specialty VARCHAR NOT NULL,
   company VARCHAR,
   company_role VARCHAR
