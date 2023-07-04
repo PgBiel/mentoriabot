@@ -125,7 +125,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .data
         .google
         .email
-        .send_emails_for_session(&selected_mentor, &student, &session)
+        .send_emails_for_session(&selected_mentor, &selected_mentor_user, &student, &session)
         .await
     {
         tracing::warn!("Couldn't send scheduling email: {err:?}");

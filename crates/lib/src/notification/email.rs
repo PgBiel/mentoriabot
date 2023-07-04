@@ -90,6 +90,7 @@ impl GmailManager {
     pub async fn send_emails_for_session(
         &self,
         teacher: &Teacher,
+        teacher_user: &User,
         user: &User,
         session: &Session,
     ) -> Result<()> {
@@ -101,10 +102,21 @@ impl GmailManager {
         self.send_to(
             sender,
             [&*teacher.email],
-            "Monitoria Marcada",
+            "Mentoria Marcada",
             &format!(
-                "Sua monitoria com o aluno {} foi agendada para {} às {}!",
+                "Sua mentoria com o aluno {} foi agendada para {} às {}!",
                 user.name, start_at_dm, start_at_hm
+            ),
+        )
+        .await?;
+
+        self.send_to(
+            sender,
+            [&*user.email],
+            "Mentoria Marcada",
+            &format!(
+                "Sua mentoria com o mentor {} foi agendada para {} às {}!",
+                teacher_user.name, start_at_dm, start_at_hm
             ),
         )
         .await
