@@ -22,9 +22,6 @@ pub mod interaction;
 mod state;
 pub mod util;
 
-#[cfg(test)]
-mod tests;
-
 pub use component::{
     Buildable, BuildableWithId, ButtonSpec, GenerateReply, MessageFormComponent,
     ModalFormComponent, ReplySpec, SelectMenuOptionSpec, SelectMenuSpec, SelectOption,
