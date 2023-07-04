@@ -63,4 +63,12 @@ commands:
     please_select_mentor: "**Selected time: %{time}**\nPlease pick a mentor:"
     time_already_taken: "**Error:** It seems someone took this mentorship session time before you finished this
       form. Sorry!"
-    success: You have successfully scheduled a session at %{time} with the mentor %{mentor}.
+    couldnt_create_google_event: Uh-oh, seems like the bot couldn't create the Google Calendar event for this session.
+      Please try running this command again.
+    success_no_email: You have successfully scheduled a session at %{time} with the mentor %{mentor}. The bot, however, failed
+      to notify you and your mentor by email, but the Google Calendar event was successfully created, along with a Google Meet
+      link you two will use for the mentorship session, at the specified time and date. Please check the invite you may have
+      received through email.
+    success: You have successfully scheduled a session at %{time} with the mentor %{mentor}. You and your mentor have been invited
+      to a Google Calendar event containing a link to the Google Meet call you two will use for the mentorship session, at the
+      specified time and date. Please check your email.

@@ -71,4 +71,12 @@ commands:
     please_select_mentor: "**Horário selecionado:** %{time}\nPor favor, selecione um mentor:"
     time_already_taken: "**Erro:** Parece que alguém tomou esse horário de mentoria antes de você concluir esse
       formulário. Foi mal!"
-    success: Você agendou com sucesso uma sessão no horário de %{time} com o mentor %{mentor}.
+    couldnt_create_google_event: Hmmm... parece que o bot não conseguiu criar um evento no Google Calendário para essa mentoria.
+      Por favor, tente executar este comando novamente.
+    success_no_email: Você agendou com sucesso uma sessão no horário de %{time} com o mentor %{mentor}. Porém, o bot não conseguiu
+      notificar você e o mentor por e-mail. Apesar disso, um evento no Google Calendário foi criado com sucesso, junto com um link
+      do Google Meet que você e seu mentor usarão durante a mentoria, no horário e data especificados. Por favor, confira o convite
+      que você deve ter recebido por e-mail.
+    success: Você agendou com sucesso uma sessão no horário de %{time} com o mentor %{mentor}. Você e seu mentor foram convidados
+      para um evento no Google Calendário contendo um link para a chamada do Google Meet que vocês dois usarão durante a mentoria,
+      no horário e data especificados. Por favor, confira seu e-mail.
