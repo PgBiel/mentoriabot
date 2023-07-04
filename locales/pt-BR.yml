@@ -37,7 +37,7 @@ main_on_error:
 commands:
   general:
     specify_subcommand: Por favor, especifique um subcomando.
-    no_modal_response: Não foi possível receber sua resposta ao formulário que acaba de ser 
+    no_modal_response: Não foi possível receber sua resposta ao formulário que acaba de ser
       apresentado; tente repetir esse comando novamente.
     cancelled: Operação cancelada.
   sessions:
@@ -52,16 +52,16 @@ commands:
     one_time: "1 horário de mentoria disponível"
     n_times: "%{amount} horários de mentoria disponíveis"
     please_select_time_one_today: Há 1 mentor disponível hoje (%{day}). Por favor
-      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível 
+      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível
       nesse horário.
-    please_select_time_n_today: Há %{total_mentor_amount} mentores disponíveis hoje (%{day}). Por favor 
-      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis 
+    please_select_time_n_today: Há %{total_mentor_amount} mentores disponíveis hoje (%{day}). Por favor
+      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis
       nesse horário.
-    please_select_time_one: Há 1 mentor disponível no dia %{day} (%{weekday}). Por favor 
-      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível 
+    please_select_time_one: Há 1 mentor disponível no dia %{day} (%{weekday}). Por favor
+      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível
       nesse horário.
-    please_select_time_n: Há %{total_mentor_amount} mentores disponíveis no dia %{day} (%{weekday}). Por favor 
-      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis 
+    please_select_time_n: Há %{total_mentor_amount} mentores disponíveis no dia %{day} (%{weekday}). Por favor
+      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis
       nesse horário.
     no_mentors_available_time: Não há mais mentores disponíveis no dia selecionado. Foi mal!
     one_mentor: "1 mentor disponível"

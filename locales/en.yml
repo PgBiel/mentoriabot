@@ -47,13 +47,13 @@ commands:
     no_mentors_available_week: There are no more mentors available in the following 7 days. Sorry!
     one_time: "1 mentorship session time available"
     n_times: "%{amount} mentorship session times available"
-    please_select_time_one_today: There is one mentor available today. Please 
+    please_select_time_one_today: There is one mentor available today. Please
       select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_n_today: There are %{total_mentor_amount} mentors available today. Please 
+    please_select_time_n_today: There are %{total_mentor_amount} mentors available today. Please
       select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_one: There is one mentor available at %{day} (%{weekday}). Please 
+    please_select_time_one: There is one mentor available at %{day} (%{weekday}). Please
       select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_n: There are %{total_mentor_amount} mentors available at %{day} (%{weekday}). Please 
+    please_select_time_n: There are %{total_mentor_amount} mentors available at %{day} (%{weekday}). Please
       select below the time you wish to schedule at to view available mentors at that time.
     no_mentors_available_time: There are no more mentors available at the selected date. Sorry!
     one_mentor: "1 mentor available"
