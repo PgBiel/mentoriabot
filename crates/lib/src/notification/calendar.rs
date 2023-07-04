@@ -68,7 +68,8 @@ impl CalendarManager {
                     conference_solution_key: Some(ConferenceSolutionKey {
                         type_: Some("hangoutsMeet".to_string()),
                     }),
-                    request_id: None,
+                    // a random and unique request ID is necessary for some reason
+                    request_id: Some(crate::util::time::brazil_now().timestamp_millis().to_string()),
                     status: None,
                 }),
                 ..Default::default()
@@ -84,6 +85,7 @@ impl CalendarManager {
         self.hub
             .events()
             .insert(event, &self.calendar_id)
+            .conference_data_version(1)  // enables creating conferences
             .doit()
             .await
             .map(|(_, event)| event)
