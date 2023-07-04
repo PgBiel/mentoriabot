@@ -10,7 +10,7 @@ use google_calendar3::{
 
 use crate::{
     error::Result,
-    model::{NewSession, Teacher},
+    model::{NewSession, Teacher, User},
 };
 
 /// Manages Google Calendar operations.
@@ -47,11 +47,11 @@ impl CalendarManager {
     /// Creates a Google Calendar event, given a Session object.
     pub async fn create_event_for_session(
         &self,
+        student: &User,
         teacher: &Teacher,
         session: &NewSession,
     ) -> Result<Event> {
         let event = Event {
-            // FIXME: use translations
             summary: "Mentoria".to_string().into(),
             description: "Mentoria".to_string().into(),
             start: Some(EventDateTime {
@@ -78,11 +78,17 @@ impl CalendarManager {
                 }),
                 ..Default::default()
             }),
-            attendees: Some(vec![EventAttendee {
-                email: Some(teacher.email.clone()),
-                response_status: Some("needsAction".to_string()),
-                ..Default::default()
-            }]),
+            // invite the student and the teacher
+            attendees: Some(
+                [&student.email, &teacher.email]
+                    .iter()
+                    .map(|email| EventAttendee {
+                        email: Some((*email).clone()),
+                        response_status: Some("needsAction".to_string()),
+                        ..Default::default()
+                    })
+                    .collect(),
+            ),
             ..Default::default()
         };
 

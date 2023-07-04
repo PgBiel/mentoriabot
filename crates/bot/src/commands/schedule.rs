@@ -101,7 +101,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .data
         .google
         .calendar
-        .create_event_for_session(&selected_mentor, &session)
+        .create_event_for_session(&student, &selected_mentor, &session)
         .await?;
 
     let Some(meet_id) = event
