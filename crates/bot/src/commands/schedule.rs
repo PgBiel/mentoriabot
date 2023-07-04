@@ -1,4 +1,4 @@
-use super::{forms::schedule::ScheduleForm, modals::register::RegisterModals};
+use super::{forms::schedule::ScheduleForm, modals::register::RegisterModal};
 use crate::{
     commands::forms::schedule::SelectMentorComponent,
     common::ApplicationContext,
@@ -6,7 +6,7 @@ use crate::{
     lib::{
         db::Repository,
         error::{Error, Result},
-        model::{Availability, DiscordId, NewSession, NewUser},
+        model::{Availability, DiscordId, NewSession},
         util::{
             self,
             time::{datetime_as_utc, datetime_with_time},
@@ -23,7 +23,6 @@ use crate::{
     description_localized("pt-BR", "Marca uma sessão com um mentor.")
 )]
 pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
-    ctx.defer_ephemeral().await?;
     let author = ctx.author();
     let author_id: DiscordId = author.id.into();
 
@@ -35,16 +34,11 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
             student
         } else {
             // User not in DB => call registration modal
-            if let Some(register) = RegisterModals::execute_based_on_locale(ctx).await? {
+            if let Some(register) = RegisterModal::ask(ctx).await? {
                 ctx.data()
                     .db
                     .user_repository()
-                    .insert(&NewUser {
-                        discord_id: author_id,
-                        name: register.name().clone(),
-                        email: register.email().clone(),
-                        bio: None,
-                    })
+                    .insert(&register.generate_new_user(author_id))
                     .await?
             } else {
                 // modal cancelled
@@ -53,6 +47,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         }
     };
 
+    ctx.defer_ephemeral().await?;
     let form = *ScheduleForm::execute(ctx).await?;
     let initial_datetime = form
         .form_start_datetime

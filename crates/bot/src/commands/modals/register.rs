@@ -1,76 +1,152 @@
 //! Modals asking for the user's data (name and email).
 
+use lazy_static::lazy_static;
+use mentoriabot_lib::util::Unvalidated;
 use poise::Modal;
 
-use crate::{common::ApplicationContext, lib::error::Result};
+use crate::{
+    common::ApplicationContext,
+    lib::{
+        error::Result,
+        model::{DiscordId, NewUser},
+    },
+};
+
+lazy_static! {
+    static ref EMAIL_REGEX: regex::Regex = regex::Regex::new("^.+@.+\\..{2,}$").unwrap();
+}
 
 /// Represents a registration modal,
 /// asking for its text data.
 #[derive(Modal, Debug, Clone)]
 #[name = "Register"]
-pub struct RegisterModal {
+struct RegisterEnglishModal {
     #[name = "Name and surname"]
     #[placeholder = "John Doe"]
     #[min_length = 1]
-    #[max_length = 100]
+    #[max_length = 128]
     pub name: String,
 
     #[name = "Email (preferably Gmail)"]
     #[placeholder = "john.doe@gmail.com"]
-    #[min_length = 1]
-    #[max_length = 128]
+    #[min_length = 6]
+    #[max_length = 256]
     pub email: String,
+
+    #[name = "Bio (optional)"]
+    #[placeholder = "A small description about yourself, if you wish"]
+    #[min_length = 0]
+    #[max_length = 512]
+    #[paragraph]
+    pub bio: Option<String>,
 }
 
 /// Same as [`RegisterModal`], but in portuguese.
 #[derive(Modal, Debug, Clone)]
 #[name = "Cadastro de Informações"]
-pub struct RegisterPortugueseModal {
+struct RegisterPortugueseModal {
     #[name = "Nome e sobrenome"]
     #[placeholder = "João Silva"]
     #[min_length = 1]
-    #[max_length = 100]
+    #[max_length = 128]
     pub name: String,
 
     #[name = "E-mail (Gmail, de preferência)"]
     #[placeholder = "joao.silva@gmail.com"]
-    #[min_length = 1]
-    #[max_length = 128]
+    #[min_length = 6]
+    #[max_length = 256]
     pub email: String,
+
+    #[name = "Bio (opcional)"]
+    #[placeholder = "Uma pequena descrição sobre si mesmo, se quiser"]
+    #[min_length = 0]
+    #[max_length = 512]
+    #[paragraph]
+    pub bio: Option<String>,
 }
 
-/// Groups together the two modals.
-#[derive(Debug, Clone)]
-pub enum RegisterModals {
-    Regular(RegisterModal),
-    Portuguese(RegisterPortugueseModal),
+/// Represents a generic register modal.
+#[derive(Debug, validator::Validate, Clone)]
+pub struct RegisterModal {
+    /// The user's name response.
+    #[validate(length(min = 1, max = 128))]
+    pub name: String,
+
+    /// The user's email response.
+    #[validate(length(min = 6, max = 256))]
+    #[validate(regex = "EMAIL_REGEX")]
+    pub email: String,
+
+    /// The user's bio response.
+    #[validate(length(min = 0, max = 512))]
+    pub bio: Option<String>,
 }
 
-impl RegisterModals {
+impl From<RegisterEnglishModal> for RegisterModal {
+    fn from(RegisterEnglishModal { name, email, bio }: RegisterEnglishModal) -> Self {
+        Self { name, email, bio }
+    }
+}
+
+impl From<RegisterPortugueseModal> for RegisterModal {
+    fn from(RegisterPortugueseModal { name, email, bio }: RegisterPortugueseModal) -> Self {
+        Self { name, email, bio }
+    }
+}
+
+impl RegisterModal {
     /// Executes either the English version of the Modal or
     /// the Portuguese one, based on the current context locale.
-    pub async fn execute_based_on_locale(ctx: ApplicationContext<'_>) -> Result<Option<Self>> {
+    pub async fn execute_based_on_locale(
+        ctx: ApplicationContext<'_>,
+    ) -> Result<Option<Unvalidated<Self>>> {
         Ok(match ctx.locale() {
             Some("pt-BR") => RegisterPortugueseModal::execute(ctx)
                 .await?
-                .map(Self::Portuguese),
-            _ => RegisterModal::execute(ctx).await?.map(Self::Regular),
+                .map(Self::from)
+                .map(Unvalidated::new),
+
+            _ => RegisterEnglishModal::execute(ctx)
+                .await?
+                .map(Self::from)
+                .map(Unvalidated::new),
         })
     }
 
-    /// Gets the user's given name on registration.
-    pub fn name(&self) -> &String {
-        match self {
-            Self::Regular(RegisterModal { name, .. })
-            | Self::Portuguese(RegisterPortugueseModal { name, .. }) => name,
+    /// Converts this modal response into a 'NewUser' instance.
+    pub fn generate_new_user(self, discord_id: DiscordId) -> NewUser {
+        NewUser {
+            discord_id,
+            name: self.name,
+            email: self.email,
+            bio: self.bio,
         }
     }
 
-    /// Gets the user's given email on registration.
-    pub fn email(&self) -> &String {
-        match self {
-            Self::Regular(RegisterModal { email, .. })
-            | Self::Portuguese(RegisterPortugueseModal { email, .. }) => email,
+    /// Present the modal to the user, and notify them of any possible
+    /// validation errors.
+    pub async fn ask(ctx: ApplicationContext<'_>) -> Result<Option<Self>> {
+        match Self::execute_based_on_locale(ctx)
+            .await?
+            .map(Unvalidated::validate)
+            .transpose()
+        {
+            Err(errs) => {
+                ctx.send(|b| {
+                    use crate::lib::tr;
+
+                    let content = if errs.field_errors().contains_key("email") {
+                        tr!("commands.general.invalid_email", ctx = ctx)
+                    } else {
+                        tr!("commands.general.invalid_modal_response", ctx = ctx)
+                    };
+
+                    b.content(content).ephemeral(true)
+                })
+                .await?;
+                Ok(None)
+            }
+            Ok(response) => Ok(response),
         }
     }
 }
