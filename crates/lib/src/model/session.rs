@@ -15,6 +15,7 @@ pub struct Session {
     pub availability_id: i64,
     pub summary: Option<String>,
     pub notified: bool,
+    pub meet_id: Option<String>,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -28,6 +29,7 @@ pub struct NewSession {
     pub availability_id: i64,
     pub summary: Option<String>,
     pub notified: bool,
+    pub meet_id: Option<String>,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -41,6 +43,7 @@ pub struct PartialSession {
     pub availability_id: Option<i64>,
     pub summary: Option<Option<String>>,
     pub notified: Option<bool>,
+    pub meet_id: Option<Option<String>>,
     pub start_at: Option<chrono::DateTime<chrono::Utc>>,
     pub end_at: Option<chrono::DateTime<chrono::Utc>>,
 }
@@ -56,6 +59,7 @@ impl From<Session> for PartialSession {
             availability_id: Some(session.availability_id),
             summary: Some(session.summary),
             notified: Some(session.notified),
+            meet_id: Some(session.meet_id),
             start_at: Some(session.start_at),
             end_at: Some(session.end_at),
         }
@@ -72,6 +76,7 @@ impl From<Session> for NewSession {
             availability_id,
             summary,
             notified,
+            meet_id,
             start_at,
             end_at,
             ..
@@ -83,6 +88,7 @@ impl From<Session> for NewSession {
             availability_id,
             summary,
             notified,
+            meet_id,
             start_at,
             end_at,
         }

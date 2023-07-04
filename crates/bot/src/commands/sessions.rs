@@ -114,6 +114,7 @@ async fn create(
             teacher_id: author_id,
             student_id: author_id,
             notified: false,
+            meet_id: None,
             start_at,
             end_at,
         })

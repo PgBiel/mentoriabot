@@ -10,7 +10,7 @@ use google_calendar3::{
 
 use crate::{
     error::Result,
-    model::{Session, Teacher},
+    model::{NewSession, Teacher},
 };
 
 /// Manages Google Calendar operations.
@@ -48,7 +48,7 @@ impl CalendarManager {
     pub async fn create_event_for_session(
         &self,
         teacher: &Teacher,
-        session: &Session,
+        session: &NewSession,
     ) -> Result<Event> {
         let event = Event {
             // FIXME: use translations

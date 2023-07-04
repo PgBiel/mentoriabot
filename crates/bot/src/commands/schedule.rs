@@ -90,20 +90,13 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         student_id: ctx.author().id.into(),
         availability_id: selected_availability.id,
         summary: None,
+        meet_id: None,
         start_at,
         end_at,
         notified: false,
     };
 
-    // Now insert the Session between the Teacher and the Student.
-    let session = ctx.data.db.session_repository().insert(&session).await?;
-
-    ctx.data
-        .google
-        .email
-        .send_emails_for_session(&selected_mentor, &student, &session)
-        .await?;
-
+    // Create Google Calendar event with Google Meet
     let event = ctx
         .data
         .google
@@ -111,19 +104,39 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .create_event_for_session(&selected_mentor, &session)
         .await?;
 
-    if event
+    let Some(meet_id) = event
         .conference_data
-        .and_then(|conf| conf.create_request)
-        .and_then(|req| req.status)
-        .and_then(|status| status.status_code)
-        .map_or(false, |status| status == "failure")
+        .and_then(|conf| conf.conference_id)
+    else {
+        ctx.send(|b| b.content(tr!("commands.schedule.couldnt_create_google_event", ctx = ctx)))
+        .await?;
+        return Ok(());
+    };
+
+    let session = NewSession {
+        meet_id: Some(meet_id),
+        ..session
+    };
+
+    // Now insert the Session between the Teacher and the Student.
+    let session = ctx.data.db.session_repository().insert(&session).await?;
+
+    let response = if let Err(err) = ctx
+        .data
+        .google
+        .email
+        .send_emails_for_session(&selected_mentor, &student, &session)
+        .await
     {
-        eprintln!("Creating conference failed!");
-    }
+        tracing::warn!("Couldn't send scheduling email: {err:?}");
+        "commands.schedule.success_no_email"
+    } else {
+        "commands.schedule.success"
+    };
 
     ctx.send(|b| {
         b.content(tr!(
-            "commands.schedule.success",
+            response,
             ctx = ctx,
             time = util::time::hour_minute_display(selected_availability.time_start),
             mentor = selected_mentor_user.name
