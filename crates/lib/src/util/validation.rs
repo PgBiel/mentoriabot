@@ -4,6 +4,7 @@
 /// be validated to be used.
 /// Part of the idea of making 'invalid states
 /// unrepresentable'.
+#[derive(Debug, Clone, PartialEq)]
 pub struct Unvalidated<T: validator::Validate>(T);
 
 impl<T: validator::Validate> Unvalidated<T> {
