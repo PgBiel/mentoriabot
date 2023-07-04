@@ -19,6 +19,7 @@ diesel::table! {
         availability_id -> Int8,
         summary -> Nullable<Text>,
         notified -> Bool,
+        meet_id -> Nullable<Varchar>,
         start_at -> Timestamptz,
         end_at -> Timestamptz,
     }
