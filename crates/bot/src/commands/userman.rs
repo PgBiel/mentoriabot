@@ -1,32 +1,13 @@
-use poise::{serenity_prelude as serenity, Modal};
+use poise::serenity_prelude as serenity;
 
 use crate::{
+    commands::modals::register::RegisterModal,
     common::ApplicationContext,
     lib::{
         db::{Repository, UpdatableRepository},
         error::Result,
-        model::NewUser,
     },
 };
-
-#[derive(Default, Modal)]
-#[name = "Adding a User"]
-struct UserModal {
-    #[name = "Name"]
-    #[min_length = 3]
-    #[max_length = 150]
-    name: String,
-
-    #[name = "Email"]
-    #[min_length = 3]
-    #[max_length = 128]
-    email: String,
-
-    #[name = "Bio"]
-    #[max_length = 1000]
-    #[paragraph]
-    bio: Option<String>,
-}
 
 /// Manages users in the database.
 #[poise::command(slash_command, subcommands("add", "get", "remove", "all"), ephemeral)]
@@ -42,18 +23,14 @@ pub async fn add(
     ctx: ApplicationContext<'_>,
     #[description = "Whom to add as User"] user: serenity::User,
 ) -> Result<()> {
-    let data = UserModal::execute(ctx).await?;
+    let data = RegisterModal::ask(ctx).await?;
     if let Some(modal_data) = data {
-        let new_user = NewUser {
-            discord_id: user.id.into(),
-            name: modal_data.name,
-            email: modal_data.email,
-            bio: modal_data.bio,
-        };
+        let new_user = modal_data.generate_new_user(user.id.into());
         let inserted_user = ctx.data.db.user_repository().upsert(&new_user).await?;
         let response = format!(
-            "Successfully added Mr. {}. to the database (with{} a bio).",
+            "Successfully added Mr. {} ({}) to the database (with{} a bio).",
             inserted_user.name,
+            inserted_user.email,
             if inserted_user.bio.is_none() {
                 "out"
             } else {
@@ -78,11 +55,12 @@ pub async fn get(
             .await?;
     } else {
         let found_user = ctx.data.db.user_repository().get(user.id.into()).await?;
-        if let Some(found_user) = found_user {
-            let bio = found_user.bio;
+        if let Some(crate::lib::model::User {
+            bio, name, email, ..
+        }) = found_user
+        {
             let response = format!(
-                "We have Mr. {} with {}.",
-                found_user.name,
+                "We have Mr. {name} ({email}) with {}.",
                 if bio.is_some() {
                     "the bio below"
                 } else {
