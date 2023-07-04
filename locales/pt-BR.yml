@@ -40,6 +40,8 @@ commands:
     no_modal_response: Não foi possível receber sua resposta ao formulário que acaba de ser
       apresentado; tente repetir esse comando novamente.
     cancelled: Operação cancelada.
+    invalid_modal_response: A resposta ao formulário apresentado foi inválida. Por favor, tente executar esse comando novamente.
+    invalid_email: O endereço de e-mail fornecido era inválido. Por favor, tente executar esse comando novamente.
   sessions:
     name: sessões
     description: Gerencia sessões de mentoria.
