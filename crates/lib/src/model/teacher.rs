@@ -14,7 +14,7 @@ use crate::db::schema::*;
 #[diesel(belongs_to(super::User, foreign_key = user_id), treat_none_as_null = true)]
 pub struct Teacher {
     pub user_id: DiscordId,
-    pub email: Option<String>,
+    pub email: String,
     pub specialty: String,
     pub company: Option<String>,
     pub company_role: Option<String>,
@@ -27,7 +27,7 @@ pub type NewTeacher = Teacher; // same fields
 #[diesel(table_name = teachers)]
 pub struct PartialTeacher {
     pub user_id: Option<DiscordId>,
-    pub email: Option<Option<String>>,
+    pub email: Option<String>,
     pub specialty: Option<String>,
     pub company: Option<Option<String>>,
     pub company_role: Option<Option<String>>,

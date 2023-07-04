@@ -52,6 +52,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     let initial_datetime = form
         .form_start_datetime
         .ok_or_else(|| Error::Other("could not get the form's starting datetime"))?;
+
     let SelectMentorComponent {
         selected_availability,
         selected_mentor,

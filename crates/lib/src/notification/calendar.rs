@@ -74,7 +74,7 @@ impl CalendarManager {
                 ..Default::default()
             }),
             attendees: Some(vec![EventAttendee {
-                email: teacher.email.clone(),
+                email: Some(teacher.email.clone()),
                 response_status: Some("needsAction".to_string()),
                 ..Default::default()
             }]),

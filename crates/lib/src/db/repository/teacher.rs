@@ -161,7 +161,7 @@ mod tests {
         };
         let new_teacher = NewTeacher {
             user_id: id,
-            email: Some("aaa@bbb.com".to_string()),
+            email: "aaa@bbb.com".to_string(),
             specialty: "Math".to_string(),
             company: Some("Mozilla Inc.".to_string()),
             company_role: Some("CTO".to_string()),
@@ -202,7 +202,7 @@ mod tests {
         };
         let new_teacher = NewTeacher {
             user_id: id,
-            email: Some("rustacean@mozilla.org".to_string()),
+            email: "rustacean@mozilla.org".to_string(),
             specialty: "Rust".to_string(),
             company: Some("Mozilla Inc.".to_string()),
             company_role: Some("Programmer".to_string()),

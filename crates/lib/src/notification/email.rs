@@ -93,26 +93,21 @@ impl GmailManager {
         user: &User,
         session: &Session,
     ) -> Result<()> {
-        if let Some(teacher_email) = &teacher.email {
-            let sender = self.resolve_sender().await?;
-            let start_at = session.start_at.with_timezone(&*BRAZIL_TIMEZONE);
-            let start_at_dm = util::time::day_month_display(&start_at.date_naive());
-            let start_at_hm = util::time::hour_minute_display(start_at.time());
+        let sender = self.resolve_sender().await?;
+        let start_at = session.start_at.with_timezone(&*BRAZIL_TIMEZONE);
+        let start_at_dm = util::time::day_month_display(&start_at.date_naive());
+        let start_at_hm = util::time::hour_minute_display(start_at.time());
 
-            self.send_to(
-                sender,
-                [&**teacher_email],
-                "Monitoria Marcada",
-                &format!(
-                    "Sua monitoria com o aluno {} foi agendada para {} às {}!",
-                    user.name, start_at_dm, start_at_hm
-                ),
-            )
-            .await
-        } else {
-            // just ignore it if they can't receive e-mails
-            Ok(())
-        }
+        self.send_to(
+            sender,
+            [&*teacher.email],
+            "Monitoria Marcada",
+            &format!(
+                "Sua monitoria com o aluno {} foi agendada para {} às {}!",
+                user.name, start_at_dm, start_at_hm
+            ),
+        )
+        .await
     }
 
     async fn resolve_sender(&self) -> Result<&String> {
