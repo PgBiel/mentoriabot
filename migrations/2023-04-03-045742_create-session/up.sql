@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS session_students;
 
 CREATE TABLE sessions (
   id BIGSERIAL PRIMARY KEY,
-  teacher_id VARCHAR NOT NULL REFERENCES teachers (user_id),
+  teacher_id BIGSERIAL NOT NULL REFERENCES teachers (id),
   student_id VARCHAR NOT NULL REFERENCES users (discord_id),
   availability_id BIGINT NOT NULL REFERENCES availability (id),
   summary TEXT,
