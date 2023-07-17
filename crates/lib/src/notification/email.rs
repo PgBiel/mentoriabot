@@ -90,7 +90,6 @@ impl GmailManager {
     pub async fn send_emails_for_session(
         &self,
         teacher: &Teacher,
-        teacher_user: &User,
         user: &User,
         session: &Session,
     ) -> Result<()> {
@@ -116,7 +115,7 @@ impl GmailManager {
             "Mentoria Marcada",
             &format!(
                 "Sua mentoria com o mentor {} foi agendada para {} às {}!",
-                teacher_user.name, start_at_dm, start_at_hm
+                teacher.name, start_at_dm, start_at_hm
             ),
         )
         .await

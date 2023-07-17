@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
     error::{Error, Result},
-    model::{DiscordId, NewUser, PartialUser, Session, Teacher, User},
+    model::{DiscordId, NewUser, PartialUser, Session, User},
 };
 
 /// Manages User instances.
@@ -47,13 +47,6 @@ impl UserRepository {
             .execute(&mut self.lock_connection().await?)
             .await
             .map_err(From::from)
-    }
-
-    /// Searches for a Teacher's User instance.
-    pub async fn find_by_teacher(&self, teacher: &Teacher) -> Result<User> {
-        self.get(teacher.user_id)
-            .await?
-            .ok_or_else(|| Error::Other("Could not find User for a certain teacher!"))
     }
 
     /// Gets a Session's student User.

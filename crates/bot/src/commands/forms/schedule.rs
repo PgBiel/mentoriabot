@@ -12,7 +12,7 @@ use crate::{
     },
     lib::{
         error::Error,
-        model::{Availability, Teacher, User, Weekday},
+        model::{Availability, Teacher, Weekday},
         util::{
             self,
             time::{brazil_now, hour_minute_display},
@@ -61,7 +61,6 @@ pub(crate) struct SelectTimeComponent;
 ), ephemeral)]
 pub(crate) struct SelectMentorComponent {
     pub(crate) selected_availability: Availability,
-    pub(crate) selected_mentor_user: User,
     pub(crate) selected_mentor: Teacher,
 }
 
@@ -70,7 +69,7 @@ pub(crate) struct SelectMentorComponent {
 pub(crate) struct ScheduleFormData {
     form_start_datetime: Option<chrono::DateTime<chrono::FixedOffset>>,
     availabilities: Vec<Availability>,
-    teacher_tuples: Vec<(Teacher, User, Availability)>,
+    teacher_tuples: Vec<(Teacher, Availability)>,
 }
 
 // impls
@@ -382,15 +381,15 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
             return Err(FormError::InvalidUserResponse.into());
         }
 
-        teachers.sort_by_cached_key(|(_, user, avail)| (avail.time_start, user.name.clone()));
+        teachers.sort_by_cached_key(|(teacher, avail)| (avail.time_start, teacher.name.clone()));
 
         let custom_id = CustomId::generate();
         let select_menu = SelectMenuSpec {
             custom_id: custom_id.clone(),
             options: teachers
                 .iter()
-                .map(|(teacher, user, avail)| SelectMenuOptionSpec {
-                    label: user.name.clone(),
+                .map(|(teacher, avail)| SelectMenuOptionSpec {
+                    label: teacher.name.clone(),
                     value_key: SelectValue::from(avail.id.to_string()),
                     description: Some(teacher.specialty.to_string()),
                     ..Default::default()
@@ -420,7 +419,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
     ) -> ContextualResult<Option<Box<Self>>> {
         let teacher_tuples = std::mem::take(&mut data.teacher_tuples);
 
-        let (teacher, user, availability) = interaction
+        let (teacher, availability) = interaction
             .data
             .values
             .first()
@@ -428,13 +427,12 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
             .and_then(|avail_id| {
                 teacher_tuples
                     .into_iter()
-                    .find(|(_, _, avail)| avail.id == avail_id)
+                    .find(|(_, avail)| avail.id == avail_id)
             })
             .ok_or(FormError::InvalidUserResponse)?;
 
         Ok(Some(Box::new(Self {
             selected_availability: availability,
-            selected_mentor_user: user,
             selected_mentor: teacher,
         })))
     }

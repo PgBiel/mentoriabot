@@ -56,7 +56,6 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     let SelectMentorComponent {
         selected_availability,
         selected_mentor,
-        selected_mentor_user,
     } = form.select_mentor;
 
     let Availability {
@@ -86,7 +85,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     );
     let end_at = start_at + chrono::Duration::hours(duration as i64);
     let session = NewSession {
-        teacher_id: selected_mentor.user_id,
+        teacher_id: selected_mentor.id,
         student_id: ctx.author().id.into(),
         availability_id: selected_availability.id,
         summary: None,
@@ -125,7 +124,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .data
         .google
         .email
-        .send_emails_for_session(&selected_mentor, &selected_mentor_user, &student, &session)
+        .send_emails_for_session(&selected_mentor, &student, &session)
         .await
     {
         tracing::warn!("Couldn't send scheduling email: {err:?}");
@@ -139,7 +138,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
             response,
             ctx = ctx,
             time = util::time::hour_minute_display(selected_availability.time_start),
-            mentor = selected_mentor_user.name
+            mentor = selected_mentor.name
         ))
     })
     .await?;

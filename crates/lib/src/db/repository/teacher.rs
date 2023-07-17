@@ -11,7 +11,7 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{Availability, DiscordId, NewTeacher, PartialTeacher, Session, Teacher, User},
+    model::{Availability, NewTeacher, PartialTeacher, Session, Teacher},
 };
 
 /// Manages Teacher instances.
@@ -29,17 +29,8 @@ impl TeacherRepository {
         }
     }
 
-    /// Gets a Teacher from the database by their Discord ID,
-    /// or inserts them instead.
-    pub async fn get_or_insert(&self, teacher: &NewTeacher) -> Result<Teacher> {
-        if let Some(found_teacher) = self.get(teacher.user_id).await? {
-            Ok(found_teacher)
-        } else {
-            self.insert(teacher).await
-        }
-    }
-
-    /// Attempts to insert a Teacher; does nothing if such a Teacher is already registered.
+    /// Attempts to insert a Teacher; does nothing if such a Teacher (with the same e-mail
+    /// or something) is already registered.
     /// Returns the inserted row count (1 if a new Teacher was inserted or 0 otherwise).
     pub async fn insert_if_not_exists(&self, teacher: &NewTeacher) -> Result<usize> {
         diesel::insert_into(teachers::table)
@@ -55,18 +46,12 @@ impl TeacherRepository {
         self.get(session.teacher_id).await
     }
 
-    /// Gets a User's associated Teacher instance.
-    pub async fn find_by_user(&self, user: &User) -> Result<Option<Teacher>> {
-        self.get(user.discord_id).await
-    }
-
     /// Gets all teachers linked to certain availabilities.
     pub async fn find_by_availabilities(
         &self,
         availabilities: &[Availability],
-    ) -> Result<Vec<(Teacher, User, Availability)>> {
+    ) -> Result<Vec<(Teacher, Availability)>> {
         teachers::table
-            .inner_join(schema::users::table)
             .inner_join(schema::availability::table)
             .filter(
                 schema::availability::id.eq_any(
@@ -77,7 +62,7 @@ impl TeacherRepository {
                 ),
             )
             .filter(
-                teachers::user_id.eq_any(
+                teachers::id.eq_any(
                     availabilities
                         .iter()
                         .map(|avail| avail.teacher_id)
@@ -98,7 +83,7 @@ impl Repository for TeacherRepository {
 
     type NewEntity = NewTeacher;
 
-    type PrimaryKey = DiscordId;
+    type PrimaryKey = i64;
 
     const TABLE: Self::Table = teachers::table;
 
@@ -107,8 +92,8 @@ impl Repository for TeacherRepository {
     }
 
     /// Gets a Teacher by their Discord ID.
-    async fn get(&self, user_id: DiscordId) -> Result<Option<Teacher>> {
-        repo_get!(self, teachers::table; user_id)
+    async fn get(&self, id: i64) -> Result<Option<Teacher>> {
+        repo_get!(self, teachers::table; id)
     }
 
     async fn insert(&self, teacher: &NewTeacher) -> Result<Teacher> {
@@ -129,7 +114,7 @@ impl UpdatableRepository for TeacherRepository {
     type PartialEntity = PartialTeacher;
 
     async fn upsert(&self, teacher: &NewTeacher) -> Result<Teacher> {
-        repo_upsert!(self, teachers::table; /*conflict_columns=*/teachers::user_id; teacher)
+        repo_upsert!(self, teachers::table; /*conflict_columns=*/teachers::id; teacher)
     }
 
     async fn update(&self, old_teacher: &Teacher, new_teacher: PartialTeacher) -> Result<Teacher> {
@@ -139,41 +124,41 @@ impl UpdatableRepository for TeacherRepository {
 
 #[cfg(test)]
 mod tests {
+    use chrono::TimeZone;
+
     use super::super::tests::init_db;
     use crate::{
         db::{Repository, UpdatableRepository},
         error::Result,
-        model::{DiscordId, NewTeacher, NewUser},
+        model::NewTeacher,
     };
 
     #[tokio::test]
     async fn test_teacher_get_insert_find_remove() -> Result<()> {
         let db = init_db();
-        let user_repo = db.user_repository();
         let teacher_repo = db.teacher_repository();
 
-        let id = DiscordId(11);
-        let new_user = NewUser {
-            discord_id: id,
-            name: "The Teacher".to_string(),
-            email: "aaa@bbb.com".to_string(),
-            bio: Some("The best teacher.".to_string()),
-        };
         let new_teacher = NewTeacher {
-            user_id: id,
+            name: "John Doe".to_string(),
             email: "aaa@bbb.com".to_string(),
             specialty: "Math".to_string(),
+            applied_at: None,
             company: Some("Mozilla Inc.".to_string()),
             company_role: Some("CTO".to_string()),
+            bio: Some("I am a teacher".to_string()),
+            whatsapp: Some("(10) 12345-6789".to_string()),
+            linkedin: Some("https://linkedin.com/????????".to_string()),
         };
 
-        user_repo.get_or_insert(&new_user).await?;
+        let inserted_teacher = teacher_repo.insert(&new_teacher).await?;
 
-        assert_eq!(None, teacher_repo.get(id).await?);
-        assert_eq!(new_teacher, teacher_repo.insert(&new_teacher).await?);
-        assert_eq!(Some(&new_teacher), teacher_repo.get(id).await?.as_ref());
+        assert_eq!(new_teacher, inserted_teacher.clone().into());
         assert_eq!(
-            vec![&new_teacher],
+            Some(&inserted_teacher),
+            teacher_repo.get(inserted_teacher.id).await?.as_ref()
+        );
+        assert_eq!(
+            vec![&inserted_teacher],
             teacher_repo
                 .find_all()
                 .await
@@ -181,31 +166,31 @@ mod tests {
                 .iter()
                 .collect::<Vec<_>>()
         );
-        assert_eq!(1, teacher_repo.remove(&new_teacher).await?);
-        assert_eq!(None, teacher_repo.get(id).await?.as_ref());
+        assert_eq!(1, teacher_repo.remove(&inserted_teacher).await?);
+        assert_eq!(None, teacher_repo.get(inserted_teacher.id).await?.as_ref());
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_user_upsert_update() -> Result<()> {
+    async fn test_teacher_update() -> Result<()> {
         let db = init_db();
-        let user_repo = db.user_repository();
         let teacher_repo = db.teacher_repository();
 
-        let id = DiscordId(12);
-        let new_user = NewUser {
-            discord_id: id,
-            name: "John Rust".to_string(),
-            email: "john.rust@gmail.com".to_string(),
-            bio: Some("I know Rust.".to_string()),
-        };
         let new_teacher = NewTeacher {
-            user_id: id,
+            name: "John Rust".to_string(),
             email: "rustacean@mozilla.org".to_string(),
             specialty: "Rust".to_string(),
+            applied_at: Some(
+                chrono::Utc
+                    .with_ymd_and_hms(2000, 10, 1, 12, 13, 14)
+                    .unwrap(),
+            ),
             company: Some("Mozilla Inc.".to_string()),
             company_role: Some("Programmer".to_string()),
+            bio: Some("I like Rust.".to_string()),
+            whatsapp: Some("(13) 12345-6778".to_string()),
+            linkedin: Some("https://linkedin.com/amongus".to_string()),
         };
         let other_teacher = NewTeacher {
             company: None,
@@ -216,23 +201,30 @@ mod tests {
             ..other_teacher.clone()
         };
 
-        user_repo.upsert(&new_user).await?;
+        let inserted_new_teacher = teacher_repo.upsert(&new_teacher).await?;
+        let inserted_other_teacher = teacher_repo.upsert(&other_teacher).await?;
 
-        assert_eq!(new_teacher, teacher_repo.upsert(&new_teacher).await?);
-        assert_eq!(other_teacher, teacher_repo.upsert(&other_teacher).await?);
+        assert_eq!(new_teacher, inserted_new_teacher.clone().into());
+        assert_eq!(other_teacher, inserted_other_teacher.clone().into());
         assert_eq!(
-            Some(&other_teacher),
-            teacher_repo.get(new_teacher.user_id).await?.as_ref()
+            Some(&inserted_other_teacher),
+            teacher_repo.get(inserted_new_teacher.id).await?.as_ref()
         );
         assert_eq!(
             third_teacher,
             teacher_repo
-                .update(&other_teacher, third_teacher.clone().into())
+                .update(&inserted_other_teacher, third_teacher.clone().into())
                 .await?
+                .into()
         );
         assert_eq!(
-            Some(&third_teacher),
-            teacher_repo.get(new_teacher.user_id).await?.as_ref()
+            Some(third_teacher),
+            teacher_repo
+                .get(inserted_new_teacher.id)
+                .await?
+                .as_ref()
+                .map(Clone::clone)
+                .map(|teacher| teacher.into())
         );
 
         Ok(())

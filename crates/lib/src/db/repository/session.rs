@@ -11,7 +11,7 @@ use super::{
 };
 use crate::{
     error::Result,
-    model::{DiscordId, NewSession, PartialSession, Session, Teacher, User},
+    model::{NewSession, PartialSession, Session, Teacher, User},
 };
 
 /// Manages Session instances.
@@ -58,7 +58,7 @@ impl SessionRepository {
 
     /// Searches for Sessions by a particular teacher (with a particular Discord ID),
     /// in ascending 'start_at' order (starting earlier first).
-    pub async fn find_by_teacher(&self, teacher_id: DiscordId) -> Result<Vec<Session>> {
+    pub async fn find_by_teacher(&self, teacher_id: i64) -> Result<Vec<Session>> {
         repo_find_by!(
             self, sessions::table;
             sessions::teacher_id.eq(teacher_id);

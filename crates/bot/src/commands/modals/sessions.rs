@@ -21,6 +21,12 @@ pub struct SessionCreateModal {
     #[min_length = 5]
     #[max_length = 25]
     pub starts_at: String,
+
+    #[name = "Teacher ID"]
+    #[placeholder = "1234"]
+    #[min_length = 1]
+    #[max_length = 64]
+    pub teacher_id: String,
 }
 
 /// Same as [`SessionCreateModal`], but in portuguese.
@@ -38,6 +44,12 @@ pub struct SessionCreatePortugueseModal {
     #[min_length = 5]
     #[max_length = 25]
     pub starts_at: String,
+
+    #[name = "ID do Mentor"]
+    #[placeholder = "1234"]
+    #[min_length = 1]
+    #[max_length = 64]
+    pub teacher_id: String,
 }
 
 /// Groups together the two modals.
@@ -88,5 +100,16 @@ impl SessionCreateModals {
             .parse::<HumanParseableDateTime>()
             .ok()
             .map(Into::into)
+    }
+
+    /// Returns the teacher ID given to this modal response,
+    /// attempting to parse it.
+    pub fn teacher_id(&self) -> Option<i64> {
+        let id_string = match self {
+            Self::Regular(SessionCreateModal { teacher_id, .. }) => teacher_id,
+            Self::Portuguese(SessionCreatePortugueseModal { teacher_id, .. }) => teacher_id,
+        };
+
+        id_string.parse::<u32>().ok().map(Into::into)
     }
 }

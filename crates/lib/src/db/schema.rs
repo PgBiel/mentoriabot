@@ -3,7 +3,7 @@
 diesel::table! {
     availability (id) {
         id -> Int8,
-        teacher_id -> Varchar,
+        teacher_id -> Int8,
         weekday -> Int2,
         time_start -> Time,
         expired -> Bool,
@@ -14,7 +14,7 @@ diesel::table! {
 diesel::table! {
     sessions (id) {
         id -> Int8,
-        teacher_id -> Varchar,
+        teacher_id -> Int8,
         student_id -> Varchar,
         availability_id -> Int8,
         summary -> Nullable<Text>,
@@ -26,12 +26,17 @@ diesel::table! {
 }
 
 diesel::table! {
-    teachers (user_id) {
-        user_id -> Varchar,
+    teachers (id) {
+        id -> Int8,
+        name -> Varchar,
         email -> Varchar,
         specialty -> Varchar,
+        applied_at -> Nullable<Timestamptz>,
+        bio -> Nullable<Varchar>,
         company -> Nullable<Varchar>,
         company_role -> Nullable<Varchar>,
+        whatsapp -> Nullable<Varchar>,
+        linkedin -> Nullable<Varchar>,
     }
 }
 
@@ -48,6 +53,5 @@ diesel::joinable!(availability -> teachers (teacher_id));
 diesel::joinable!(sessions -> availability (availability_id));
 diesel::joinable!(sessions -> teachers (teacher_id));
 diesel::joinable!(sessions -> users (student_id));
-diesel::joinable!(teachers -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(availability, sessions, teachers, users,);

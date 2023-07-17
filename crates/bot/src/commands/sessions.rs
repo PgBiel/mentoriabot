@@ -8,7 +8,7 @@ use crate::{
     lib::{
         db::Repository,
         error::{Error, Result},
-        model::{NewSession, Session, User},
+        model::{NewSession, Session},
         util::{self, tr, BRAZIL_TIMEZONE},
     },
 };
@@ -80,6 +80,14 @@ async fn create(
         return Ok(());
     }
 
+    let Some(teacher_id) = modal.teacher_id() else {
+        ctx.send(|b| {
+            b.content("Teacher ID must be a valid positive integer.")
+                .ephemeral(true)
+        }).await?;
+        return Ok(());
+    };
+
     let summary = modal.summary().clone();
     let end_at = start_at.add(chrono::Duration::hours(hours));
 
@@ -111,7 +119,7 @@ async fn create(
         .insert(&NewSession {
             summary: Some(summary),
             availability_id: 1, // TODO
-            teacher_id: author_id,
+            teacher_id,
             student_id: author_id,
             notified: false,
             meet_id: None,
@@ -169,16 +177,12 @@ pub async fn get(
         let Session {
             id,
             summary,
-            teacher_id,
             start_at,
             end_at,
             ..
         } = session;
 
-        let User {
-            name: teacher_name, ..
-        } = db.user_repository().find_by_teacher(&teacher).await?;
-        let teacher_mention = teacher_id.as_user_mention();
+        let teacher_name = teacher.name;
 
         let summary = summary
             .map(|s| format!("\"{}\"", s))
@@ -192,11 +196,7 @@ pub async fn get(
                     let duration =
                         util::locale::convert_chrono_duration_to_brazilian_string(duration);
                     f.title(format!("Sessão #{}", id))
-                        .field(
-                            "Mentor",
-                            format!("{teacher_name} ({teacher_mention})"),
-                            true,
-                        )
+                        .field("Mentor", format!("{teacher_name}"), true)
                         .field("Começa em", start_at.to_string(), false)
                         .field("Duração", duration, true)
                         .description(summary)
@@ -204,11 +204,7 @@ pub async fn get(
                 } else {
                     let duration = util::locale::convert_chrono_duration_to_string(duration);
                     f.title(format!("Session #{}", id))
-                        .field(
-                            "Mentor",
-                            format!("{teacher_name} ({teacher_mention})"),
-                            true,
-                        )
+                        .field("Mentor", format!("{teacher_name}"), true)
                         .field("Starts at", start_at.to_string(), false)
                         .field("Duration", duration, true)
                         .description(summary)

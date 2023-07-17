@@ -1,6 +1,5 @@
 use diesel::{AsChangeset, Associations, Identifiable, Insertable, Queryable, QueryableByName};
 
-use super::DiscordId;
 use crate::{db::schema::*, model::Weekday};
 
 /// Represents a certain time of the week when a Teacher can initiate a Session
@@ -21,7 +20,7 @@ use crate::{db::schema::*, model::Weekday};
 #[diesel(table_name = availability)]
 pub struct Availability {
     pub id: i64,
-    pub teacher_id: DiscordId,
+    pub teacher_id: i64,
     pub weekday: Weekday,
     pub time_start: chrono::NaiveTime,
     pub expired: bool,
@@ -31,7 +30,7 @@ pub struct Availability {
 #[derive(Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
 #[diesel(table_name = availability, treat_none_as_null = true)]
 pub struct NewAvailability {
-    pub teacher_id: DiscordId,
+    pub teacher_id: i64,
     pub weekday: Weekday,
     pub time_start: chrono::NaiveTime,
     pub expired: bool,
@@ -43,7 +42,7 @@ pub struct NewAvailability {
 #[diesel(table_name = availability)]
 pub struct PartialAvailability {
     pub id: Option<i64>,
-    pub teacher_id: Option<DiscordId>,
+    pub teacher_id: Option<i64>,
     pub weekday: Option<Weekday>,
     pub time_start: Option<chrono::NaiveTime>,
     pub expired: Option<bool>,

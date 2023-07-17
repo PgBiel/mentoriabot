@@ -7,10 +7,10 @@ use crate::db::schema::*;
 #[derive(
     Queryable, Identifiable, Insertable, AsChangeset, Associations, Debug, Clone, PartialEq, Eq,
 )]
-#[diesel(belongs_to(super::User, foreign_key = teacher_id))]
+#[diesel(belongs_to(super::User, foreign_key = student_id))]
 pub struct Session {
     pub id: i64,
-    pub teacher_id: DiscordId,
+    pub teacher_id: i64,
     pub student_id: DiscordId,
     pub availability_id: i64,
     pub summary: Option<String>,
@@ -24,7 +24,7 @@ pub struct Session {
 #[derive(Insertable, AsChangeset, Debug, Clone, PartialEq, Eq)]
 #[diesel(table_name = sessions, treat_none_as_null = true)]
 pub struct NewSession {
-    pub teacher_id: DiscordId,
+    pub teacher_id: i64,
     pub student_id: DiscordId,
     pub availability_id: i64,
     pub summary: Option<String>,
@@ -38,7 +38,7 @@ pub struct NewSession {
 #[diesel(table_name = sessions)]
 pub struct PartialSession {
     pub id: Option<i64>,
-    pub teacher_id: Option<DiscordId>,
+    pub teacher_id: Option<i64>,
     pub student_id: Option<DiscordId>,
     pub availability_id: Option<i64>,
     pub summary: Option<Option<String>>,
