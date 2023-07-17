@@ -196,7 +196,7 @@ pub async fn get(
                     let duration =
                         util::locale::convert_chrono_duration_to_brazilian_string(duration);
                     f.title(format!("Sessão #{}", id))
-                        .field("Mentor", format!("{teacher_name}"), true)
+                        .field("Mentor", teacher_name.to_string(), true)
                         .field("Começa em", start_at.to_string(), false)
                         .field("Duração", duration, true)
                         .description(summary)
@@ -204,7 +204,7 @@ pub async fn get(
                 } else {
                     let duration = util::locale::convert_chrono_duration_to_string(duration);
                     f.title(format!("Session #{}", id))
-                        .field("Mentor", format!("{teacher_name}"), true)
+                        .field("Mentor", teacher_name.to_string(), true)
                         .field("Starts at", start_at.to_string(), false)
                         .field("Duration", duration, true)
                         .description(summary)
