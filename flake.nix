@@ -20,7 +20,7 @@
       systems = [
         "x86_64-linux"
       ];
-      perSystem = { pkgs, system, ... }:
+      perSystem = { self', pkgs, system, ... }:
         let
           inherit (pkgs) lib;
           inherit (lib) importTOML;
@@ -31,9 +31,10 @@
             rustc = toolchain;
             cargo = toolchain;
           };
+          pname = "mentoriabot";
         in {
           packages.default = rustPlatform.buildRustPackage {
-            pname = "mentoriabot";
+            inherit pname;
             version = Cargo-toml.workspace.package.version;
 
             # these seem to be required
@@ -51,6 +52,13 @@
               license = licenses.mit;
               maintainers = [];
             };
+          };
+
+          # "nix run" should run the binary in the default package
+          # (aka start the bot!)
+          apps.default = {
+            type = "app";
+            program = "${self'.packages.default}/bin/${pname}";
           };
 
           formatter = pkgs.nixpkgs-fmt;
