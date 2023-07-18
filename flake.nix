@@ -25,11 +25,17 @@
           inherit (pkgs) lib;
           inherit (lib) importTOML;
           Cargo-toml = importTOML ./Cargo.toml;
-          toolchain = (fenix.packages.${system}.fromManifestFile rust-manifest)
-            .minimalToolchain;
+          manifestToolchain = fenix.packages.${system}.fromManifestFile rust-manifest;
+          minToolchain = manifestToolchain.minimalToolchain;
+          devToolchain = manifestToolchain.withComponents [
+            "rustc"
+            "cargo"
+            "clippy"
+            "rustfmt"
+          ];
           rustPlatform = pkgs.makeRustPlatform {
-            rustc = toolchain;
-            cargo = toolchain;
+            rustc = minToolchain;
+            cargo = minToolchain;
           };
           pname = "mentoriabot";
         in {
@@ -59,6 +65,15 @@
           apps.default = {
             type = "app";
             program = "${self'.packages.default}/bin/${pname}";
+          };
+
+          devShells.default = pkgs.mkShell {
+            packages = [
+              devToolchain  # allow compiling, linting etc.
+            ];
+
+            buildInputs = with pkgs; [ openssl ];
+            nativeBuildInputs = with pkgs; [ pkg-config ];
           };
 
           formatter = pkgs.nixpkgs-fmt;
