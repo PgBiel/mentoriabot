@@ -47,7 +47,7 @@ impl DiscordId {
     /// # Examples
     ///
     /// ```
-    /// # use crate::model::DiscordId;
+    /// # use mentoriabot_lib::model::DiscordId;
     /// let id = DiscordId(1234567u64);
     ///
     /// let mention = id.as_user_mention();

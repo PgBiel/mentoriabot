@@ -49,24 +49,24 @@ impl FromStr for HumanParseableDateTime {
     /// # Examples
     ///
     /// ```
-    /// # use crate::util::HumanParseableDateTime;
-    /// # use chrono::TimeZone;
+    /// # use mentoriabot_lib::util::HumanParseableDateTime;
+    /// # use chrono::{Datelike, TimeZone};
     /// // UTC-3 (base for parsing)
-    /// let timezone = chrono::FixedOffset::west_opt(3 * HOUR).unwrap();
+    /// let timezone = chrono::FixedOffset::west_opt(3 * 3600).unwrap();
     /// let today = chrono::Utc::now().with_timezone(&timezone);
-    /// let expected_date1 = today
+    /// let expected_date1 = timezone
     ///     .with_ymd_and_hms(2023, 3, 19, 11, 29, 30)
     ///     .single()
     ///     .unwrap();
-    /// let expected_date2 = today
+    /// let expected_date2 = timezone
     ///     .with_ymd_and_hms(2023, 3, 19, 11, 29, 0)
     ///     .single()
     ///     .unwrap();
-    /// let expected_date3 = today
+    /// let expected_date3 = timezone
     ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 11, 29, 30)
     ///     .single()
     ///     .unwrap();
-    /// let expected_date4 = today
+    /// let expected_date4 = timezone
     ///     .with_ymd_and_hms(today.year(), today.month(), today.day(), 11, 29, 0)
     ///     .single()
     ///     .unwrap();

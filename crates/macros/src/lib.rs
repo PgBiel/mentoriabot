@@ -32,7 +32,7 @@ use proc_macro::TokenStream;
 ///
 /// Usage:
 ///
-/// ```
+/// ```ignore
 /// use mentoriabot_macros::InteractionForm;
 ///
 /// #[derive(InteractionForm)]
