@@ -78,6 +78,14 @@ pub enum Error {
     /// [lettre `Error`]: lettre::error::Error
     Lettre(lettre::error::Error),
 
+    /// Holds a [csv `Error`].
+    ///
+    /// [csv `Error`]: csv::Error
+    Csv(csv::Error),
+
+    /// Holds one or more validation errors.
+    Validations(validator::ValidationErrors),
+
     #[allow(dead_code)]
     Generic(Box<dyn std::error::Error + Send + Sync>),
 
@@ -92,7 +100,7 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-macro_rules! impl_from_error {
+macro_rules! impl_from_error_private {
     ($err:ty => $variant:ident) => {
         impl From<$err> for Error {
             fn from(err: $err) -> Self {
@@ -102,19 +110,29 @@ macro_rules! impl_from_error {
     };
 }
 
-impl_from_error!(forms::FormError => Form);
-impl_from_error!(strum::ParseError => EnumParse);
-impl_from_error!(serenity::Error => Serenity);
-impl_from_error!(diesel::result::Error => Diesel);
-impl_from_error!(diesel::result::ConnectionError => DieselConnection);
-impl_from_error!(deadpool::BuildError => DeadpoolBuild);
-impl_from_error!(deadpool::PoolError => DeadpoolPool);
-impl_from_error!(google_calendar3::Error => Calendar);
-impl_from_error!(std::io::Error => Io);
-impl_from_error!(google_apis_common::oauth2::Error => Auth);
-impl_from_error!(lettre::address::AddressError => LettreAddress);
-impl_from_error!(lettre::error::Error => Lettre);
-impl_from_error!(String => String);
+macro_rules! impl_from_error {
+    ($($err:ty => $variant:ident;)*) => {
+        $(impl_from_error_private!($err => $variant);)*
+    }
+}
+
+impl_from_error!(
+    forms::FormError => Form;
+    strum::ParseError => EnumParse;
+    serenity::Error => Serenity;
+    diesel::result::Error => Diesel;
+    diesel::result::ConnectionError => DieselConnection;
+    deadpool::BuildError => DeadpoolBuild;
+    deadpool::PoolError => DeadpoolPool;
+    google_calendar3::Error => Calendar;
+    std::io::Error => Io;
+    google_apis_common::oauth2::Error => Auth;
+    lettre::address::AddressError => LettreAddress;
+    lettre::error::Error => Lettre;
+    csv::Error => Csv;
+    validator::ValidationErrors => Validations;
+    String => String;
+);
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -131,6 +149,8 @@ impl Display for Error {
             Self::Auth(inner) => Display::fmt(&inner, f),
             Self::LettreAddress(inner) => Display::fmt(&inner, f),
             Self::Lettre(inner) => Display::fmt(&inner, f),
+            Self::Csv(inner) => Display::fmt(&inner, f),
+            Self::Validations(inner) => Display::fmt(&inner, f),
             Self::DateTimeParse => write!(f, "Failed to parse the given date expression"),
             Self::CommandCheck(message) => write!(f, "{}", message),
             Self::Generic(inner) => Display::fmt(&inner, f),
@@ -151,6 +171,8 @@ impl std::error::Error for Error {
             Self::DeadpoolBuild(inner) => Some(inner),
             Self::DeadpoolPool(inner) => Some(inner),
             Self::Calendar(inner) => Some(inner),
+            Self::Csv(inner) => Some(inner),
+            Self::Validations(inner) => Some(inner),
             Self::Io(inner) => Some(inner),
             Self::Auth(inner) => Some(inner),
             Self::Generic(inner) => Some(&**inner),
