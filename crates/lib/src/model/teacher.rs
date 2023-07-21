@@ -14,9 +14,9 @@ pub struct Teacher {
     pub email: String,
     pub specialty: String,
     pub applied_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub bio: Option<String>,
     pub company: Option<String>,
     pub company_role: Option<String>,
-    pub bio: Option<String>,
     pub whatsapp: Option<String>,
     pub linkedin: Option<String>,
 }
@@ -29,9 +29,9 @@ pub struct NewTeacher {
     pub email: String,
     pub specialty: String,
     pub applied_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub bio: Option<String>,
     pub company: Option<String>,
     pub company_role: Option<String>,
-    pub bio: Option<String>,
     pub whatsapp: Option<String>,
     pub linkedin: Option<String>,
 }
@@ -45,9 +45,9 @@ pub struct PartialTeacher {
     pub email: Option<String>,
     pub specialty: Option<String>,
     pub applied_at: Option<Option<chrono::DateTime<chrono::Utc>>>,
+    pub bio: Option<Option<String>>,
     pub company: Option<Option<String>>,
     pub company_role: Option<Option<String>>,
-    pub bio: Option<Option<String>>,
     pub whatsapp: Option<Option<String>>,
     pub linkedin: Option<Option<String>>,
 }

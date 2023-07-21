@@ -194,10 +194,12 @@ mod tests {
         };
         let other_teacher = NewTeacher {
             company: None,
+            email: "other@mozilla.org".to_string(),
             ..new_teacher.clone()
         };
         let third_teacher = NewTeacher {
             specialty: "Swift".to_string(),
+            email: "third@hotmail.com".to_string(),
             ..other_teacher.clone()
         };
 
@@ -207,13 +209,13 @@ mod tests {
         assert_eq!(new_teacher, inserted_new_teacher.clone().into());
         assert_eq!(other_teacher, inserted_other_teacher.clone().into());
         assert_eq!(
-            Some(&inserted_other_teacher),
+            Some(&inserted_new_teacher),
             teacher_repo.get(inserted_new_teacher.id).await?.as_ref()
         );
         assert_eq!(
             third_teacher,
             teacher_repo
-                .update(&inserted_other_teacher, third_teacher.clone().into())
+                .update(&inserted_new_teacher, third_teacher.clone().into())
                 .await?
                 .into()
         );
