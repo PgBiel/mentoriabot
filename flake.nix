@@ -14,9 +14,16 @@
       url = "https://static.rust-lang.org/dist/2023-06-01/channel-rust-1.70.0.toml";
       flake = false;
     };
+
+    # for completion
+    flake-compat = {
+      url = "github:inclyc/flake-compat";
+      flake = false;
+    };
   };
   outputs = inputs@{ flake-parts, fenix, rust-manifest, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
+      debug = true;
       systems = [
         "x86_64-linux"
       ];
@@ -50,7 +57,7 @@
             src = ./.;
 
             # replace with 'lib.fakeHash' to get the new hash
-            cargoHash = "sha256-VluDBd2axnUpkfcMFXFt7jdUWEk73dxvo4YMH80M9fA=";
+            cargoHash = "sha256-k4RiGgTl8ZKeiphockgUbPQdPblNnaTIRtYvuyrcBG0=";
 
             meta = with lib; {
               description = "Mentoria bot";
