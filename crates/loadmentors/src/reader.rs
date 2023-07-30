@@ -2,6 +2,7 @@
 mod row;
 
 use csv::Result as CsvResult;
+use mentoriabot_lib::model::PartialAvailability;
 
 use self::row::TeacherRow;
 use crate::exports::lib::{error::Error, model::NewTeacher};
@@ -13,9 +14,11 @@ pub(crate) type ReaderResult<T> = std::result::Result<Vec<T>, Vec<(usize, Error)
 
 /// Reads a CSV file for teachers.
 /// The outermost Result will error if the CSV failed to parse.
-pub(crate) fn read_teacher_csv(csv_contents: &str) -> CsvResult<ReaderResult<NewTeacher>> {
+pub(crate) fn read_teacher_csv(
+    csv_contents: &str,
+) -> CsvResult<ReaderResult<(NewTeacher, Vec<PartialAvailability>)>> {
     let rows = TeacherRow::from_csv(csv_contents);
-    let mut res_vec: Vec<NewTeacher> = Vec::new();
+    let mut res_vec: Vec<(NewTeacher, Vec<PartialAvailability>)> = Vec::new();
     res_vec.reserve(rows.len());
     let mut errs_vec = Vec::new();
 
@@ -25,8 +28,8 @@ pub(crate) fn read_teacher_csv(csv_contents: &str) -> CsvResult<ReaderResult<New
             // only consider a valid row if there are no errors already,
             // since we only return valid rows if no errors occurred.
             Ok(row) if !errs_vec.is_empty() => {
-                match row.try_into() {
-                    Ok(teacher) => res_vec.push(teacher),
+                match row.try_parse() {
+                    Ok((teacher, availabilities)) => res_vec.push((teacher, availabilities)),
 
                     // error line is i + 1 as we are skipping the header line
                     Err(conversion_err) => errs_vec.push((i + 1, conversion_err)),
