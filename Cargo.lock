@@ -1164,6 +1164,7 @@ dependencies = [
 name = "mentoriabot_loadmentors"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "csv",
  "lazy_static",
  "mentoriabot_lib",
