@@ -207,6 +207,186 @@ mod test {
 
     #[test]
     fn test_wrap_string_based_on_emptiness_wraps_non_empty_string_in_some() {
-        assert_eq!(wrap_string_option_based_on_emptiness("abc".into()), Some("abc".into()));
+        assert_eq!(
+            wrap_string_option_based_on_emptiness("abc".into()),
+            Some("abc".into())
+        );
+    }
+
+    #[test]
+    fn test_row_teacher_parsing_works_correctly() {
+        let row = TeacherRow {
+            form_timestamp: "11/05/2023 18:43:55".into(),
+            email: "email@email.com".into(),
+            name: "José Silva".into(),
+            whatsapp: "(41)912345678".into(),
+            linkedin: "https://linkedin.com/sus".into(),
+            course_info: "Engenharia da Computação, USP".into(),
+            company: "Empadas & Cia.".into(),
+            company_role: "Gerente de Software".into(),
+            bio: "Gosto do meu trabalho".into(),
+            specialty: "Álgebra Linear".into(),
+            availability_monday: "09:00, 10:00".into(),
+            availability_tuesday: "20:00, 21:00".into(),
+            availability_wednesday: "12:00, 13:00".into(),
+            availability_thursday: "".into(),
+            availability_friday: "10:00".into(),
+            availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
+            comment_general: "".into(),
+            comment_experience: "Nada a declarar".into(),
+        };
+
+        let (teacher, _) = row.try_parse().unwrap();
+
+        assert_eq!(
+            teacher,
+            NewTeacher {
+                name: "José Silva".into(),
+                email: "email@email.com".into(),
+                specialty: "Álgebra Linear".into(),
+
+                // 21:43:55 in UTC (18:43:55 in UTC-3)
+                applied_at: Some(
+                    chrono::Utc
+                        .with_ymd_and_hms(2023, 05, 11, 21, 43, 55)
+                        .single()
+                        .unwrap()
+                ),
+                bio: Some("Gosto do meu trabalho".into()),
+                company: Some("Empadas & Cia.".into()),
+                company_role: Some("Gerente de Software".into()),
+                whatsapp: Some("(41)912345678".into()),
+                linkedin: Some("https://linkedin.com/sus".into()),
+            }
+        );
+    }
+
+    #[test]
+    fn test_row_availabilities_parsing_works_correctly() {
+        let row = TeacherRow {
+            form_timestamp: "11/05/2023 18:43:55".into(),
+            email: "email@email.com".into(),
+            name: "José Silva".into(),
+            whatsapp: "(41)912345678".into(),
+            linkedin: "https://linkedin.com/sus".into(),
+            course_info: "Engenharia da Computação, USP".into(),
+            company: "Empadas & Cia.".into(),
+            company_role: "Gerente de Software".into(),
+            bio: "Gosto do meu trabalho".into(),
+            specialty: "Álgebra Linear".into(),
+            availability_monday: "09:00, 10:00".into(),
+            availability_tuesday: "20:00, 21:00".into(),
+            availability_wednesday: "12:00, 13:00".into(),
+            availability_thursday: "".into(),
+            availability_friday: "10:00".into(),
+            availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
+            comment_general: "".into(),
+            comment_experience: "Nada a declarar".into(),
+        };
+
+        let (_, availabilities) = row.try_parse().unwrap();
+
+        let time_hm = |hour, min| chrono::NaiveTime::from_hms_opt(hour, min, 0).unwrap();
+        assert_eq!(
+            availabilities,
+            vec![
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Monday),
+                    time_start: Some(time_hm(9, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Monday),
+                    time_start: Some(time_hm(10, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Tuesday),
+                    time_start: Some(time_hm(20, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Tuesday),
+                    time_start: Some(time_hm(21, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Wednesday),
+                    time_start: Some(time_hm(12, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Wednesday),
+                    time_start: Some(time_hm(13, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Friday),
+                    time_start: Some(time_hm(10, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Saturday),
+                    time_start: Some(time_hm(17, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Saturday),
+                    time_start: Some(time_hm(18, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Saturday),
+                    time_start: Some(time_hm(19, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Saturday),
+                    time_start: Some(time_hm(20, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+                PartialAvailability {
+                    id: None,
+                    teacher_id: None,
+                    weekday: Some(Weekday::Saturday),
+                    time_start: Some(time_hm(21, 0)),
+                    expired: Some(false),
+                    duration: Some(1i16),
+                },
+            ]
+        );
     }
 }
