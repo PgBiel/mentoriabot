@@ -11,7 +11,7 @@ license.workspace = true
 serde = { version = "1.0.152", features = ["derive"] }
 csv = "1.2.2"
 lazy_static = "1.4.0"
-validator = "0.16.1"
+validator = { version = "0.16.1", features = ["derive"] }
 regex = "1"
 chrono = "0.4.24"
 mentoriabot_lib = { path = "../lib" }
