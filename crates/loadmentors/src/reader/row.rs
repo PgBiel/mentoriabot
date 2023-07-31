@@ -30,80 +30,98 @@ pub(crate) struct TeacherRow {
     /// The CSV is extracted from Google Forms.
     /// As such, each row starts with a timestamp.
     #[validate(regex = "TIMESTAMP_REGEX")]
+    #[serde(rename = "Carimbo de data/hora")]
     pub(crate) form_timestamp: String,
 
     /// The teacher's email.
     #[validate(regex = "EMAIL_REGEX")]
     #[validate(length(min = 2, max = 512))]
+    #[serde(rename = "Endereço de e-mail")]
     pub(crate) email: String,
 
     /// The teacher's full name.
     #[validate(length(min = 1, max = 512))]
+    #[serde(rename = "Nome completo")]
     pub(crate) name: String,
 
     /// The teacher's WhatsApp-compatible
     /// phone number.
     #[validate(length(min = 0, max = 512))]
+    #[serde(rename = "Whatsapp")]
     pub(crate) whatsapp: String,
 
     /// The teacher's Linkedin URL.
     #[validate(length(min = 0, max = 512))]
+    #[serde(rename = "Linkedin")]
     pub(crate) linkedin: String,
 
     /// The teacher's academic course
     /// and the educational institution
     /// in which they study.
     #[validate(length(min = 0, max = 512))]
+    #[serde(rename = "Formação acadêmica (curso e instituição)")]
     pub(crate) course_info: String,
 
     /// The company the teacher works in,
     /// if any.
     #[validate(length(min = 0, max = 512))]
+    #[serde(rename = "Empresa/Instituição que trabalha")]
     pub(crate) company: String,
 
     /// The role the teacher has at their
     /// company, if any.
     #[validate(length(min = 1, max = 512))]
+    #[serde(rename = "Cargo/Ocupação atual")]
     pub(crate) company_role: String,
 
     /// The teacher's bio.
     #[validate(length(min = 0, max = 1024))]
+    #[serde(rename = "Mini bio")]
     pub(crate) bio: String,
 
     /// What the teacher is specialized at.
     #[validate(length(min = 0, max = 512))]
+    #[serde(rename = "Quais os conhecimentos/habilidades você pode compartilhar com os mentorados?")]
     pub(crate) specialty: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Seg (21/08)]")]
     #[validate(length(min = 0, 512))]
     pub(crate) availability_monday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Ter (22/08)]")]
     #[validate(length(min = 0, 512))]
     pub(crate) availability_tuesday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qua (23/08)]")]
     #[validate(length(min = 0, 512))]
     pub(crate) availability_wednesday: String,
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qui (24/08)]")]
     #[validate(length(min = 0, 512))]
     pub(crate) availability_thursday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sex (25/08)]")]
     #[validate(length(min = 0, 512))]
     pub(crate) availability_friday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sáb (26/08)]")]
     #[validate(length(min = 0, 512))]
     pub(crate) availability_saturday: String,
 
     /// Any general comments left by the teacher.
     #[validate(length(min = 0, max = 8192))]
+    #[serde(rename = "Gostaria de fazer algum comentário ou sugestão?")]
     pub(crate) comment_general: String,
 
     /// The experience comment left by the teacher,
     /// if any.
     #[validate(length(min = 0, max = 8192))]
+    #[serde(rename = "Qual sua experiência?")]
     pub(crate) comment_experience: String,
 }
 
