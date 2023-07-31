@@ -195,3 +195,18 @@ impl TeacherRow {
 fn wrap_string_option_based_on_emptiness(string: String) -> Option<String> {
     Some(string).filter(|string| !string.is_empty())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_wrap_string_based_on_emptiness_returns_none_for_empty_string() {
+        assert_eq!(wrap_string_option_based_on_emptiness("".into()), None);
+    }
+
+    #[test]
+    fn test_wrap_string_based_on_emptiness_wraps_non_empty_string_in_some() {
+        assert_eq!(wrap_string_option_based_on_emptiness("abc".into()), Some("abc".into()));
+    }
+}
