@@ -25,7 +25,9 @@ lazy_static::lazy_static! {
 }
 
 /// Represents a single row in the teachers CSV.
-#[derive(Debug, Clone, PartialEq, Eq, validator::Validate, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, validator::Validate, serde::Serialize, serde::Deserialize,
+)]
 pub(crate) struct TeacherRow {
     /// The CSV is extracted from Google Forms.
     /// As such, each row starts with a timestamp.
@@ -81,36 +83,39 @@ pub(crate) struct TeacherRow {
 
     /// What the teacher is specialized at.
     #[validate(length(min = 0, max = 512))]
-    #[serde(rename = "Quais os conhecimentos/habilidades você pode compartilhar com os mentorados?")]
+    #[serde(
+        rename = "Quais os conhecimentos/habilidades você pode compartilhar com os mentorados?"
+    )]
     pub(crate) specialty: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Seg (21/08)]")]
     #[validate(length(min = 0, 512))]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Seg (21/08)]")]
     pub(crate) availability_monday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Ter (22/08)]")]
     #[validate(length(min = 0, 512))]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Ter (22/08)]")]
     pub(crate) availability_tuesday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
+    #[validate(length(min = 0, 512))]
     #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qua (23/08)]")]
-    #[validate(length(min = 0, 512))]
     pub(crate) availability_wednesday: String,
+
     #[validate(regex = "AVAILABILITY_REGEX")]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qui (24/08)]")]
     #[validate(length(min = 0, 512))]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qui (24/08)]")]
     pub(crate) availability_thursday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sex (25/08)]")]
     #[validate(length(min = 0, 512))]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sex (25/08)]")]
     pub(crate) availability_friday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sáb (26/08)]")]
     #[validate(length(min = 0, 512))]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sáb (26/08)]")]
     pub(crate) availability_saturday: String,
 
     /// Any general comments left by the teacher.
@@ -225,35 +230,28 @@ mod test {
 
         assert_eq!(
             row.into_iter()
-                .map(|v| v
-                    .unwrap()
-                    .validate()
-                    .unwrap()
-                )
+                .map(|v| v.unwrap().validate().unwrap())
                 .collect::<Vec<_>>(),
-
-            vec![
-                TeacherRow {
-                    form_timestamp: "11/05/2023 18:43:55".into(),
-                    email: "email@email.com".into(),
-                    name: "José Silva".into(),
-                    whatsapp: "(41)912345678".into(),
-                    linkedin: "https://www.linkedin.com/sus".into(),
-                    course_info: "Engenharia da Computação, USP".into(),
-                    company: "Empadas & Cia.".into(),
-                    company_role: "Gerente de Software".into(),
-                    bio: "Gosto do meu trabalho, sim".into(),
-                    specialty: "Álgebra \"Linear\"".into(),
-                    availability_monday: "09:00, 10:00".into(),
-                    availability_tuesday: "20:00, 21:00".into(),
-                    availability_wednesday: "12:00, 13:00".into(),
-                    availability_thursday: "".into(),
-                    availability_friday: "10:00".into(),
-                    availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
-                    comment_general: "".into(),
-                    comment_experience: "Nada a declarar".into(),
-                }
-            ]
+            vec![TeacherRow {
+                form_timestamp: "11/05/2023 18:43:55".into(),
+                email: "email@email.com".into(),
+                name: "José Silva".into(),
+                whatsapp: "(41)912345678".into(),
+                linkedin: "https://www.linkedin.com/sus".into(),
+                course_info: "Engenharia da Computação, USP".into(),
+                company: "Empadas & Cia.".into(),
+                company_role: "Gerente de Software".into(),
+                bio: "Gosto do meu trabalho, sim".into(),
+                specialty: "Álgebra \"Linear\"".into(),
+                availability_monday: "09:00, 10:00".into(),
+                availability_tuesday: "20:00, 21:00".into(),
+                availability_wednesday: "12:00, 13:00".into(),
+                availability_thursday: "".into(),
+                availability_friday: "10:00".into(),
+                availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
+                comment_general: "".into(),
+                comment_experience: "Nada a declarar".into(),
+            }]
         );
     }
 
