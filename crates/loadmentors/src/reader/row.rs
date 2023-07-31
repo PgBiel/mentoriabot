@@ -17,7 +17,7 @@ lazy_static::lazy_static! {
     pub static ref EMAIL_REGEX: regex::Regex = regex::Regex::new("^.+@.+\\..{2,}$").unwrap();
 
     // "09:00, 10:00, 13:00"  /  "11:00"
-    pub static ref AVAILABILITY_REGEX: regex::Regex = regex::Regex::new("^(\\d{1,2}:\\d{1,2}, )*(\\d{1,2}:\\d{1,2})?$").unwrap();
+    pub static ref AVAILABILITY_REGEX: regex::Regex = regex::Regex::new("^(?:\\d{1,2}:\\d{1,2}, )*(?:\\d{1,2}:\\d{1,2})?$").unwrap();
 
     // "11/12/2023 13:34:20"
     pub static ref TIMESTAMP_REGEX: regex::Regex =
@@ -155,25 +155,10 @@ impl TeacherRow {
             // six elements => 0-5 + 1 => 1-6 (within range)
             let weekday = Weekday::try_from(weekday_number).unwrap();
 
-            let matches = AVAILABILITY_REGEX
-                .captures(&availability_text)
-                .ok_or_else(|| Error::Other("could not parse available schedule specification"))?;
-
-            // see the regex for reference
-            // e.g. for "19:00, 20:00, 21:00":
-            // -> first_availabilities is "19:00, 20:00, "
-            // -> second_availabilities is "21:00"
-            let first_availabilities = matches.get(1).unwrap().as_str();
-            let last_availability = matches.get(2).unwrap().as_str();
-
-            let availability_strings = first_availabilities
-                .split(", ")
-                .into_iter()
-                .filter(|s| !s.is_empty()) // last one is empty (due to trailing ", ")
-                .chain([last_availability]);
+            let availability_strings = availability_text.split(", ").into_iter();
 
             let new_availabilities = availability_strings
-                .map(|avail| chrono::NaiveTime::parse_from_str(avail, "%H:%M:%S"))
+                .map(|avail| chrono::NaiveTime::parse_from_str(&format!("{avail}:00"), "%H:%M:%S"))
                 .map(|time| PartialAvailability {
                     id: None,
                     teacher_id: None,
