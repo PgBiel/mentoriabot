@@ -21,7 +21,7 @@ lazy_static::lazy_static! {
 
     // "11/12/2023 13:34:20"
     pub static ref TIMESTAMP_REGEX: regex::Regex =
-        regex::Regex::new("^(\\d{2})/(\\d{2})/(\\d{4}) (\\d{2}):(\\d{2}):(\\d{2})$").unwrap();
+        regex::Regex::new("^(\\d{1,2})/(\\d{1,2})/(\\d{4}) (\\d{2}):(\\d{2}):(\\d{2})$").unwrap();
 }
 
 /// Represents a single row in the teachers CSV.
@@ -224,7 +224,7 @@ mod test {
     #[test]
     fn test_csv_input_generates_a_teacher_row_correctly() {
         let csv_input = r#"Carimbo de data/hora,Endereço de e-mail,Nome e sobrenome,Whatsapp,Linkedin,Formação acadêmica (curso e instituição),Empresa/Instituição que trabalha,Cargo/Ocupação atual,Mini bio,Qual sua experiência?,Quais os conhecimentos/habilidades você pode compartilhar com as pessoas mentoradas?,→ Arraste para o lado para ver todos os horários  [Seg (21/08)],→ Arraste para o lado para ver todos os horários  [Ter (22/08)],→ Arraste para o lado para ver todos os horários  [Qua (23/08)],→ Arraste para o lado para ver todos os horários  [Qui (24/08)],→ Arraste para o lado para ver todos os horários  [Sex (25/08)],→ Arraste para o lado para ver todos os horários  [Sáb (26/08)],Gostaria de fazer algum comentário ou sugestão?
-11/05/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim",Nada a declarar,"Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00, 19:00, 20:00, 21:00","#;
+11/5/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim",Nada a declarar,"Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00, 19:00, 20:00, 21:00","#;
 
         let row = TeacherRow::from_csv(csv_input);
 
@@ -233,7 +233,7 @@ mod test {
                 .map(|v| v.unwrap().validate().unwrap())
                 .collect::<Vec<_>>(),
             vec![TeacherRow {
-                form_timestamp: "11/05/2023 18:43:55".into(),
+                form_timestamp: "11/5/2023 18:43:55".into(),
                 email: "email@email.com".into(),
                 name: "José Silva".into(),
                 whatsapp: "(41)912345678".into(),
@@ -258,7 +258,7 @@ mod test {
     #[test]
     fn test_row_teacher_parsing_works_correctly() {
         let row = TeacherRow {
-            form_timestamp: "11/05/2023 18:43:55".into(),
+            form_timestamp: "11/5/2023 18:43:55".into(),
             email: "email@email.com".into(),
             name: "José Silva".into(),
             whatsapp: "(41)912345678".into(),
