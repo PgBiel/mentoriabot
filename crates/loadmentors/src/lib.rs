@@ -20,7 +20,7 @@ use exports::lib::{self, db::Repository};
 /// in the database.
 pub async fn load_teachers_to_db(
     csv_contents: &str,
-    database_url: &str,
+    db: &lib::db::DatabaseManager,
 ) -> lib::error::Result<ReaderResult<(lib::model::Teacher, Vec<lib::model::Availability>)>> {
     let csv_data = match reader::read_teacher_csv(csv_contents)? {
         Ok(new_teachers) => new_teachers,
@@ -28,7 +28,6 @@ pub async fn load_teachers_to_db(
     };
 
     Ok({
-        let db = lib::db::DatabaseManager::new(database_url)?;
         let mut results = Vec::new();
         let mut errors = Vec::new();
         results.reserve(csv_data.len());
