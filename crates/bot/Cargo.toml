@@ -21,6 +21,7 @@ google-apis-common = "5"
 validator = { version = "0.16.1", features = ["derive"] }
 regex = "1"
 mentoriabot_lib = { path = "../lib" }
+mentoriabot_loadmentors = { path = "../loadmentors"}
 mentoriabot_macros = { path = "../macros" }
 mentoriabot_forms = { path = "../forms" }
 

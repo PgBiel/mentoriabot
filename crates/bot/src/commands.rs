@@ -1,6 +1,7 @@
 use crate::{common::Data, lib::error::Error};
 
 mod forms;
+mod loadmentors;
 mod modal;
 mod modals;
 mod ping;
@@ -10,6 +11,7 @@ mod testform;
 mod userman;
 mod userup;
 
+pub use loadmentors::loadmentors;
 pub use modal::modal;
 pub use ping::ping;
 pub use schedule::schedule;
@@ -20,6 +22,7 @@ pub use userup::userup;
 
 pub fn get_commands() -> Vec<poise::Command<Data, Error>> {
     vec![
+        loadmentors(),
         ping(),
         userup(),
         modal(),

@@ -28,6 +28,9 @@ pub mod forms {
 pub mod lib {
     pub use mentoriabot_lib::*;
 }
+pub mod loadmentors {
+    pub use mentoriabot_loadmentors::*;
+}
 
 const CONFIG_FILE: &str = "config.json";
 

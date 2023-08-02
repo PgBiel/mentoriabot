@@ -1109,6 +1109,7 @@ dependencies = [
  "lazy_static",
  "mentoriabot_forms",
  "mentoriabot_lib",
+ "mentoriabot_loadmentors",
  "mentoriabot_macros",
  "once_cell",
  "poise",
