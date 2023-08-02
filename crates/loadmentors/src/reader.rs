@@ -27,7 +27,7 @@ pub(crate) fn read_teacher_csv(
         match validated_row {
             // only consider a valid row if there are no errors already,
             // since we only return valid rows if no errors occurred.
-            Ok(row) if !errs_vec.is_empty() => {
+            Ok(row) if errs_vec.is_empty() => {
                 match row.try_parse() {
                     Ok((teacher, availabilities)) => res_vec.push((teacher, availabilities)),
 
