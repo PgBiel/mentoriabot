@@ -43,7 +43,7 @@ pub(crate) struct TeacherRow {
 
     /// The teacher's full name.
     #[validate(length(min = 1, max = 512))]
-    #[serde(rename = "Nome completo")]
+    #[serde(rename = "Nome e sobrenome")]
     pub(crate) name: String,
 
     /// The teacher's WhatsApp-compatible
@@ -84,7 +84,7 @@ pub(crate) struct TeacherRow {
     /// What the teacher is specialized at.
     #[validate(length(min = 0, max = 512))]
     #[serde(
-        rename = "Quais os conhecimentos/habilidades você pode compartilhar com os mentorados?"
+        rename = "Quais os conhecimentos/habilidades você pode compartilhar com as pessoas mentoradas?"
     )]
     pub(crate) specialty: String,
 
@@ -223,8 +223,8 @@ mod test {
 
     #[test]
     fn test_csv_input_generates_a_teacher_row_correctly() {
-        let csv_input = r#"Carimbo de data/hora,Endereço de e-mail,Nome completo,Whatsapp,Linkedin,Formação acadêmica (curso e instituição),Empresa/Instituição que trabalha,Cargo/Ocupação atual,Mini bio,Quais os conhecimentos/habilidades você pode compartilhar com os mentorados?,→ Arraste para o lado para ver todos os horários  [Seg (21/08)],→ Arraste para o lado para ver todos os horários  [Ter (22/08)],→ Arraste para o lado para ver todos os horários  [Qua (23/08)],→ Arraste para o lado para ver todos os horários  [Qui (24/08)],→ Arraste para o lado para ver todos os horários  [Sex (25/08)],→ Arraste para o lado para ver todos os horários  [Sáb (26/08)],Gostaria de fazer algum comentário ou sugestão?,Qual sua experiência?
-11/05/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim","Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00, 19:00, 20:00, 21:00",,Nada a declarar"#;
+        let csv_input = r#"Carimbo de data/hora,Endereço de e-mail,Nome e sobrenome,Whatsapp,Linkedin,Formação acadêmica (curso e instituição),Empresa/Instituição que trabalha,Cargo/Ocupação atual,Mini bio,Qual sua experiência?,Quais os conhecimentos/habilidades você pode compartilhar com as pessoas mentoradas?,→ Arraste para o lado para ver todos os horários  [Seg (21/08)],→ Arraste para o lado para ver todos os horários  [Ter (22/08)],→ Arraste para o lado para ver todos os horários  [Qua (23/08)],→ Arraste para o lado para ver todos os horários  [Qui (24/08)],→ Arraste para o lado para ver todos os horários  [Sex (25/08)],→ Arraste para o lado para ver todos os horários  [Sáb (26/08)],Gostaria de fazer algum comentário ou sugestão?
+11/05/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim",Nada a declarar,"Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00, 19:00, 20:00, 21:00","#;
 
         let row = TeacherRow::from_csv(csv_input);
 
