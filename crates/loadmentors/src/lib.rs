@@ -41,7 +41,7 @@ pub async fn load_teachers_to_db(
             let teacher = match db.teacher_repository().insert(&new_teacher).await {
                 Ok(teacher) => teacher,
                 Err(db_err) => {
-                    errors.push((i + 1, db_err.into()));
+                    errors.push((i + 1, db_err));
                     continue;
                 }
             };
@@ -70,7 +70,7 @@ pub async fn load_teachers_to_db(
                 match db.availability_repository().insert(&new_availability).await {
                     Ok(availability) => inserted_availabilities.push(availability),
                     Err(db_err) => {
-                        errors.push((i + 1, db_err.into()));
+                        errors.push((i + 1, db_err));
                         continue;
                     }
                 }

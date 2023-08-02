@@ -178,7 +178,7 @@ impl TeacherRow {
             // six elements => 0-5 + 1 => 1-6 (within range)
             let weekday = Weekday::try_from(weekday_number).unwrap();
 
-            let availability_strings = availability_text.split(", ").into_iter();
+            let availability_strings = availability_text.split(", ");
 
             let new_availabilities = availability_strings
                 .map(|avail| chrono::NaiveTime::parse_from_str(&format!("{avail}:00"), "%H:%M:%S"))
