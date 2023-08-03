@@ -57,7 +57,7 @@
             src = ./.;
 
             # replace with 'lib.fakeHash' to get the new hash
-            cargoHash = "sha256-k4RiGgTl8ZKeiphockgUbPQdPblNnaTIRtYvuyrcBG0=";
+            cargoHash = "sha256-9L1z495a7enSi3ni5HYFjtQkGXKmeJIl9q2zotSvUok=";
 
             meta = with lib; {
               description = "Mentoria bot";
