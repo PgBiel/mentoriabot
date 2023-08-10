@@ -5,3 +5,7 @@ pub mod error;
 pub mod model;
 pub mod notification;
 pub mod util;
+
+pub(crate) mod forms {
+    pub(crate) use mentoriabot_forms::*;
+}
