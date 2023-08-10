@@ -186,7 +186,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectWeekdayCompon
                     let next_day = weekday.next_day_with_this_weekday(&now);
                     let date_string = util::time::day_month_display(&next_day.date_naive());
 
-                    SelectMenuOptionSpec {
+                    util::apply_limits_to_select_option_spec(SelectMenuOptionSpec {
                         // e.g. "Tue (23/10)"
                         label: format!("{weekday_string} ({date_string})"),
                         // value should be the weekday number so we can parse back later
@@ -201,7 +201,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectWeekdayCompon
                             )
                         }),
                         ..Default::default()
-                    }
+                    })
                 })
                 .collect(),
             ..Default::default()
@@ -293,7 +293,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
                 .into_iter()
                 .map(|(time, amount_mentors)| {
                     let time_string = hour_minute_display(time).to_string();
-                    SelectMenuOptionSpec {
+                    util::apply_limits_to_select_option_spec(SelectMenuOptionSpec {
                         label: time_string.clone(),
                         value_key: SelectValue::from(time_string),
                         description: Some(if amount_mentors == 1 {
@@ -306,7 +306,7 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectTimeComponent
                             )
                         }),
                         ..Default::default()
-                    }
+                    })
                 })
                 .collect(),
             ..Default::default()
@@ -388,11 +388,13 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectMentorCompone
             custom_id: custom_id.clone(),
             options: teachers
                 .iter()
-                .map(|(teacher, avail)| SelectMenuOptionSpec {
-                    label: teacher.name.clone(),
-                    value_key: SelectValue::from(avail.id.to_string()),
-                    description: Some(teacher.specialty.to_string()),
-                    ..Default::default()
+                .map(|(teacher, avail)| {
+                    util::apply_limits_to_select_option_spec(SelectMenuOptionSpec {
+                        label: teacher.name.clone(),
+                        value_key: SelectValue::from(avail.id.to_string()),
+                        description: Some(teacher.specialty.to_string()),
+                        ..Default::default()
+                    })
                 })
                 .collect(),
             ..Default::default()
