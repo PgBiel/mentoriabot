@@ -33,10 +33,13 @@ diesel::table! {
         specialty -> Varchar,
         applied_at -> Nullable<Timestamptz>,
         bio -> Nullable<Varchar>,
+        course_info -> Nullable<Varchar>,
         company -> Nullable<Varchar>,
         company_role -> Nullable<Varchar>,
         whatsapp -> Nullable<Varchar>,
         linkedin -> Nullable<Varchar>,
+        comment_general -> Nullable<Varchar>,
+        comment_experience -> Nullable<Varchar>,
     }
 }
 

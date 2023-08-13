@@ -6,10 +6,13 @@ CREATE TABLE teachers (
   specialty VARCHAR NOT NULL,
   applied_at timestamp with time zone,
   bio VARCHAR,
+  course_info VARCHAR,
   company VARCHAR,
   company_role VARCHAR,
   whatsapp VARCHAR,
-  linkedin VARCHAR
+  linkedin VARCHAR,
+  comment_general VARCHAR,
+  comment_experience VARCHAR
 );
 
 CREATE TABLE availability (
