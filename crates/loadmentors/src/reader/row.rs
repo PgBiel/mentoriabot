@@ -305,7 +305,7 @@ mod test {
                 company_role: Some("Gerente de Software".into()),
                 whatsapp: Some("(41)912345678".into()),
                 linkedin: Some("https://linkedin.com/sus".into()),
-                comment_general: Some("".into()),
+                comment_general: None,
                 comment_experience: Some("Nada a declarar".into()),
             }
         );
