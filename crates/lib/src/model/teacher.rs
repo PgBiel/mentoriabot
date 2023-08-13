@@ -15,10 +15,13 @@ pub struct Teacher {
     pub specialty: String,
     pub applied_at: Option<chrono::DateTime<chrono::Utc>>,
     pub bio: Option<String>,
+    pub course_info: Option<String>,
     pub company: Option<String>,
     pub company_role: Option<String>,
     pub whatsapp: Option<String>,
     pub linkedin: Option<String>,
+    pub comment_general: Option<String>,
+    pub comment_experience: Option<String>,
 }
 
 /// A New Teacher, to be inserted
@@ -30,10 +33,13 @@ pub struct NewTeacher {
     pub specialty: String,
     pub applied_at: Option<chrono::DateTime<chrono::Utc>>,
     pub bio: Option<String>,
+    pub course_info: Option<String>,
     pub company: Option<String>,
     pub company_role: Option<String>,
     pub whatsapp: Option<String>,
     pub linkedin: Option<String>,
+    pub comment_general: Option<String>,
+    pub comment_experience: Option<String>,
 }
 
 /// A Partial Teacher, in order to specify certain fields to update.
@@ -46,10 +52,13 @@ pub struct PartialTeacher {
     pub specialty: Option<String>,
     pub applied_at: Option<Option<chrono::DateTime<chrono::Utc>>>,
     pub bio: Option<Option<String>>,
+    pub course_info: Option<Option<String>>,
     pub company: Option<Option<String>>,
     pub company_role: Option<Option<String>>,
     pub whatsapp: Option<Option<String>>,
     pub linkedin: Option<Option<String>>,
+    pub comment_general: Option<Option<String>>,
+    pub comment_experience: Option<Option<String>>,
 }
 
 impl From<Teacher> for NewTeacher {
@@ -64,8 +73,11 @@ impl From<Teacher> for NewTeacher {
             company: teacher.company,
             company_role: teacher.company_role,
             bio: teacher.bio,
+            course_info: teacher.course_info,
             whatsapp: teacher.whatsapp,
             linkedin: teacher.linkedin,
+            comment_general: teacher.comment_general,
+            comment_experience: teacher.comment_experience,
         }
     }
 }
@@ -83,8 +95,11 @@ impl From<Teacher> for PartialTeacher {
             company: Some(teacher.company),
             company_role: Some(teacher.company_role),
             bio: Some(teacher.bio),
+            course_info: Some(teacher.course_info),
             whatsapp: Some(teacher.whatsapp),
             linkedin: Some(teacher.linkedin),
+            comment_general: Some(teacher.comment_general),
+            comment_experience: Some(teacher.comment_experience),
         }
     }
 }
@@ -103,8 +118,11 @@ impl From<NewTeacher> for PartialTeacher {
             company: Some(new_teacher.company),
             company_role: Some(new_teacher.company_role),
             bio: Some(new_teacher.bio),
+            course_info: Some(new_teacher.course_info),
             whatsapp: Some(new_teacher.whatsapp),
             linkedin: Some(new_teacher.linkedin),
+            comment_general: Some(new_teacher.comment_general),
+            comment_experience: Some(new_teacher.comment_experience),
         }
     }
 }

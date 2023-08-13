@@ -152,10 +152,15 @@ impl TeacherRow {
                     .map_err(|_| Error::DateTimeParse)?,
             )),
             bio: wrap_string_option_based_on_emptiness(self.bio.clone()),
+            course_info: wrap_string_option_based_on_emptiness(self.course_info.clone()),
             company: wrap_string_option_based_on_emptiness(self.company.clone()),
             company_role: wrap_string_option_based_on_emptiness(self.company_role.clone()),
             whatsapp: wrap_string_option_based_on_emptiness(self.whatsapp.clone()),
             linkedin: wrap_string_option_based_on_emptiness(self.linkedin.clone()),
+            comment_general: wrap_string_option_based_on_emptiness(self.comment_general.clone()),
+            comment_experience: wrap_string_option_based_on_emptiness(
+                self.comment_experience.clone(),
+            ),
         };
 
         let mut availabilities = Vec::new();
@@ -295,10 +300,13 @@ mod test {
                         .unwrap()
                 ),
                 bio: Some("Gosto do meu trabalho".into()),
+                course_info: Some("Engenharia da Computação, USP".into()),
                 company: Some("Empadas & Cia.".into()),
                 company_role: Some("Gerente de Software".into()),
                 whatsapp: Some("(41)912345678".into()),
                 linkedin: Some("https://linkedin.com/sus".into()),
+                comment_general: Some("".into()),
+                comment_experience: Some("Nada a declarar".into()),
             }
         );
     }

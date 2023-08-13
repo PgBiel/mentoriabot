@@ -146,8 +146,11 @@ mod tests {
             company: Some("Mozilla Inc.".to_string()),
             company_role: Some("CTO".to_string()),
             bio: Some("I am a teacher".to_string()),
+            course_info: Some("Teaching at University".to_string()),
             whatsapp: Some("(10) 12345-6789".to_string()),
             linkedin: Some("https://linkedin.com/????????".to_string()),
+            comment_general: None,
+            comment_experience: Some("All the experience".to_string()),
         };
 
         let inserted_teacher = teacher_repo.insert(&new_teacher).await?;
@@ -189,8 +192,11 @@ mod tests {
             company: Some("Mozilla Inc.".to_string()),
             company_role: Some("Programmer".to_string()),
             bio: Some("I like Rust.".to_string()),
+            course_info: Some("Computer Science at MIT".to_string()),
             whatsapp: Some("(13) 12345-6778".to_string()),
             linkedin: Some("https://linkedin.com/amongus".to_string()),
+            comment_general: None,
+            comment_experience: Some("No comments".to_string()),
         };
         let other_teacher = NewTeacher {
             company: None,
