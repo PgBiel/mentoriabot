@@ -17,11 +17,10 @@ use crate::{
 #[poise::command(
     slash_command,
     ephemeral,
-    name_localized("pt-BR", "sessões"),
     description_localized("pt-BR", "Gerencia sessões de mentoria."),
     subcommands("create", "get", "remove", "all")
 )]
-pub async fn sessions(ctx: Context<'_>) -> Result<()> {
+pub async fn sessionman(ctx: Context<'_>) -> Result<()> {
     ctx.send(|reply| {
         reply
             .content(tr!("commands.general.specify_subcommand", ctx = ctx))
