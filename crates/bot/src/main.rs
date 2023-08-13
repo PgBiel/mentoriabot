@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use serenity::GuildId;
+use crate::serenity::GuildId;
 use tracing::{error, info, warn};
 
 mod authenticate;

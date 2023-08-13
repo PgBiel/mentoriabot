@@ -7,3 +7,8 @@ version = "0.1.0"
 authors = ["PgBiel"]
 edition = "2021"
 license = "MIT"
+
+[workspace.dependencies]
+# disable 'handle_panics' feature
+poise = { version = "0.5.5", default-features = false, features = ["cache", "chrono"] }
+serenity = { features = ["rustls_backend"] }

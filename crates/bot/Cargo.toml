@@ -6,7 +6,8 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-poise = "0.5.2"
+poise = { workspace = true }
+serenity = { workspace = true }
 tokio = { version = "1.26.0", features = ["full"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.93"
