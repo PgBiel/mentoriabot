@@ -1,15 +1,16 @@
 use std::ops::Add;
 
-use poise::serenity_prelude as serenity;
-
 use crate::{
-    commands::modals::sessions::SessionCreateModals,
+    commands::{
+        embeds,
+        modals::sessions::SessionCreateModals,
+    },
     common::{ApplicationContext, Context},
     lib::{
         db::Repository,
         error::{Error, Result},
         model::{NewSession, Session},
-        util::{self, tr, BRAZIL_TIMEZONE},
+        util::tr,
     },
 };
 
@@ -173,42 +174,9 @@ pub async fn get(
     let db = &ctx.data.db;
     let session_and_teacher = db.session_repository().get_with_teacher(id).await?;
     if let Some((session, teacher)) = session_and_teacher {
-        let Session {
-            id,
-            summary,
-            start_at,
-            end_at,
-            ..
-        } = session;
-
-        let teacher_name = teacher.name;
-
-        let summary = summary
-            .map(|s| format!("\"{}\"", s))
-            .unwrap_or("".to_string());
-        let start_at = start_at.with_timezone(&*BRAZIL_TIMEZONE);
-        let duration = end_at.signed_duration_since(start_at);
-
         ctx.send(|f| {
             f.ephemeral(true).embed(|f| {
-                if ctx.locale() == Some("pt-BR") {
-                    let duration =
-                        util::locale::convert_chrono_duration_to_brazilian_string(duration);
-                    f.title(format!("Sessão #{}", id))
-                        .field("Mentor", teacher_name.to_string(), true)
-                        .field("Começa em", start_at.to_string(), false)
-                        .field("Duração", duration, true)
-                        .description(summary)
-                        .color(serenity::Colour::BLITZ_BLUE)
-                } else {
-                    let duration = util::locale::convert_chrono_duration_to_string(duration);
-                    f.title(format!("Session #{}", id))
-                        .field("Mentor", teacher_name.to_string(), true)
-                        .field("Starts at", start_at.to_string(), false)
-                        .field("Duration", duration, true)
-                        .description(summary)
-                        .color(serenity::Colour::BLITZ_BLUE)
-                }
+                embeds::session_embed(f, &session, &teacher, ctx.locale(), true)
             })
         })
         .await?;
