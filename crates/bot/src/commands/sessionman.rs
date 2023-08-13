@@ -1,10 +1,7 @@
 use std::ops::Add;
 
 use crate::{
-    commands::{
-        embeds,
-        modals::sessions::SessionCreateModals,
-    },
+    commands::{embeds, modals::sessions::SessionCreateModals},
     common::{ApplicationContext, Context},
     lib::{
         db::Repository,
@@ -175,9 +172,8 @@ pub async fn get(
     let session_and_teacher = db.session_repository().get_with_teacher(id).await?;
     if let Some((session, teacher)) = session_and_teacher {
         ctx.send(|f| {
-            f.ephemeral(true).embed(|f| {
-                embeds::session_embed(f, &session, &teacher, ctx.locale(), true)
-            })
+            f.ephemeral(true)
+                .embed(|f| embeds::session_embed(f, &session, &teacher, ctx.locale(), true))
         })
         .await?;
     } else {
