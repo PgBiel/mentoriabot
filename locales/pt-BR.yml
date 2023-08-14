@@ -86,5 +86,5 @@ commands:
     session_list_entry: "**Mentoria #%{id}** (%{date})"
     session_list_footer: "Digite '/mentorias info NÚMERO' para ver mais sobre a mentoria"
     info:
-      no_such_session: Mentoria #%{id} não encontrada!
-      not_your_session: Você não está participando da mentoria #%{id}!
+      no_such_session: "Mentoria #%{id} não encontrada!"
+      not_your_session: "Você não está participando da mentoria #%{id}!"

@@ -78,5 +78,5 @@ commands:
     session_list_entry: "**Session #%{id}** (%{date})"
     session_list_footer: "Type '/sessions info NUMBER' to view info for that session"
     info:
-      no_such_session: Session #%{id} not found!
-      not_your_session: You're not a participant of Session #%{id}!
+      no_such_session: "Session #%{id} not found!"
+      not_your_session: "You're not a participant of Session #%{id}!"
