@@ -98,7 +98,7 @@ impl InstalledFlowDelegate for AuthDelegate {
             DefaultInstalledFlowDelegate.present_user_url(url, need_code)
         } else {
             panic!(
-                "No OAuth2 token cache found.
+                "No OAuth2 token cache found (or it expired).
                     Please specify the {AUTH_VAR}=1 environment variable to specify it interactively,
                     or add it to the file {OAUTH_TOKEN_CACHE_PATH}."
             );
