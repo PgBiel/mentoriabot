@@ -11,4 +11,8 @@ license = "MIT"
 [workspace.dependencies]
 # disable 'handle_panics' feature
 poise = { version = "0.5.5", default-features = false, features = ["cache", "chrono"] }
-serenity = { features = ["rustls_backend"] }
+
+[workspace.dependencies.serenity]
+version = "0.11.5"
+features = ["builder", "client", "gateway", "model", "utils", "collector", "rustls_backend"]
+default-features = false
