@@ -80,3 +80,11 @@ commands:
     success: Você agendou com sucesso uma sessão no horário de %{time} com o mentor %{mentor}. Você e seu mentor foram convidados
       para um evento no Google Calendário contendo um link para a chamada do Google Meet que vocês dois usarão durante a mentoria,
       no horário e data especificados. Por favor, confira seu e-mail.
+  sessions:
+    no_sessions: Você não tem nenhuma mentoria agendada. Por favor, utilize o comando '/marcar' para agendar uma!
+    session_list_title: Suas Mentorias (Página %{page}/%{pages})
+    session_list_entry: "**Mentoria #%{id}** (%{date})"
+    session_list_footer: "Digite '/mentorias info NÚMERO' para ver mais sobre a mentoria"
+    info:
+      no_such_session: Mentoria #%{id} não encontrada!
+      not_your_session: Você não está participando da mentoria #%{id}!

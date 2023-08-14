@@ -72,3 +72,11 @@ commands:
     success: You have successfully scheduled a session at %{time} with the mentor %{mentor}. You and your mentor have been invited
       to a Google Calendar event containing a link to the Google Meet call you two will use for the mentorship session, at the
       specified time and date. Please check your email.
+  sessions:
+    no_sessions: You do not have any scheduled mentorship sessions. Please use the '/schedule' command to schedule one!
+    session_list_title: Your Mentorship Sessions (Page %{page}/%{pages})
+    session_list_entry: "**Session #%{id}** (%{date})"
+    session_list_footer: "Type '/sessions info NUMBER' to view info for that session"
+    info:
+      no_such_session: Session #%{id} not found!
+      not_your_session: You're not a participant of Session #%{id}!
