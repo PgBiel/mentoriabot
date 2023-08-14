@@ -10,6 +10,7 @@ mod schedule;
 mod sessionman;
 mod sessions;
 mod testform;
+mod unschedule;
 mod userman;
 mod userup;
 
@@ -20,6 +21,7 @@ pub use schedule::schedule;
 pub use sessionman::sessionman;
 pub use sessions::sessions;
 pub use testform::testform;
+pub use unschedule::unschedule;
 pub use userman::userman;
 pub use userup::userup;
 
@@ -30,6 +32,7 @@ pub fn get_commands() -> Vec<poise::Command<Data, Error>> {
         userup(),
         modal(),
         testform(),
+        unschedule(),
         userman(),
         sessions(),
         sessionman(),
