@@ -37,6 +37,12 @@ pub fn session_embed<'embed>(
     let start_at = start_at.with_timezone(&*BRAZIL_TIMEZONE);
     let duration = end_at.signed_duration_since(start_at);
 
+    let start_at_string = format!(
+        "{}, {}",
+        util::time::day_month_year_display(&start_at.date_naive()),
+        util::time::hour_minute_display(start_at.time()),
+    );
+
     if locale == Some("pt-BR") {
         let duration = util::locale::convert_chrono_duration_to_brazilian_string(duration);
         let starts_at_label = if start_at < util::time::brazil_now() {
@@ -47,7 +53,7 @@ pub fn session_embed<'embed>(
         let embed = embed
             .title(format!("Sessão #{}", id))
             .field("Mentor", teacher_name.to_string(), true)
-            .field(starts_at_label, start_at.to_string(), false)
+            .field(starts_at_label, start_at_string, false)
             .field("Duração", duration, true)
             .description(summary)
             .color(serenity::Colour::BLITZ_BLUE);
@@ -74,7 +80,7 @@ pub fn session_embed<'embed>(
         let embed = embed
             .title(format!("Session #{}", id))
             .field("Mentor", teacher_name.to_string(), true)
-            .field(starts_at_label, start_at.to_string(), false)
+            .field(starts_at_label, start_at_string, false)
             .field("Duration", duration, true)
             .description(summary)
             .color(serenity::Colour::BLITZ_BLUE);

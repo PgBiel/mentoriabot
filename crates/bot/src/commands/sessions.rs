@@ -56,7 +56,7 @@ pub async fn list(ctx: Context<'_>) -> Result<()> {
                 chunk
                     .iter()
                     .map(|session| tr!(
-                        "commands.session.session_list_entry",
+                        "commands.sessions.session_list_entry",
                         ctx = ctx,
                         "id" => session.id,
                         "date" => util::time::day_month_year_display(&session.start_at.with_timezone(&*BRAZIL_TIMEZONE).date_naive()),
@@ -68,9 +68,9 @@ pub async fn list(ctx: Context<'_>) -> Result<()> {
 
         let page_count = pages.len();
         let titles = (1..=page_count)
-            .map(|page| tr!("commands.session.session_list_title", ctx = ctx, "page" => page + 1, "pages" => page_count))
+            .map(|page| tr!("commands.sessions.session_list_title", ctx = ctx, "page" => page, "pages" => page_count))
             .collect::<Vec<_>>();
-        let footers = std::iter::repeat(tr!("commands.session.session_list_footer", ctx = ctx))
+        let footers = std::iter::repeat(tr!("commands.sessions.session_list_footer", ctx = ctx))
             .take(page_count)
             .collect::<Vec<_>>();
 
