@@ -47,7 +47,7 @@ macro_rules! tr {
     // tr!("foo %{a} %{b}", ctx = ctx, "a" => "bar", "b" => "baz")
     ($key:expr, ctx = $ctx:expr, $($var_name:expr => $var_val:expr),+ $(,)?) => {
         {
-            tr!($key, locale = $crate::util::get_defaulted_locale($ctx.into()), $($var_name = $var_val),*)
+            tr!($key, locale = $crate::util::locale::get_defaulted_locale($ctx.into()), $($var_name = $var_val),*)
         }
     };
 

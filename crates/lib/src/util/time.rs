@@ -36,6 +36,11 @@ pub fn day_month_display(datetime: &chrono::NaiveDate) -> impl Display {
     datetime.format("%d/%m")
 }
 
+/// Displays a date as DAY/MONTH/YEAR.
+pub fn day_month_year_display(datetime: &chrono::NaiveDate) -> impl Display {
+    datetime.format("%d/%m/%Y")
+}
+
 pub fn parse_hour_minute(string: &str) -> chrono::ParseResult<chrono::NaiveTime> {
     chrono::NaiveTime::parse_from_str(string, "%H:%M")
 }
