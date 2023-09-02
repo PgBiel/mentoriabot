@@ -5,14 +5,9 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-    fenix = {
-      url = "github:nix-community/fenix";
+    crane = {
+      url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    rust-manifest = {
-      # pin to rustc 1.70.0
-      url = "https://static.rust-lang.org/dist/2023-06-01/channel-rust-1.70.0.toml";
-      flake = false;
     };
 
     # for completion
@@ -21,7 +16,7 @@
       flake = false;
     };
   };
-  outputs = inputs@{ flake-parts, fenix, rust-manifest, ... }:
+  outputs = inputs@{ flake-parts, crane, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       debug = true;
       systems = [
@@ -32,40 +27,66 @@
           inherit (pkgs) lib;
           inherit (lib) importTOML;
           Cargo-toml = importTOML ./Cargo.toml;
-          manifestToolchain = fenix.packages.${system}.fromManifestFile rust-manifest;
-          minToolchain = manifestToolchain.minimalToolchain;
-          devToolchain = manifestToolchain.withComponents [
-            "rustc"
-            "cargo"
-            "clippy"
-            "rustfmt"
-          ];
-          rustPlatform = pkgs.makeRustPlatform {
-            rustc = minToolchain;
-            cargo = minToolchain;
-          };
+
           pname = "mentoriabot";
-        in {
-          packages.default = rustPlatform.buildRustPackage {
-            inherit pname;
-            version = Cargo-toml.workspace.package.version;
+          version = Cargo-toml.workspace.package.version;
 
-            # these seem to be required
-            buildInputs = with pkgs; [ openssl ];
-            nativeBuildInputs = with pkgs; [ pkg-config ];
+          # crane config
+          # see https://github.com/ipetkov/crane/blob/master/examples/trunk-workspace/flake.nix
 
-            src = ./.;
+          craneLib = crane.lib.${system};
 
-            # replace with 'lib.fakeHash' to get the new hash
-            cargoHash = "sha256-SBO06SYCP9SCcHWcecSip6p1/z6ItbgOPgaOkWK1Y1s=";
+          # crate code source: keep only rust files and locales
+          src = lib.cleanSourceWith {
+            src = ./.; # The original, unfiltered source
 
-            meta = with lib; {
-              description = "Mentoria bot";
-              homepage = "https://github.com/PgBiel/mentoriabot";
-              license = licenses.mit;
-              maintainers = [];
-            };
+            # keep only locales and code
+            filter = path: type:
+              # Keep locales
+              (lib.hasInfix "/locales/" path) ||
+              # Default filter from crane (allow .rs files)
+              (craneLib.filterCargoSources path type);
           };
+
+          commonCraneArgs = {
+            inherit src pname version;
+
+            buildInputs = [ pkgs.openssl ];
+          };
+
+          nativeCraneArgs = commonCraneArgs // {
+            nativeBuildInputs = [ pkgs.pkg-config ];
+          };
+
+          # derivation with just the dependencies, so we don't have to
+          # keep re-building them
+          cargoArtifacts = craneLib.buildDepsOnly nativeCraneArgs;
+
+          # our main derivation
+          mentoriabot = craneLib.buildPackage (nativeCraneArgs // {
+            inherit cargoArtifacts;
+          });
+
+          # nightly rustfmt
+          rustfmtNightly = pkgs.rustfmt.override { asNightly = true; };
+        in {
+          checks = {
+            # ensure 'nix flake check' builds our crate
+            inherit mentoriabot;
+
+            # run clippy check on a separate derivation
+            # error on warnings
+            mentoriabot-clippy = craneLib.cargoClippy (nativeCraneArgs // {
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+            });
+
+            # formatting check
+            mentoriabot-fmt = craneLib.cargoFmt commonCraneArgs;
+          };
+
+          # our main package (the bot)
+          packages.default = mentoriabot;
 
           # "nix run" should run the binary in the default package
           # (aka start the bot!)
@@ -75,8 +96,11 @@
           };
 
           devShells.default = pkgs.mkShell {
-            packages = [
-              devToolchain  # allow compiling, linting etc.
+            packages = with pkgs; [
+              rustc
+              cargo
+              clippy
+              rustfmtNightly
             ];
 
             buildInputs = with pkgs; [ openssl ];
