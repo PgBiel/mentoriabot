@@ -31,10 +31,19 @@
           pname = "mentoriabot";
           version = Cargo-toml.workspace.package.version;
 
+          # nightly rustfmt
+          rustfmtNightly = pkgs.rustfmt.override { asNightly = true; };
+
           # crane config
           # see https://github.com/ipetkov/crane/blob/master/examples/trunk-workspace/flake.nix
 
-          craneLib = crane.lib.${system};
+          craneLib = crane.lib.${system}.overrideScope' (
+            _final: _prev:
+              {
+                # ensure crane uses nightly rustfmt
+                rustfmt = rustfmtNightly;
+              }
+          );
 
           # crate code source: keep only rust files and locales
           src = lib.cleanSourceWith {
@@ -67,9 +76,8 @@
             inherit cargoArtifacts;
           });
 
-          # nightly rustfmt
-          rustfmtNightly = pkgs.rustfmt.override { asNightly = true; };
-        in {
+        in
+        {
           checks = {
             # ensure 'nix flake check' builds our crate
             inherit mentoriabot;
@@ -81,7 +89,7 @@
               cargoClippyExtraArgs = "--all-targets -- --deny warnings";
             });
 
-            # formatting check
+            # formatting check with nightly rustfmt
             mentoriabot-fmt = craneLib.cargoFmt commonCraneArgs;
           };
 
