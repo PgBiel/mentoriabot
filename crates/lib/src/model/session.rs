@@ -16,6 +16,7 @@ pub struct Session {
     pub summary: Option<String>,
     pub notified: bool,
     pub meet_id: Option<String>,
+    pub calendar_event_id: Option<String>,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -30,6 +31,7 @@ pub struct NewSession {
     pub summary: Option<String>,
     pub notified: bool,
     pub meet_id: Option<String>,
+    pub calendar_event_id: Option<String>,
     pub start_at: chrono::DateTime<chrono::Utc>,
     pub end_at: chrono::DateTime<chrono::Utc>,
 }
@@ -44,6 +46,7 @@ pub struct PartialSession {
     pub summary: Option<Option<String>>,
     pub notified: Option<bool>,
     pub meet_id: Option<Option<String>>,
+    pub calendar_event_id: Option<Option<String>>,
     pub start_at: Option<chrono::DateTime<chrono::Utc>>,
     pub end_at: Option<chrono::DateTime<chrono::Utc>>,
 }
@@ -60,6 +63,7 @@ impl From<Session> for PartialSession {
             summary: Some(session.summary),
             notified: Some(session.notified),
             meet_id: Some(session.meet_id),
+            calendar_event_id: Some(session.calendar_event_id),
             start_at: Some(session.start_at),
             end_at: Some(session.end_at),
         }
@@ -77,6 +81,7 @@ impl From<Session> for NewSession {
             summary,
             notified,
             meet_id,
+            calendar_event_id,
             start_at,
             end_at,
             ..
@@ -89,6 +94,7 @@ impl From<Session> for NewSession {
             summary,
             notified,
             meet_id,
+            calendar_event_id,
             start_at,
             end_at,
         }

@@ -90,6 +90,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         availability_id: selected_availability.id,
         summary: None,
         meet_id: None,
+        calendar_event_id: None,
         start_at,
         end_at,
         notified: false,
@@ -114,6 +115,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
 
     let session = NewSession {
         meet_id: Some(meet_id),
+        calendar_event_id: event.id,
         ..session
     };
 

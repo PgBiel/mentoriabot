@@ -20,6 +20,7 @@ diesel::table! {
         summary -> Nullable<Text>,
         notified -> Bool,
         meet_id -> Nullable<Varchar>,
+        calendar_event_id -> Nullable<Varchar>,
         start_at -> Timestamptz,
         end_at -> Timestamptz,
     }

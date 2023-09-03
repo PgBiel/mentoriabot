@@ -10,6 +10,7 @@ CREATE TABLE sessions (
   summary TEXT,
   notified BOOLEAN NOT NULL,
   meet_id VARCHAR,
+  calendar_event_id VARCHAR,
   start_at timestamp with time zone NOT NULL,
   end_at timestamp with time zone NOT NULL,
   CHECK (start_at < end_at)

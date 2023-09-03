@@ -120,6 +120,7 @@ async fn create(
             student_id: author_id,
             notified: false,
             meet_id: None,
+            calendar_event_id: None,
             start_at,
             end_at,
         })
