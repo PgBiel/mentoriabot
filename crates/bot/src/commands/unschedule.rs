@@ -1,3 +1,4 @@
+use super::autocomplete::autocomplete_active_student_sessions;
 use crate::{
     common::ApplicationContext,
     lib::{
@@ -20,6 +21,7 @@ pub async fn unschedule(
 
     #[description = "The session's number."]
     #[description_localized("pt-BR", "O número da mentoria.")]
+    #[autocomplete = "autocomplete_active_student_sessions"]
     number: u32,
 ) -> Result<()> {
     // don't timeout the interaction if this takes a bit

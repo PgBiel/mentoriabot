@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
+use diesel::{dsl::sql, ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
 
 use super::{
@@ -72,6 +72,39 @@ impl SessionRepository {
         repo_find_by!(
             self, sessions::table;
             sessions::student_id.eq(student_id);
+            @order_by: sessions::start_at.asc()
+        )
+    }
+
+    /// Searches for Sessions by a particular student (with a particular Discord ID),
+    /// in ascending 'start_at' order (starting earlier first), based on a partial
+    /// session ID input.
+    /// If 'only_active' is given, only active sessions (which haven't already started)
+    /// are displayed.
+    pub async fn find_student_autocomplete(
+        &self,
+        student_id: DiscordId,
+        partial_id: &str,
+        only_active: bool,
+    ) -> Result<Vec<Session>> {
+        if !partial_id.is_empty() && partial_id.parse::<u32>().is_err() {
+            // invalid integer => no results
+            return Ok(Vec::new());
+        }
+
+        repo_find_by!(
+            self, sessions::table;
+            // belongs to this student
+            sessions::student_id.eq(student_id)
+
+            // starts with the given id string
+            sql::<diesel::sql_types::Bool>("starts_with(CAST(id AS TEXT), ")
+                .bind::<diesel::sql_types::Text, _>(partial_id)
+                .sql(")"),
+
+            // if only_active was given, only display sessions which haven't yet begun
+            @filter_if (only_active) => sessions::start_at.ge(chrono::Utc::now());
+
             @order_by: sessions::start_at.asc()
         )
     }

@@ -1,5 +1,6 @@
 use crate::{common::Data, lib::error::Error};
 
+mod autocomplete;
 mod embeds;
 mod forms;
 mod loadmentors;

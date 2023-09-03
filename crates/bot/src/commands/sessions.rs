@@ -1,3 +1,4 @@
+use super::autocomplete::autocomplete_any_student_sessions;
 use crate::{
     commands::embeds,
     common::Context,
@@ -97,6 +98,7 @@ pub async fn info(
 
     #[description = "The session's number."]
     #[description_localized("pt-BR", "O número da mentoria.")]
+    #[autocomplete = "autocomplete_any_student_sessions"]
     number: u32,
 ) -> Result<()> {
     if let Some((session, teacher)) = ctx

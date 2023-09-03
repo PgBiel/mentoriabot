@@ -77,21 +77,44 @@ macro_rules! repo_find_by_first {
 }
 
 macro_rules! repo_find_by {
-    ($self:ident, $table:expr; $filter_expr:expr) => {
-        $table
-            .filter($filter_expr)
-            .get_results(&mut $self.lock_connection().await?)
-            .await
-            .map_err(From::from)
+    ($self:ident, $table:expr; $($filter_expr:expr) +) => {
+        {
+            $table
+                $(.filter($filter_expr))+
+                .get_results(&mut $self.lock_connection().await?)
+                .await
+                .map_err(From::from)
+        }
     };
 
-    ($self:ident, $table:expr; $filter_expr:expr; @order_by: $order_by:expr) => {
-        $table
-            .filter($filter_expr)
-            .order_by($order_by)
-            .get_results(&mut $self.lock_connection().await?)
-            .await
-            .map_err(From::from)
+    ($self:ident, $table:expr; $($filter_expr:expr) +; @order_by: $order_by:expr) => {
+        {
+            $table
+                $(.filter($filter_expr))+
+                .get_results(&mut $self.lock_connection().await?)
+                .await
+                .map_err(From::from)
+        }
+    };
+
+    ($self:ident, $table:expr; $($filter_expr:expr) +, @filter_if ($condition:expr) => $cond_filter_expr:expr; @order_by: $order_by:expr) => {
+        {
+            let __query = $table
+                $(.filter($filter_expr))+;
+
+            if $condition {
+                __query
+                    .filter($cond_filter_expr)
+                    .get_results(&mut $self.lock_connection().await?)
+                    .await
+                    .map_err(From::from)
+            } else {
+                __query
+                    .get_results(&mut $self.lock_connection().await?)
+                    .await
+                    .map_err(From::from)
+            }
+        }
     };
 }
 
