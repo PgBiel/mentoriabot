@@ -74,6 +74,7 @@ You can run `nix develop .` to spawn a dev shell with all the required tools to 
 - The `crates/` folder contains the multiple Rust crates (modules) which make the bot work.
     - The `crates/bot/` folder contains the source of the binary crate (executable), which contains code for the bot's commands (in `commands/`), along with the entrypoint in `main.rs` and other dependencies (such as `authenticate.rs` and `config.rs`).
     - The `crates/lib/` folder contains most of the bot's non-command logic, including database code (`db/`), models (`model/`), Google API providers (`notification/`), general utilities (`util/`), and errors (`error.rs`).
+    - The `crates/loadmentors/` folder contains a crate which is responsible for parsing CSV files with mentor information (obtained through Google Forms) and writing the obtained information to the database.
     - The `crates/forms/` folder contains the code used by the bot for Discord interaction forms, or data requests through several consecutive messages with interactions (such as buttons, select menus and modals).
     - The `crates/macros/` folder contains Rust procedural macros which are applied to structures meant to represent components in a Discord interaction form, and are meant to be used in conjunction with the code in `forms/`, as those macros generate code relevant to that module.
 - The `locales/` folder contains translation strings used throughout the bot for user-facing messages. Currently, it only contains strings for two languages: English and Brazilian Portuguese.
