@@ -100,7 +100,8 @@ macro_rules! repo_find_by {
     ($self:ident, $table:expr; $($filter_expr:expr) +, @filter_if ($condition:expr) => $cond_filter_expr:expr; @order_by: $order_by:expr) => {
         {
             let __query = $table
-                $(.filter($filter_expr))+;
+                $(.filter($filter_expr))+
+                .order_by($order_by);
 
             if $condition {
                 __query
