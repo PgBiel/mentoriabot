@@ -25,10 +25,10 @@ pub async fn autocomplete_student_sessions(
 
 /// Autocomplete a user's active or inactive session IDs as student.
 pub async fn autocomplete_any_student_sessions(ctx: Context<'_>, partial: &str) -> Vec<u32> {
-    autocomplete_student_sessions(ctx, partial, true).await
+    autocomplete_student_sessions(ctx, partial, false).await
 }
 
 /// Autocomplete a user's active only (i.e. which weren't yet started) session IDs as student.
 pub async fn autocomplete_active_student_sessions(ctx: Context<'_>, partial: &str) -> Vec<u32> {
-    autocomplete_student_sessions(ctx, partial, false).await
+    autocomplete_student_sessions(ctx, partial, true).await
 }
