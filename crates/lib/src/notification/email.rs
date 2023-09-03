@@ -103,8 +103,8 @@ impl GmailManager {
             [&*teacher.email],
             "Mentoria Marcada",
             &format!(
-                "Sua mentoria com o aluno {} foi agendada para {} às {}!",
-                user.name, start_at_dm, start_at_hm
+                "Sua mentoria com o aluno {} foi agendada para {} às {}! O número dessa mentoria é #{}.",
+                user.name, start_at_dm, start_at_hm, session.id
             ),
         )
         .await?;
@@ -114,8 +114,8 @@ impl GmailManager {
             [&*user.email],
             "Mentoria Marcada",
             &format!(
-                "Sua mentoria com o mentor {} foi agendada para {} às {}!",
-                teacher.name, start_at_dm, start_at_hm
+                "Sua mentoria com o mentor {} foi agendada para {} às {}! O número dessa mentoria é #{}.",
+                teacher.name, start_at_dm, start_at_hm, session.id
             ),
         )
         .await
