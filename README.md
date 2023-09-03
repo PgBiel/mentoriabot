@@ -42,9 +42,28 @@ Use `diesel migration redo --all` to **wipe the migrations** and re-apply them *
 
 Use `cargo run` to build and run the bot. Use just `cargo check` if just checking if it would compile without running it.
 
+### Using Nix
+
+This repository exports a Nix flake. You can run the bot through Nix with `nix run .`
+
+You can also run a full check (build, run clippy and check formatting) using `nix flake check`.
+
 ## Formatting
 
 Use `cargo +nightly fmt --all` (installing Rust nightly is required for this command, but not for building/running the bot).
+
+## Development
+
+To develop this project, you need at least:
+- A fairly recent Rust toolchain with `rustc` and `cargo` (see Compatibility below);
+- `clippy`;
+- Nightly toolchain's `rustfmt` for the formatting;
+- `diesel-cli` to run the database migrations with the `diesel` command.
+    - Can be installed through `cargo` with `cargo install diesel-cli`. Requires postgresql and some other drivers on your system.
+
+### Using Nix
+
+You can run `nix develop .` to spawn a dev shell with all the required tools to develop (mentioned above).
 
 ## Compatibility
 
