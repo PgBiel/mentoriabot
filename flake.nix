@@ -109,6 +109,7 @@
               cargo
               clippy
               rustfmtNightly
+              diesel-cli
             ];
 
             buildInputs = with pkgs; [ openssl ];
