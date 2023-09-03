@@ -22,6 +22,9 @@ pub async fn unschedule(
     #[description_localized("pt-BR", "O número da mentoria.")]
     number: u32,
 ) -> Result<()> {
+    // don't timeout the interaction if this takes a bit
+    ctx.defer_ephemeral().await?;
+
     let author = ctx.author();
     let author_id: DiscordId = author.id.into();
 
