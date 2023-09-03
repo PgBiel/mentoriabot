@@ -39,6 +39,15 @@ pub async fn unschedule(
         return Err(Error::Other("Expected availability associated to session to exist"));
     };
 
+    if session.start_at < chrono::Utc::now() {
+        ctx.say(tr!(
+            "commands.unschedule.session_already_started",
+            ctx = ctx
+        ))
+        .await?;
+        return Ok(());
+    }
+
     if author_id != session.student_id {
         ctx.say(tr!("commands.session.info.not_your_session", ctx = ctx, "id" => number))
             .await?;

@@ -89,6 +89,7 @@ commands:
       no_such_session: "Mentoria #%{id} não encontrada!"
       not_your_session: "Você não está participando da mentoria #%{id}!"
   unschedule:
+    session_already_started: Você não pode desmarcar uma mentoria que já começou (ou acabou). Foi mal!
     success_no_email: Você desmarcou e cancelou com sucesso sua sessão de mentoria no horário de %{time} com o mentor %{mentor}
       (mentoria \#%{session}). Porém, o bot não conseguiu notificar você e o mentor do cancelamento por e-mail. Apesar disso,
       o evento correspondente no Google Calendário foi removido, junto com o link do Google Meet anteriormente associado.

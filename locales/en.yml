@@ -81,6 +81,7 @@ commands:
       no_such_session: "Session #%{id} not found!"
       not_your_session: "You're not a participant of Session #%{id}!"
   unschedule:
+    session_already_started: You cannot unschedule a session that has already started (or ended). Sorry!
     success_no_email: You have successfully unscheduled and cancelled your session at %{time} with the mentor %{mentor} (session
       \#%{session}). The bot, however, failed to notify you and your mentor of the unscheduling by email, but the Google Calendar
       event was successfully removed, along with the previously generated Google Meet link.
