@@ -90,8 +90,8 @@ commands:
       not_your_session: "Você não está participando da mentoria #%{id}!"
   unschedule:
     success_no_email: Você desmarcou e cancelou com sucesso sua sessão de mentoria no horário de %{time} com o mentor %{mentor}
-      (mentoria \#{session}). Porém, o bot não conseguiu notificar você e o mentor do cancelamento por e-mail. Apesar disso,
+      (mentoria \#%{session}). Porém, o bot não conseguiu notificar você e o mentor do cancelamento por e-mail. Apesar disso,
       o evento correspondente no Google Calendário foi removido, junto com o link do Google Meet anteriormente associado.
     success: Você desmarcou e cancelou com sucesso sua sessão de mentoria no horário de %{time} com o mentor %{mentor}
-      (mentoria \#{session}).  O evento do Google Calendário e o link do Google Meet anteriormente associados a essa mentoria
+      (mentoria \#%{session}).  O evento do Google Calendário e o link do Google Meet anteriormente associados a essa mentoria
       foram removidos.
