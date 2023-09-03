@@ -10,7 +10,7 @@ use google_calendar3::{
 
 use crate::{
     error::Result,
-    model::{NewSession, Teacher, User},
+    model::{NewSession, Session, Teacher, User},
 };
 
 /// Manages Google Calendar operations.
@@ -100,5 +100,20 @@ impl CalendarManager {
             .await
             .map(|(_, event)| event)
             .map_err(From::from)
+    }
+
+    /// Given a session, cancels its associated Google Calendar event, if any.
+    pub async fn cancel_event_for_session(&self, session: &Session) -> Result<()> {
+        if let Some(event_id) = session.calendar_event_id.as_deref() {
+            self.hub
+                .events()
+                .delete(&self.calendar_id, event_id)
+                .doit()
+                .await
+                .map(|_| ())
+                .map_err(From::from)
+        } else {
+            Ok(())
+        }
     }
 }

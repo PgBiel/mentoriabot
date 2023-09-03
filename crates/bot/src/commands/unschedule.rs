@@ -1,17 +1,10 @@
-use super::{forms::schedule::ScheduleForm, modals::register::RegisterModal};
 use crate::{
-    commands::forms::schedule::SelectMentorComponent,
     common::ApplicationContext,
-    forms::InteractionForm,
     lib::{
         db::Repository,
         error::{Error, Result},
-        model::{Availability, DiscordId, NewSession},
-        util::{
-            self,
-            time::{datetime_as_utc, datetime_with_time},
-            tr,
-        },
+        model::DiscordId,
+        util::{self, tr},
     },
 };
 
@@ -32,9 +25,13 @@ pub async fn unschedule(
     let author = ctx.author();
     let author_id: DiscordId = author.id.into();
 
-    let Some((session, teacher)) = ctx.data.db.session_repository().get_with_teacher(number as i64).await? else {
+    let Some((session, teacher, student)) = ctx.data.db.session_repository().get_with_participants(number as i64).await? else {
         ctx.say(tr!("commands.sessions.info.no_such_session", ctx = ctx, "id" => number)).await?;
         return Ok(());
+    };
+
+    let Some(availability) = ctx.data.db.availability_repository().get(session.availability_id).await? else {
+        return Err(Error::Other("Expected availability associated to session to exist"));
     };
 
     if author_id != session.student_id {
@@ -43,9 +40,37 @@ pub async fn unschedule(
         return Ok(());
     }
 
-    todo!("Store event ID so we can cancel it here + send emails and stuff");
+    ctx.data
+        .google
+        .calendar
+        .cancel_event_for_session(&session)
+        .await?;
 
     ctx.data.db.session_repository().remove(&session).await?;
+
+    let response = if let Err(err) = ctx
+        .data
+        .google
+        .email
+        .send_cancel_emails_for_session(&teacher, &student, &session)
+        .await
+    {
+        tracing::warn!("Couldn't send unscheduling email: {err:?}");
+        "commands.unschedule.success_no_email"
+    } else {
+        "commands.unschedule.success"
+    };
+
+    ctx.send(|b| {
+        b.content(tr!(
+            response,
+            ctx = ctx,
+            time = util::time::hour_minute_display(availability.time_start),
+            mentor = teacher.name,
+            session = session.id
+        ))
+    })
+    .await?;
 
     Ok(())
 }

@@ -15,6 +15,16 @@ pub struct GmailManager {
     sender: OnceCell<String>,
 }
 
+/// Given a session, generates a string of the form '01/02/2023 às 23:59' indicating when it
+/// started / will start.
+fn generate_start_at_brazilian_string(session: &Session) -> String {
+    let start_at = session.start_at.with_timezone(&*BRAZIL_TIMEZONE);
+    let start_at_dm = util::time::day_month_display(&start_at.date_naive());
+    let start_at_hm = util::time::hour_minute_display(start_at.time());
+
+    format!("{start_at_dm} às {start_at_hm}")
+}
+
 impl GmailManager {
     /// Connects to the Gmail API with the given authenticator.
     pub(super) async fn connect(
@@ -85,7 +95,7 @@ impl GmailManager {
         Ok(())
     }
 
-    /// Send an e-mail to the teacher and to the student notifying that their session
+    /// Send an email to the teacher and to the student notifying that their session
     /// was scheduled - if possible.
     pub async fn send_emails_for_session(
         &self,
@@ -94,17 +104,15 @@ impl GmailManager {
         session: &Session,
     ) -> Result<()> {
         let sender = self.resolve_sender().await?;
-        let start_at = session.start_at.with_timezone(&*BRAZIL_TIMEZONE);
-        let start_at_dm = util::time::day_month_display(&start_at.date_naive());
-        let start_at_hm = util::time::hour_minute_display(start_at.time());
+        let start_at = generate_start_at_brazilian_string(session);
 
         self.send_to(
             sender,
             [&*teacher.email],
-            "Mentoria Marcada",
+            &format!("Mentoria #{} Marcada", session.id),
             &format!(
-                "Sua mentoria com o aluno {} foi agendada para {} às {}! O número dessa mentoria é #{}.",
-                user.name, start_at_dm, start_at_hm, session.id
+                "Sua mentoria com o aluno {} foi agendada para {start_at}! O número dessa mentoria é #{}.",
+                user.name, session.id
             ),
         )
         .await?;
@@ -112,10 +120,44 @@ impl GmailManager {
         self.send_to(
             sender,
             [&*user.email],
-            "Mentoria Marcada",
+            &format!("Mentoria #{} Marcada", session.id),
             &format!(
-                "Sua mentoria com o mentor {} foi agendada para {} às {}! O número dessa mentoria é #{}.",
-                teacher.name, start_at_dm, start_at_hm, session.id
+                "Sua mentoria com o mentor {} foi agendada para {start_at}! O número dessa mentoria é #{}.",
+                teacher.name, session.id
+            ),
+        )
+        .await
+    }
+
+    /// Send an email to the teacher and to the student notifying that their session
+    /// was unscheduled - if possible.
+    pub async fn send_cancel_emails_for_session(
+        &self,
+        teacher: &Teacher,
+        user: &User,
+        session: &Session,
+    ) -> Result<()> {
+        let sender = self.resolve_sender().await?;
+        let start_at = generate_start_at_brazilian_string(session);
+
+        self.send_to(
+            sender,
+            [&*teacher.email],
+            &format!("Mentoria #{} Desmarcada", session.id),
+            &format!(
+                "Sua mentoria com o aluno {}, de número #{} e anteriormente agendada para {start_at}, acaba de ser desmarcada.",
+                user.name, session.id
+            ),
+        )
+        .await?;
+
+        self.send_to(
+            sender,
+            [&*user.email],
+            &format!("Mentoria #{} Desmarcada", session.id),
+            &format!(
+                "Sua mentoria com o mentor {}, de número #{} e anteriormente agendada para {start_at}, acaba de ser desmarcada.",
+                teacher.name, session.id
             ),
         )
         .await

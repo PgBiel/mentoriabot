@@ -80,3 +80,9 @@ commands:
     info:
       no_such_session: "Session #%{id} not found!"
       not_your_session: "You're not a participant of Session #%{id}!"
+  unschedule:
+    success_no_email: You have successfully unscheduled and cancelled your session at %{time} with the mentor %{mentor} (session
+      \#%{session}). The bot, however, failed to notify you and your mentor of the unscheduling by email, but the Google Calendar
+      event was successfully removed, along with the previously generated Google Meet link.
+    success: You have successfully unscheduled and cancelled your session at %{time} with the mentor %{mentor} (session
+      \#%{session}). The corresponding Google Calendar event and Google Meet link were cancelled.
