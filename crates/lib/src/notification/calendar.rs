@@ -96,6 +96,7 @@ impl CalendarManager {
             .events()
             .insert(event, &self.calendar_id)
             .conference_data_version(1) // enables creating conferences
+            .send_notifications(true)
             .doit()
             .await
             .map(|(_, event)| event)
