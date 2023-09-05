@@ -184,7 +184,7 @@ impl TeacherRow {
             let weekday = Weekday::try_from(weekday_number).unwrap();
 
             let split_regex = regex::Regex::new(", ?")?;
-            let availability_strings = split_regex.split(&availability_text);
+            let availability_strings = split_regex.split(availability_text);
 
             let new_availabilities = availability_strings
                 .map(|avail| chrono::NaiveTime::parse_from_str(&format!("{avail}:00"), "%H:%M:%S"))
