@@ -122,10 +122,24 @@ impl RegisterModal {
         email: String,
         bio: Option<String>,
     ) -> Result<Option<Unvalidated<Self>>> {
-        // Apply limits beforehand so Discord doesn't complain
-        let name = name[..128].to_string();
-        let email: String = email[..256].to_string();
-        let bio = bio.map(|bio| bio[..512].to_string());
+        // Apply length limits beforehand so Discord doesn't complain
+        let name = {
+            let mut name = name;
+            name.truncate(128);
+            name
+        };
+        let email = {
+            let mut email = email;
+            email.truncate(256);
+            email
+        };
+        let bio = {
+            let mut bio = bio;
+            if let Some(bio) = bio.as_mut() {
+                bio.truncate(512);
+            }
+            bio
+        };
 
         Ok(match ctx.locale() {
             Some("pt-BR") => RegisterPortugueseModal::execute_with_defaults(
