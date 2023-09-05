@@ -110,7 +110,7 @@ impl GmailManager {
         let student_bio = user
             .bio
             .as_ref()
-            .map(|bio| format!("\nO(a) aluno(a) definiu a seguinte bio: {bio}"))
+            .map(|bio| format!("\n\nO(a) aluno(a) definiu a seguinte bio: {bio}"))
             .unwrap_or_else(String::default);
 
         self.send_to(
@@ -154,7 +154,7 @@ ocorrerá no Google Meet no seguinte link: https://meet.google.com/{meet_id}",
             [&*teacher.email],
             &format!("Mentoria #{} Desmarcada", session.id),
             &format!(
-                "Sua mentoria com o aluno {}, de número #{} e anteriormente agendada para {start_at}, acaba de ser desmarcada.",
+                "Sua mentoria com o(a) aluno(a) {}, de número #{} e anteriormente agendada para {start_at}, acaba de ser desmarcada.",
                 user.name, session.id
             ),
         )
@@ -165,7 +165,7 @@ ocorrerá no Google Meet no seguinte link: https://meet.google.com/{meet_id}",
             [&*user.email],
             &format!("Mentoria #{} Desmarcada", session.id),
             &format!(
-                "Sua mentoria com o mentor {}, de número #{} e anteriormente agendada para {start_at}, acaba de ser desmarcada.",
+                "Sua mentoria com o(a) mentor(a) {}, de número #{} e anteriormente agendada para {start_at}, acaba de ser desmarcada.",
                 teacher.name, session.id
             ),
         )
