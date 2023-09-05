@@ -67,13 +67,13 @@ in
         PrivateTmp = "yes"; # remove access to /tmp
         PrivateDevices = "yes"; # remove access to devices
 
-        ProtectHome = "yes"; # forbid home access
-        ProtectSystem = "strict"; # read-only FS
-        ProtectClock = "yes"; # read-only clock
-        ProtectHostname = "yes"; # not like we need that info
-        ProtectKernelLogs = "yes"; # why would we access that
-        ProtectKernelTunables = "yes"; # why would we need kernel settings
-        ProtectProc = "invisible"; # we don't need to see other processes
+        # ProtectHome = "yes"; # forbid home access
+        # ProtectSystem = "strict"; # read-only FS
+        # ProtectClock = "yes"; # read-only clock
+        # ProtectHostname = "yes"; # not like we need that info
+        # ProtectKernelLogs = "yes"; # why would we access that
+        # ProtectKernelTunables = "yes"; # why would we need kernel settings
+        # ProtectProc = "invisible"; # we don't need to see other processes
 
         RestrictNamespaces = "yes"; # debatable
         RestrictRealtime = "yes"; # some cpu scheduling stuff we don't need
