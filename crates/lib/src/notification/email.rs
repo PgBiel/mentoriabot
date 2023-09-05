@@ -102,17 +102,25 @@ impl GmailManager {
         teacher: &Teacher,
         user: &User,
         session: &Session,
+        meet_id: &str,
     ) -> Result<()> {
         let sender = self.resolve_sender().await?;
         let start_at = generate_start_at_brazilian_string(session);
+
+        let student_bio = user
+            .bio
+            .as_ref()
+            .map(|bio| format!("\nO(a) aluno(a) definiu a seguinte bio: {bio}"))
+            .unwrap_or_else(String::default);
 
         self.send_to(
             sender,
             [&*teacher.email],
             &format!("Mentoria #{} Marcada", session.id),
             &format!(
-                "Sua mentoria com o aluno {} foi agendada para {start_at}! O número dessa mentoria é #{}.",
-                user.name, session.id
+                "Sua mentoria com o(a) aluno(a) {} foi agendada para {start_at}! O número dessa mentoria é #{}, que
+ocorrerá no Google Meet no seguinte link: https://meet.google.com/{meet_id}{}",
+                user.name, session.id, student_bio
             ),
         )
         .await?;
@@ -122,7 +130,8 @@ impl GmailManager {
             [&*user.email],
             &format!("Mentoria #{} Marcada", session.id),
             &format!(
-                "Sua mentoria com o mentor {} foi agendada para {start_at}! O número dessa mentoria é #{}.",
+                "Sua mentoria com o(a) mentor(a) {} foi agendada para {start_at}! O número dessa mentoria é #{}, que
+ocorrerá no Google Meet no seguinte link: https://meet.google.com/{meet_id}",
                 teacher.name, session.id
             ),
         )

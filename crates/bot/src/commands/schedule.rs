@@ -114,7 +114,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
     };
 
     let session = NewSession {
-        meet_id: Some(meet_id),
+        meet_id: Some(meet_id.clone()),
         calendar_event_id: event.id,
         ..session
     };
@@ -126,7 +126,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .data
         .google
         .email
-        .send_emails_for_session(&selected_mentor, &student, &session)
+        .send_emails_for_session(&selected_mentor, &student, &session, &meet_id)
         .await
     {
         tracing::warn!("Couldn't send scheduling email: {err:?}");
