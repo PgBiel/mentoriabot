@@ -7,6 +7,7 @@ mod loadmentors;
 mod modal;
 mod modals;
 mod ping;
+mod register;
 mod schedule;
 mod sessionman;
 mod sessions;
@@ -18,6 +19,7 @@ mod userup;
 pub use loadmentors::loadmentors;
 pub use modal::modal;
 pub use ping::ping;
+pub use register::register;
 pub use schedule::schedule;
 pub use sessionman::sessionman;
 pub use sessions::sessions;
@@ -30,6 +32,7 @@ pub fn get_commands() -> Vec<poise::Command<Data, Error>> {
     vec![
         loadmentors(),
         ping(),
+        register(),
         userup(),
         modal(),
         testform(),

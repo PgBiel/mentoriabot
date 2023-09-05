@@ -96,3 +96,6 @@ commands:
     success: Você desmarcou e cancelou com sucesso sua sessão de mentoria no horário de %{time} com o mentor %{mentor}
       (mentoria \#%{session}).  O evento do Google Calendário e o link do Google Meet anteriormente associados a essa mentoria
       foram removidos.
+  register:
+    new_register_success: Cadastro de dados feito com sucesso. Obrigado! Você pode utilizar este comando novamente se quiser atualizar seus dados.
+    updated_register_success: Seus dados foram atualizados com sucesso!

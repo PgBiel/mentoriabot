@@ -87,3 +87,6 @@ commands:
       event was successfully removed, along with the previously generated Google Meet link.
     success: You have successfully unscheduled and cancelled your session at %{time} with the mentor %{mentor} (session
       \#%{session}). The corresponding Google Calendar event and Google Meet link were cancelled.
+  register:
+    new_register_success: Data registration successful. Thank you! Use this command again if you'd like to update your data.
+    updated_register_success: Your data has been successfully updated!
