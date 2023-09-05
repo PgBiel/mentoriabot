@@ -90,27 +90,27 @@ pub(crate) struct TeacherRow {
 
     #[validate(regex = "AVAILABILITY_REGEX")]
     #[validate(length(min = 0, 512))]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Seg (21/08)]")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Seg (11/09)]")]
     pub(crate) availability_monday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
     #[validate(length(min = 0, 512))]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Ter (22/08)]")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Ter (12/09)]")]
     pub(crate) availability_tuesday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
     #[validate(length(min = 0, 512))]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qua (23/08)]")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qua (13/09)]")]
     pub(crate) availability_wednesday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
     #[validate(length(min = 0, 512))]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qui (24/08)]")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Qui (14/09)]")]
     pub(crate) availability_thursday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
     #[validate(length(min = 0, 512))]
-    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sex (25/08)]")]
+    #[serde(rename = "→ Arraste para o lado para ver todos os horários  [Sex (15/09)]")]
     pub(crate) availability_friday: String,
 
     #[validate(regex = "AVAILABILITY_REGEX")]
@@ -228,7 +228,7 @@ mod test {
 
     #[test]
     fn test_csv_input_generates_a_teacher_row_correctly() {
-        let csv_input = r#"Carimbo de data/hora,Endereço de e-mail,Nome e sobrenome,Whatsapp,Linkedin,Formação acadêmica (curso e instituição),Empresa/Instituição que trabalha,Cargo/Ocupação atual,Mini bio,Qual sua experiência?,Quais os conhecimentos/habilidades você pode compartilhar com as pessoas mentoradas?,→ Arraste para o lado para ver todos os horários  [Seg (21/08)],→ Arraste para o lado para ver todos os horários  [Ter (22/08)],→ Arraste para o lado para ver todos os horários  [Qua (23/08)],→ Arraste para o lado para ver todos os horários  [Qui (24/08)],→ Arraste para o lado para ver todos os horários  [Sex (25/08)],→ Arraste para o lado para ver todos os horários  [Sáb (26/08)],Gostaria de fazer algum comentário ou sugestão?
+        let csv_input = r#"Carimbo de data/hora,Endereço de e-mail,Nome e sobrenome,Whatsapp,Linkedin,Formação acadêmica (curso e instituição),Empresa/Instituição que trabalha,Cargo/Ocupação atual,Mini bio,Qual sua experiência?,Quais os conhecimentos/habilidades você pode compartilhar com as pessoas mentoradas?,→ Arraste para o lado para ver todos os horários  [Seg (11/09)],→ Arraste para o lado para ver todos os horários  [Ter (12/09)],→ Arraste para o lado para ver todos os horários  [Qua (13/09)],→ Arraste para o lado para ver todos os horários  [Qui (14/09)],→ Arraste para o lado para ver todos os horários  [Sex (15/09)],→ Arraste para o lado para ver todos os horários  [Sáb (26/08)],Gostaria de fazer algum comentário ou sugestão?
 5/11/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim",Nada a declarar,"Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00, 19:00, 20:00, 21:00","#;
 
         let row = TeacherRow::from_csv(csv_input);
