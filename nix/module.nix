@@ -10,7 +10,7 @@ let
   mkDisableOption = desc: (lib.mkEnableOption desc) // { default = true; example = false; };
 
   hostSystem = pkgs.stdenv.hostPlatform.system;
-  # mentoriabot = flake.packages.${hostSystem}.default;
+  mentoriabot = flake.packages.${hostSystem}.default;
 in
 {
   options.services.mentoriabot = {
@@ -28,7 +28,7 @@ in
     package = lib.mkOption {
       type = lib.types.package;
       description = "The mentoriabot package to use. Defaults to the one built with the source flake.";
-      default = pkgs.hello;
+      default = mentoriabot;
     };
     protect = mkDisableOption "Enables sandboxing and general security measures for the bot.";
   };
