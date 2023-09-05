@@ -16,12 +16,18 @@
       flake = false;
     };
   };
-  outputs = inputs@{ flake-parts, crane, ... }:
+  outputs = inputs@{ self, flake-parts, crane, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       debug = true;
+
       systems = [
         "x86_64-linux"
       ];
+
+      flake = {
+        nixosModules.default = import ./nix/module.nix self;
+      };
+
       perSystem = { self', pkgs, system, ... }:
         let
           inherit (pkgs) lib;
@@ -79,7 +85,7 @@
               description = "A Rust mentorship bot";
               homepage = "https://github.com/PgBiel/mentoriabot";
               license = licenses.mit;
-              maintainers = [];
+              maintainers = [ ];
               mainProgram = pname;
             };
           });
