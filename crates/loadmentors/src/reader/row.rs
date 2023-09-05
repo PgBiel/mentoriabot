@@ -17,7 +17,7 @@ lazy_static::lazy_static! {
     pub static ref EMAIL_REGEX: regex::Regex = regex::Regex::new("^.+@.+\\..{2,}$").unwrap();
 
     // "09:00, 10:00, 13:00"  /  "11:00"
-    pub static ref AVAILABILITY_REGEX: regex::Regex = regex::Regex::new("^(?:\\d{1,2}:\\d{1,2}, )*(?:\\d{1,2}:\\d{1,2})?$").unwrap();
+    pub static ref AVAILABILITY_REGEX: regex::Regex = regex::Regex::new("^(?:\\d{1,2}:\\d{1,2}, ?)*(?:\\d{1,2}:\\d{1,2})?$").unwrap();
 
     // "11/12/2023 13:34:20"
     pub static ref TIMESTAMP_REGEX: regex::Regex =
@@ -148,7 +148,7 @@ impl TeacherRow {
             specialty: self.specialty.clone(),
             applied_at: Some(util::time::datetime_as_utc(
                 &BRAZIL_TIMEZONE // uses US date format
-                    .datetime_from_str(&self.form_timestamp, "%m/%d/%Y %H:%M:%S")
+                    .datetime_from_str(&self.form_timestamp, "%d/%m/%Y %H:%M:%S")
                     .map_err(|_| Error::DateTimeParse)?,
             )),
             bio: wrap_string_option_based_on_emptiness(self.bio.clone()),
@@ -183,7 +183,8 @@ impl TeacherRow {
             // six elements => 0-5 + 1 => 1-6 (within range)
             let weekday = Weekday::try_from(weekday_number).unwrap();
 
-            let availability_strings = availability_text.split(", ");
+            let split_regex = regex::Regex::new(", ?")?;
+            let availability_strings = split_regex.split(&availability_text);
 
             let new_availabilities = availability_strings
                 .map(|avail| chrono::NaiveTime::parse_from_str(&format!("{avail}:00"), "%H:%M:%S"))
@@ -229,7 +230,7 @@ mod test {
     #[test]
     fn test_csv_input_generates_a_teacher_row_correctly() {
         let csv_input = r#"Carimbo de data/hora,Endereço de e-mail,Nome e sobrenome,Whatsapp,Linkedin,Formação acadêmica (curso e instituição),Empresa/Instituição que trabalha,Cargo/Ocupação atual,Mini bio,Qual sua experiência?,Quais os conhecimentos/habilidades você pode compartilhar com as pessoas mentoradas?,→ Arraste para o lado para ver todos os horários  [Seg (11/09)],→ Arraste para o lado para ver todos os horários  [Ter (12/09)],→ Arraste para o lado para ver todos os horários  [Qua (13/09)],→ Arraste para o lado para ver todos os horários  [Qui (14/09)],→ Arraste para o lado para ver todos os horários  [Sex (15/09)],→ Arraste para o lado para ver todos os horários  [Sáb (26/08)],Gostaria de fazer algum comentário ou sugestão?
-5/11/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim",Nada a declarar,"Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00, 19:00, 20:00, 21:00","#;
+11/05/2023 18:43:55,email@email.com,José Silva,(41)912345678,https://www.linkedin.com/sus,"Engenharia da Computação, USP",Empadas & Cia.,Gerente de Software,"Gosto do meu trabalho, sim",Nada a declarar,"Álgebra ""Linear""","09:00, 10:00","20:00, 21:00","12:00, 13:00",,10:00,"17:00, 18:00,19:00, 20:00, 21:00","#;
 
         let row = TeacherRow::from_csv(csv_input);
 
@@ -238,7 +239,7 @@ mod test {
                 .map(|v| v.unwrap().validate().unwrap())
                 .collect::<Vec<_>>(),
             vec![TeacherRow {
-                form_timestamp: "5/11/2023 18:43:55".into(),
+                form_timestamp: "11/05/2023 18:43:55".into(),
                 email: "email@email.com".into(),
                 name: "José Silva".into(),
                 whatsapp: "(41)912345678".into(),
@@ -253,7 +254,7 @@ mod test {
                 availability_wednesday: "12:00, 13:00".into(),
                 availability_thursday: "".into(),
                 availability_friday: "10:00".into(),
-                availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
+                availability_saturday: "17:00, 18:00,19:00, 20:00, 21:00".into(),
                 comment_general: "".into(),
                 comment_experience: "Nada a declarar".into(),
             }]
@@ -263,7 +264,7 @@ mod test {
     #[test]
     fn test_row_teacher_parsing_works_correctly() {
         let row = TeacherRow {
-            form_timestamp: "5/11/2023 18:43:55".into(),
+            form_timestamp: "11/05/2023 18:43:55".into(),
             email: "email@email.com".into(),
             name: "José Silva".into(),
             whatsapp: "(41)912345678".into(),
@@ -278,7 +279,7 @@ mod test {
             availability_wednesday: "12:00, 13:00".into(),
             availability_thursday: "".into(),
             availability_friday: "10:00".into(),
-            availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
+            availability_saturday: "17:00, 18:00,19:00, 20:00, 21:00".into(),
             comment_general: "".into(),
             comment_experience: "Nada a declarar".into(),
         };
@@ -314,7 +315,7 @@ mod test {
     #[test]
     fn test_row_availabilities_parsing_works_correctly() {
         let row = TeacherRow {
-            form_timestamp: "5/11/2023 18:43:55".into(),
+            form_timestamp: "11/05/2023 18:43:55".into(),
             email: "email@email.com".into(),
             name: "José Silva".into(),
             whatsapp: "(41)912345678".into(),
@@ -329,7 +330,7 @@ mod test {
             availability_wednesday: "12:00, 13:00".into(),
             availability_thursday: "".into(),
             availability_friday: "10:00".into(),
-            availability_saturday: "17:00, 18:00, 19:00, 20:00, 21:00".into(),
+            availability_saturday: "17:00, 18:00,19:00, 20:00, 21:00".into(),
             comment_general: "".into(),
             comment_experience: "Nada a declarar".into(),
         };
