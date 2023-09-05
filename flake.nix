@@ -74,6 +74,14 @@
           # our main derivation
           mentoriabot = craneLib.buildPackage (nativeCraneArgs // {
             inherit cargoArtifacts;
+
+            meta = with lib; {
+              description = "A Rust mentorship bot";
+              homepage = "https://github.com/PgBiel/mentoriabot";
+              license = licenses.mit;
+              maintainers = [];
+              mainProgram = pname;
+            };
           });
 
         in
