@@ -35,9 +35,9 @@ in
 
   config = lib.mkIf cfg.enable {
     systemd.services.mentoriabot = {
-      after = "network-online.target"; # requires a network connection
+      after = [ "network-online.target" ]; # requires a network connection
 
-      wantedBy = "multi-user.target"; # starts on boot (becomes a boot dependency)
+      wantedBy = [ "multi-user.target" ]; # starts on boot (becomes a boot dependency)
 
       description = "A mentorship management bot.";
 
