@@ -11,6 +11,8 @@ let
 
   hostSystem = pkgs.stdenv.hostPlatform.system;
   mentoriabot = flake.packages.${hostSystem}.default;
+
+  runDir = "/run/mentoriabot";
 in
 {
   options.services.mentoriabot = {
@@ -55,20 +57,30 @@ in
         # only enable these options if 'services.mentoriabot.protect == true'
         RuntimeDirectory = "mentoriabot"; # create a /run/ directory for temp stuff
         RuntimeDirectoryMode = "0755";
-        BindReadOnlyPaths = [
-          "${workdir}:/run/mentoriabot/workdir"
+        BindPaths = [
+          "${workdir}"
         ];
-        WorkingDirectory = "/run/mentoriabot/workdir";
+        BindReadOnlyPaths = [
+          # begin: logging mounts
+          "/dev/log"
+          "/run/systemd/journal/socket"
+          "/run/systemd/journal/stdout"
+          # end: logging mounts
+          "/etc"
+          "/nix"
+        ];
+
+        # chroot into runDir
+        RootDirectory = "${runDir}";
 
         # security options
-        DynamicUser = "yes"; # don't run as root
+        # had to remove DynamicUser as it broke writing files
         NoNewPrivileges = "yes"; # child processes won't be able to... well we don't even have those
         LockPersonality = "yes"; # we don't need whatever that is
         PrivateTmp = "yes"; # remove access to /tmp
         PrivateDevices = "yes"; # remove access to devices
 
-        ProtectHome = "yes"; # forbid home access
-        ProtectSystem = "strict"; # read-only FS
+        ProtectSystem = "full"; # read-only system files
         ProtectClock = "yes"; # read-only clock
         ProtectHostname = "yes"; # not like we need that info
         ProtectKernelLogs = "yes"; # why would we access that
