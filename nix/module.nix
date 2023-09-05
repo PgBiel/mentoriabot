@@ -9,7 +9,7 @@ let
   workdir = cfg.workdir;
   mkDisableOption = desc: (lib.mkEnableOption desc) // { default = true; example = false; };
 
-  hostSystem = pkgs.system;
+  hostSystem = pkgs.stdenv.hostPlatform.system;
   mentoriabot = flake.packages.${hostSystem}.default;
 in
 {
