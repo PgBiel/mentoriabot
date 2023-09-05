@@ -113,6 +113,39 @@ impl RegisterModal {
         })
     }
 
+    /// Executes either the English version of the Modal or
+    /// the Portuguese one, based on the current context locale,
+    /// with some defaults.
+    pub async fn execute_with_defaults_based_on_locale(
+        ctx: ApplicationContext<'_>,
+        name: String,
+        email: String,
+        bio: Option<String>,
+    ) -> Result<Option<Unvalidated<Self>>> {
+        // Apply limits beforehand so Discord doesn't complain
+        let name = name[..128].to_string();
+        let email: String = email[..256].to_string();
+        let bio = bio.map(|bio| bio[..512].to_string());
+
+        Ok(match ctx.locale() {
+            Some("pt-BR") => RegisterPortugueseModal::execute_with_defaults(
+                ctx,
+                RegisterPortugueseModal { name, email, bio },
+            )
+            .await?
+            .map(Self::from)
+            .map(Unvalidated::new),
+
+            _ => RegisterEnglishModal::execute_with_defaults(
+                ctx,
+                RegisterEnglishModal { name, email, bio },
+            )
+            .await?
+            .map(Self::from)
+            .map(Unvalidated::new),
+        })
+    }
+
     /// Converts this modal response into a 'NewUser' instance.
     pub fn generate_new_user(self, discord_id: DiscordId) -> NewUser {
         NewUser {
@@ -126,11 +159,30 @@ impl RegisterModal {
     /// Present the modal to the user, and notify them of any possible
     /// validation errors.
     pub async fn ask(ctx: ApplicationContext<'_>) -> Result<Option<Self>> {
-        match Self::execute_based_on_locale(ctx)
-            .await?
-            .map(Unvalidated::validate)
-            .transpose()
-        {
+        Self::validate_or_warn_user(ctx, Self::execute_based_on_locale(ctx).await?).await
+    }
+
+    /// Present the modal to the user with some defaults, and notify them of
+    /// any possible validation errors.
+    pub async fn ask_with_defaults(
+        ctx: ApplicationContext<'_>,
+        name: String,
+        email: String,
+        bio: Option<String>,
+    ) -> Result<Option<Self>> {
+        Self::validate_or_warn_user(
+            ctx,
+            Self::execute_with_defaults_based_on_locale(ctx, name, email, bio).await?,
+        )
+        .await
+    }
+
+    /// Notify the user of possible validation errors.
+    async fn validate_or_warn_user(
+        ctx: ApplicationContext<'_>,
+        unvalidated: Option<Unvalidated<Self>>,
+    ) -> Result<Option<Self>> {
+        match unvalidated.map(Unvalidated::validate).transpose() {
             Err(errs) => {
                 ctx.send(|b| {
                     use crate::lib::tr;
