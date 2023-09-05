@@ -28,6 +28,7 @@ tempfile = "3.5"
 validator = "0.16.1"
 lettre = { version = "*", features = ["builder"] }
 csv = "1.2.2"
+regex = "1"
 mentoriabot_forms = { path = "../forms" }
 
 [dev-dependencies]

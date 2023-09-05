@@ -78,6 +78,11 @@ pub enum Error {
     /// [lettre `Error`]: lettre::error::Error
     Lettre(lettre::error::Error),
 
+    /// Holds a [regex `Error`].
+    ///
+    /// [regex `Error`]: regex::Error
+    Regex(regex::Error),
+
     /// Holds a [csv `Error`].
     ///
     /// [csv `Error`]: csv::Error
@@ -129,6 +134,7 @@ impl_from_error!(
     google_apis_common::oauth2::Error => Auth;
     lettre::address::AddressError => LettreAddress;
     lettre::error::Error => Lettre;
+    regex::Error => Regex;
     csv::Error => Csv;
     validator::ValidationErrors => Validations;
     String => String;
@@ -149,6 +155,7 @@ impl Display for Error {
             Self::Auth(inner) => Display::fmt(&inner, f),
             Self::LettreAddress(inner) => Display::fmt(&inner, f),
             Self::Lettre(inner) => Display::fmt(&inner, f),
+            Self::Regex(inner) => Display::fmt(&inner, f),
             Self::Csv(inner) => Display::fmt(&inner, f),
             Self::Validations(inner) => Display::fmt(&inner, f),
             Self::DateTimeParse => write!(f, "Failed to parse the given date expression"),
@@ -171,6 +178,7 @@ impl std::error::Error for Error {
             Self::DeadpoolBuild(inner) => Some(inner),
             Self::DeadpoolPool(inner) => Some(inner),
             Self::Calendar(inner) => Some(inner),
+            Self::Regex(inner) => Some(inner),
             Self::Csv(inner) => Some(inner),
             Self::Validations(inner) => Some(inner),
             Self::Io(inner) => Some(inner),

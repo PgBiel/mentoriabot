@@ -1168,6 +1168,7 @@ dependencies = [
  "mentoriabot_forms",
  "once_cell",
  "poise",
+ "regex",
  "serde",
  "serde_json",
  "serenity",
