@@ -62,23 +62,23 @@ in
 
         # security options
         DynamicUser = "yes"; # don't run as root
-        # NoNewPrivileges = "yes"; # child processes won't be able to... well we don't even have those
-        # LockPersonality = "yes"; # we don't need whatever that is
-        # PrivateTmp = "yes"; # remove access to /tmp
-        # PrivateDevices = "yes"; # remove access to devices
+        NoNewPrivileges = "yes"; # child processes won't be able to... well we don't even have those
+        LockPersonality = "yes"; # we don't need whatever that is
+        PrivateTmp = "yes"; # remove access to /tmp
+        PrivateDevices = "yes"; # remove access to devices
 
-        # ProtectHome = "yes"; # forbid home access
-        # ProtectSystem = "strict"; # read-only FS
-        # ProtectClock = "yes"; # read-only clock
-        # ProtectHostname = "yes"; # not like we need that info
-        # ProtectKernelLogs = "yes"; # why would we access that
-        # ProtectKernelTunables = "yes"; # why would we need kernel settings
-        # ProtectProc = "invisible"; # we don't need to see other processes
+        ProtectHome = "yes"; # forbid home access
+        ProtectSystem = "strict"; # read-only FS
+        ProtectClock = "yes"; # read-only clock
+        ProtectHostname = "yes"; # not like we need that info
+        ProtectKernelLogs = "yes"; # why would we access that
+        ProtectKernelTunables = "yes"; # why would we need kernel settings
+        ProtectProc = "invisible"; # we don't need to see other processes
 
-        # RestrictNamespaces = "yes"; # debatable
-        # RestrictRealtime = "yes"; # some cpu scheduling stuff we don't need
-        # RestrictSUIDSGID = "yes"; # we don't install things
-        # SystemCallArchitectures = "native"; # we don't need to use other architectures' instructions
+        RestrictNamespaces = "yes"; # debatable
+        RestrictRealtime = "yes"; # some cpu scheduling stuff we don't need
+        RestrictSUIDSGID = "yes"; # we don't install things
+        SystemCallArchitectures = "native"; # we don't need to use other architectures' instructions
       };
     };
   };
