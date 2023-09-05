@@ -99,14 +99,13 @@ in
 
         # security options
         # had to remove DynamicUser as it broke writing files
-        ProtectHome = "tmpfs"; # replace home by a RAM-bound folder
-        ProtectSystem = "strict"; # read-only FS (except for run dir)
         NoNewPrivileges = "yes"; # child processes won't be able to... well we don't even have those
         LockPersonality = "yes"; # we don't need whatever that is
         PrivateTmp = "yes"; # remove access to /tmp
         PrivateDevices = "yes"; # remove access to devices
 
-        ProtectSystem = "full"; # read-only system files
+        ProtectHome = "tmpfs"; # replace home by a RAM-bound folder
+        ProtectSystem = "strict"; # read-only FS (except for run dir)
         ProtectClock = "yes"; # read-only clock
         ProtectHostname = "yes"; # not like we need that info
         ProtectKernelLogs = "yes"; # why would we access that
