@@ -82,19 +82,17 @@ in
         # only enable these options if 'services.mentoriabot.protect == true'
         RuntimeDirectory = "mentoriabot"; # create a /run/ directory for temp stuff
         RuntimeDirectoryMode = "0755";
-        BindPaths = [
-          workdir
-        ];
         BindReadOnlyPaths = [
           # begin: logging mounts
           "/dev/log"
           "/run/systemd/journal/socket"
           "/run/systemd/journal/stdout"
           # end: logging mounts
-          "/etc"
-          "/nix"
+          "/etc" # network stuff and whatnot
+          "/nix" # necessary to run the thing
         ];
-        ReadWritePaths = workdir;
+        BindPaths = [ workdir ];
+        ReadWritePaths = [ workdir ];
 
         # chroot into runDir
         RootDirectory = runDir;
