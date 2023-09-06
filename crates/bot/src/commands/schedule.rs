@@ -1,6 +1,5 @@
 use super::{forms::schedule::ScheduleForm, modals::register::RegisterModal};
 use crate::{
-    commands::forms::schedule::SelectMentorComponent,
     common::ApplicationContext,
     forms::InteractionForm,
     lib::{
@@ -58,10 +57,7 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         .form_start_datetime
         .ok_or_else(|| Error::Other("could not get the form's starting datetime"))?;
 
-    let SelectMentorComponent {
-        selected_availability,
-        selected_mentor,
-    } = form.select_mentor;
+    let (selected_availability, selected_mentor) = form.retrieve_selection();
 
     let Availability {
         id: avail_id,

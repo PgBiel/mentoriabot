@@ -46,29 +46,28 @@ commands:
     name: sessões
     description: Gerencia sessões de mentoria.
   schedule:
-    please_select_weekday_one: Há 1 mentor disponível nos próximos 7 dias. Por favor selecione abaixo o dia no qual
-      você gostaria de agendar uma mentoria para ver as opções disponíveis.
-    please_select_weekday_n: Há %{total_sessions_amount} horários de mentoria disponíveis nos próximos 7 dias.
-      Por favor selecione abaixo o dia no qual você gostaria de agendar uma mentoria para ver possíveis opções.
+    please_select_weekday_one: "**Mentor selecionado: %{mentor}**\nO mentor só tem 1 horário disponível nesta semana. Por favor selecione abaixo
+      o dia no qual você gostaria de agendar uma mentoria para ver esse horário."
+    please_select_weekday_n: "**Mentor selecionado: %{mentor}**\nO mentor tem %{session_count} horários de mentoria disponíveis nos próximos 7 dias.
+      Por favor selecione abaixo o dia no qual você gostaria de agendar uma mentoria para ver possíveis opções."
     no_mentors_available_week: Não há mais mentores disponíveis nos próximos 7 dias. Foi mal!
     one_time: "1 horário de mentoria disponível"
     n_times: "%{amount} horários de mentoria disponíveis"
-    please_select_time_one_today: Há 1 mentor disponível hoje (%{day}). Por favor
-      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível
-      nesse horário.
-    please_select_time_n_today: Há %{total_mentor_amount} mentores disponíveis hoje (%{day}). Por favor
-      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis
-      nesse horário.
-    please_select_time_one: Há 1 mentor disponível no dia %{day} (%{weekday}). Por favor
-      selecione abaixo o horário em que gostaria de marcar para ver o mentor disponível
-      nesse horário.
-    please_select_time_n: Há %{total_mentor_amount} mentores disponíveis no dia %{day} (%{weekday}). Por favor
-      selecione abaixo o horário em que gostaria de marcar para ver os mentores disponíveis
-      nesse horário.
+    please_select_time_one_today: O mentor tem apenas 1 horário disponível hoje (%{day}). Por favor
+      selecione abaixo o horário para marcar uma mentoria com esse mentor nesse horário.
+    please_select_time_n_today: O mentor tem %{time_count} horários disponíveis hoje (%{day}). Por favor
+      selecione abaixo o horário em que gostaria de marcar uma mentoria para confirmar.
+    please_select_time_one: O mentor tem apenas 1 horário disponível no dia %{day} (%{weekday}). Por favor
+      selecione abaixo o horário para marcar uma mentoria com esse mentor nesse horário.
+    please_select_time_n: O mentor tem %{time_count} horários disponíveis no dia %{day} (%{weekday}). Por favor
+      selecione abaixo o horário em que gostaria de marcar uma mentoria para confirmar.
     no_mentors_available_time: Não há mais mentores disponíveis no dia selecionado. Foi mal!
     one_mentor: "1 mentor disponível"
     n_mentors: "%{amount} mentores disponíveis"
-    please_select_mentor: "**Horário selecionado:** %{time}\nPor favor, selecione um mentor:"
+    please_select_mentor_one: "Há apenas 1 mentor disponível nos próximos 7 dias. Por favor selecione seu nome abaixo
+      se você quiser marcar uma mentoria com esse mentor."
+    please_select_mentor_n: "Há %{mentor_count} mentores disponíveis nos próximos 7 dias. Por favor selecione o nome
+      do mentor com o qual você deseja marcar uma mentoria."
     time_already_taken: "**Erro:** Parece que alguém tomou esse horário de mentoria antes de você concluir esse
       formulário. Foi mal!"
     couldnt_create_google_event: Hmmm... parece que o bot não conseguiu criar um evento no Google Calendário para essa mentoria.

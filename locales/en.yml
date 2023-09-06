@@ -42,25 +42,28 @@ commands:
     invalid_modal_response: The response you gave to the modal form was invalid. Please try running this command again.
     invalid_email: The provided email address was invalid. Please try running this command again.
   schedule:
-    please_select_weekday_one: There is one mentor available this week. Please
-      select below the day you wish to schedule at to view available options at that day.
-    please_select_weekday_n: There are %{total_sessions_amount} available mentorship session times in the next 7 days.
-      Please select below the time you day to schedule at to view available options at that day.
-    no_mentors_available_week: There are no more mentors available in the following 7 days. Sorry!
-    one_time: "1 mentorship session time available"
-    n_times: "%{amount} mentorship session times available"
-    please_select_time_one_today: There is one mentor available today. Please
-      select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_n_today: There are %{total_mentor_amount} mentors available today. Please
-      select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_one: There is one mentor available at %{day} (%{weekday}). Please
-      select below the time you wish to schedule at to view available mentors at that time.
-    please_select_time_n: There are %{total_mentor_amount} mentors available at %{day} (%{weekday}). Please
-      select below the time you wish to schedule at to view available mentors at that time.
+    please_select_weekday_one: "**Selected mentor: %{mentor}**\nThe mentor has only one available scheduling time this week. Please
+      select below the day you wish to schedule at to view that time."
+    please_select_weekday_n: "**Selected mentor: %{mentor}**\nThere are %{session_count} available scheduling times for this mentor in
+      the next 7 days. Please select below the day you wish to schedule a session at to view available options at that day."
+    no_mentors_available_week: There are no more mentors available in the next 7 days. Sorry!
+    one_time: "1 scheduling time available"
+    n_times: "%{amount} scheduling times available"
+    please_select_time_one_today: The mentor only has one available time today. Please select the time below
+      to schedule with the mentor at that time.
+    please_select_time_n_today: The mentor has %{time_count} available times for scheduling today. Please select below
+      the time you wish to schedule a session at to confirm.
+    please_select_time_one: The mentor only has one available time at %{day} (%{weekday}). Please select the time below
+      to schedule with the mentor at that time.
+    please_select_time_n: The mentor has %{time_count} available times for scheduling at %{day} (%{weekday}). Please select below
+      the time you wish to schedule a session at to confirm.
     no_mentors_available_time: There are no more mentors available at the selected date. Sorry!
     one_mentor: "1 mentor available"
     n_mentors: "%{amount} mentors available"
-    please_select_mentor: "**Selected time: %{time}**\nPlease pick a mentor:"
+    please_select_mentor_one: "There is only one mentor available in the next 7 days. Please select their name
+      below if you'd like to schedule a session with them."
+    please_select_mentor_n: "There are %{mentor_count} mentors available in the next 7 days. Please select
+      select below the name of the mentor you'd like to schedule a session with."
     time_already_taken: "**Error:** It seems someone took this mentorship session time before you finished this
       form. Sorry!"
     couldnt_create_google_event: Uh-oh, seems like the bot couldn't create the Google Calendar event for this session.
