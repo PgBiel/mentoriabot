@@ -41,10 +41,10 @@ pub enum Error {
     /// [`PoolError`]: deadpool::PoolError
     DeadpoolPool(deadpool::PoolError),
 
-    /// A Google Calendar [`Error`] occurred.
+    /// A Google API [`Error`] occurred.
     ///
-    /// [`Error`]: google_calendar3::Error
-    Calendar(google_calendar3::Error),
+    /// [`Error`]: google_calendar3::client::Error
+    GoogleApi(google_calendar3::client::Error),
 
     /// An [I/O `Error`] occurred.
     ///
@@ -129,7 +129,7 @@ impl_from_error!(
     diesel::result::ConnectionError => DieselConnection;
     deadpool::BuildError => DeadpoolBuild;
     deadpool::PoolError => DeadpoolPool;
-    google_calendar3::Error => Calendar;
+    google_calendar3::client::Error => GoogleApi;
     std::io::Error => Io;
     google_apis_common::oauth2::Error => Auth;
     lettre::address::AddressError => LettreAddress;
@@ -150,7 +150,7 @@ impl Display for Error {
             Self::DieselConnection(inner) => Display::fmt(&inner, f),
             Self::DeadpoolBuild(inner) => Display::fmt(&inner, f),
             Self::DeadpoolPool(inner) => Display::fmt(&inner, f),
-            Self::Calendar(inner) => Display::fmt(&inner, f),
+            Self::GoogleApi(inner) => Display::fmt(&inner, f),
             Self::Io(inner) => Display::fmt(&inner, f),
             Self::Auth(inner) => Display::fmt(&inner, f),
             Self::LettreAddress(inner) => Display::fmt(&inner, f),
@@ -177,7 +177,7 @@ impl std::error::Error for Error {
             Self::DieselConnection(inner) => Some(inner),
             Self::DeadpoolBuild(inner) => Some(inner),
             Self::DeadpoolPool(inner) => Some(inner),
-            Self::Calendar(inner) => Some(inner),
+            Self::GoogleApi(inner) => Some(inner),
             Self::Regex(inner) => Some(inner),
             Self::Csv(inner) => Some(inner),
             Self::Validations(inner) => Some(inner),
