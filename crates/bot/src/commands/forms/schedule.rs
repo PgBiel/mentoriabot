@@ -72,7 +72,42 @@ pub(crate) struct ScheduleFormData {
     teacher_tuples: Vec<(Teacher, Availability)>,
 }
 
-// impls
+// --- impls ---
+
+/// Inits the form data by pulling valid availabilities and recording the current timestamp.
+/// Cancels the form if there are none.
+/// This should be run by the first form component.
+async fn init_form_data(
+    context: ApplicationContext<'_>,
+    data: &mut FormState<ScheduleFormData>,
+) -> ContextualResult<()> {
+    let now = brazil_now();
+    let availabilities = context
+        .data
+        .db
+        .availability_repository()
+        .find_nontaken_within_a_week_of_date(now)
+        .await?;
+
+    // No mentors have time available for sessions in the next week
+    if availabilities.is_empty() {
+        context
+            .send(|b| {
+                b.content(tr!(
+                    "commands.schedule.no_mentors_available_week",
+                    ctx = context
+                ))
+            })
+            .await?;
+        return Err(FormError::Cancelled.into());
+    }
+
+    data.form_start_datetime = Some(now);
+    data.availabilities = availabilities;
+
+    Ok(())
+}
+
 async fn select_weekday_reply_content(
     context: ApplicationContext<'_>,
     data: &FormState<ScheduleFormData>,
@@ -146,26 +181,14 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectWeekdayCompon
         context: ApplicationContext<'_>,
         data: &mut FormState<ScheduleFormData>,
     ) -> ContextualResult<Vec<CustomId>> {
-        let now = brazil_now();
-        let availabilities = context
-            .data
-            .db
-            .availability_repository()
-            .find_nontaken_within_a_week_of_date(now)
-            .await?;
+        init_form_data(context, data).await?;
 
-        // No mentors have time available for sessions in the next week
-        if availabilities.is_empty() {
-            context
-                .send(|b| {
-                    b.content(tr!(
-                        "commands.schedule.no_mentors_available_week",
-                        ctx = context
-                    ))
-                })
-                .await?;
-            return Err(FormError::Cancelled.into());
-        }
+        // 'init_form_data' should have set this.
+        let now = data
+            .form_start_datetime
+            .ok_or_else(|| Error::Other("could not get the form's starting datetime"))?;
+
+        let availabilities = &data.availabilities;
 
         let mut unique_availability_weekdays: Vec<(Weekday, usize)> =
             util::iter::group_by_count(availabilities.iter(), |avail: &Availability| avail.weekday)
@@ -206,9 +229,6 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectWeekdayCompon
                 .collect(),
             ..Default::default()
         };
-
-        data.form_start_datetime = Some(now);
-        data.availabilities = availabilities;
 
         let reply =
             <Self as GenerateReply<Data, Error, ScheduleFormData>>::create_reply(context, data)
