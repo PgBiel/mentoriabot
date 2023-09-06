@@ -234,12 +234,7 @@ async fn select_time_reply_content(
     let sample_availability = data.availabilities.first();
     let (selected_weekday, selected_date) = sample_availability
         .zip(data.form_start_datetime.as_ref())
-        .map(|(avail, initial_date)| {
-            (
-                avail.weekday,
-                avail.first_possible_date_after(&initial_date),
-            )
-        })
+        .map(|(avail, initial_date)| (avail.weekday, avail.first_possible_date_after(initial_date)))
         .ok_or_else(|| Error::Other("Couldn't get the selected date at 'schedule' form."))?;
     let date_string = util::time::day_month_display(&selected_date.date_naive());
     let weekday_string = selected_weekday

@@ -56,7 +56,7 @@ impl Availability {
         &self,
         initial_date: &chrono::DateTime<chrono::FixedOffset>,
     ) -> chrono::DateTime<chrono::FixedOffset> {
-        self.weekday.next_day_with_this_weekday(&initial_date)
+        self.weekday.next_day_with_this_weekday(initial_date)
     }
 }
 
