@@ -49,6 +49,17 @@ pub struct PartialAvailability {
     pub duration: Option<i16>,
 }
 
+impl Availability {
+    /// Returns the first date this availability could correspond to
+    /// after the given date (first matching weekday).
+    pub fn first_possible_date_after(
+        &self,
+        initial_date: &chrono::DateTime<chrono::FixedOffset>,
+    ) -> chrono::DateTime<chrono::FixedOffset> {
+        self.weekday.next_day_with_this_weekday(&initial_date)
+    }
+}
+
 impl From<Availability> for PartialAvailability {
     /// Converts a [`Availability`] into a [`PartialAvailability`]
     /// by wrapping each Availability field into a 'Some'.
