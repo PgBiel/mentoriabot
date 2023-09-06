@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use chrono::Timelike;
+use chrono::{TimeZone, Timelike};
+use once_cell::sync::Lazy;
 use poise::serenity_prelude::MessageComponentInteraction;
 
 use crate::{
@@ -20,6 +21,18 @@ use crate::{
         },
     },
 };
+
+// Arbitrarily restrict availabilities to between 11/09 and 16/09
+static MIN_AVAILABILITY_DATE: Lazy<chrono::DateTime<chrono::FixedOffset>> = Lazy::new(|| {
+    util::BRAZIL_TIMEZONE
+        .with_ymd_and_hms(2023, 9, 11, 0, 0, 0)
+        .unwrap()
+});
+static MAX_AVAILABILITY_DATE: Lazy<chrono::DateTime<chrono::FixedOffset>> = Lazy::new(|| {
+    util::BRAZIL_TIMEZONE
+        .with_ymd_and_hms(2023, 9, 16, 23, 59, 0)
+        .unwrap()
+});
 
 #[derive(Debug, InteractionForm)]
 #[form_data(data(ScheduleFormData), ctx(Data, Error))]
@@ -145,12 +158,18 @@ async fn init_form_data(
     data: &mut FormState<ScheduleFormData>,
 ) -> ContextualResult<()> {
     let now = brazil_now();
-    let availabilities = context
+    let mut availabilities = context
         .data
         .db
         .availability_repository()
         .find_nontaken_within_a_week_of_date(now)
         .await?;
+
+    // ensure only availabilities within the expected period are shown
+    availabilities.retain(|avail| {
+        let avail_date = avail.first_possible_date_after(&now);
+        *MIN_AVAILABILITY_DATE <= avail_date && avail_date <= *MAX_AVAILABILITY_DATE
+    });
 
     // No mentors have time available for sessions in the next week
     if availabilities.is_empty() {
