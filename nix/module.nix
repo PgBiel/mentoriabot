@@ -68,7 +68,9 @@ in
         ExecStart = "${lib.getExe botPackage}";
         Type = "simple"; # just runs to completion
 
-        Restart = "on-failure"; # restart on exit code 1 or segfault or whatever
+        Restart = "always"; # restart on exit
+        RuntimeMaxSec = "12h"; # restart every 12 hours
+
         WorkingDirectory = workdir;
 
         User = lib.mkIf (cfg.runAs.user != null) cfg.runAs.user;
