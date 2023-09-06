@@ -366,8 +366,9 @@ impl MessageFormComponent<Data, Error, ScheduleFormData> for SelectWeekdayCompon
                 .into_iter()
                 .collect();
 
-        // sort by increasing times
-        unique_availability_weekdays.sort();
+        // sort by increasing dates
+        unique_availability_weekdays
+            .sort_unstable_by_key(|(weekday, _)| weekday.next_day_with_this_weekday(&now));
 
         let custom_id = CustomId::generate();
         let select_menu = SelectMenuSpec {
