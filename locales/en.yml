@@ -93,3 +93,5 @@ commands:
   register:
     new_register_success: Data registration successful. Thank you! Use this command again if you'd like to update your data.
     updated_register_success: Your data has been successfully updated!
+  restart:
+    trying: Trying to restart the bot...

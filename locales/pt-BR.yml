@@ -98,3 +98,5 @@ commands:
   register:
     new_register_success: Cadastro de dados feito com sucesso. Obrigado! Você pode utilizar este comando novamente se quiser atualizar seus dados.
     updated_register_success: Seus dados foram atualizados com sucesso!
+  restart:
+    trying: Tentando reiniciar o bot...
