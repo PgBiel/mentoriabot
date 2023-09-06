@@ -49,6 +49,11 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
 
     ctx.defer_ephemeral().await?;
     let form = *ScheduleForm::execute(ctx).await?;
+
+    // after asking for the user's input:
+    // show the bot as 'typing' while we do things
+    ctx.defer_ephemeral().await?;
+
     let initial_datetime = form
         .form_start_datetime
         .ok_or_else(|| Error::Other("could not get the form's starting datetime"))?;
