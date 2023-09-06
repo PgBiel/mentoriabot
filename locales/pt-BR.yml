@@ -31,6 +31,9 @@ main_on_error:
     default: Ocorreu um erro interno no banco de dados. Foi mal!
   database_connection:
     default: Ocorreu um erro interno na conexão ao banco de dados. Foi mal!
+  google_error:
+    default: Um erro ocorreu ao tentar se conectar com os servidores do Google. Foi mal!
+    bad_auth: Parece que o bot não conseguiu se autenticar com o Google. Por favor, peça a um administrador que reinicie o bot.
   unexpected:
     default: Um erro inesperado ocorreu.
 

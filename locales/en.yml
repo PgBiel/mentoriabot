@@ -31,6 +31,9 @@ main_on_error:
     default: An internal database error occurred. Sorry!
   database_connection:
     default: An internal database connection error occurred. Sorry!
+  google_error:
+    default: An error occurred while trying to connect to Google's servers. Sorry!
+    bad_auth: It seems the bot couldn't authenticate with Google. Please ask an administrator to restart the bot.
   unexpected:
     default: Unexpected error occurred.
 

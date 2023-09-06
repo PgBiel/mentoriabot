@@ -165,6 +165,38 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                     tr!("main_on_error.database_connection.default", locale = locale)
                 }
                 Error::Form(FormError::Cancelled) => "".to_string(),
+                Error::GoogleApi(error) => {
+                    let generic_google_error = || {
+                        error!("Google connection error: {error}");
+                        tr!("main_on_error.google_error.default", locale = locale)
+                    };
+                    match error {
+                        // expected format for the "unauthenticated" path:
+                        // {"error":{"code":401,"errors":[
+                        //    {"domain":"global","location":"Authorization","locationType":"header",
+                        // "message":"Invalid Credentials",    "reason":"
+                        // authError"}],"message":"(OMITTED)", "status":"UNAUTHENTICATED"}}
+                        google_apis_common::Error::BadRequest(serde_json::Value::Object(
+                            bad_request_info,
+                        )) => {
+                            if let Some(serde_json::Value::Object(error_body)) =
+                                bad_request_info.get("error")
+                            {
+                                if error_body.get("status")
+                                    == Some(&serde_json::json!("UNAUTHENTICATED"))
+                                {
+                                    error!("Google authentication failed - try restarting the bot. Full message: {error}");
+                                    tr!("main_on_error.google_error.bad_auth", locale = locale)
+                                } else {
+                                    generic_google_error()
+                                }
+                            } else {
+                                generic_google_error()
+                            }
+                        }
+                        _ => generic_google_error(),
+                    }
+                }
                 _ => {
                     error!("Unexpected command error: {}: {}", framework_error, error);
                     tr!("main_on_error.unexpected.default", locale = locale)
