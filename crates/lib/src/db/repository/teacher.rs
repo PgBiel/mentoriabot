@@ -6,8 +6,8 @@ use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQuer
 
 use super::{
     super::schema::{self, teachers},
-    repo_find_all, repo_get, repo_insert, repo_remove, repo_update, repo_upsert, Repository,
-    UpdatableRepository,
+    repo_find_all, repo_find_by, repo_get, repo_insert, repo_remove, repo_update, repo_upsert,
+    Repository, UpdatableRepository,
 };
 use crate::{
     error::Result,
@@ -72,6 +72,15 @@ impl TeacherRepository {
             .get_results(&mut self.lock_connection().await?)
             .await
             .map_err(From::from)
+    }
+
+    /// Fetches teachers with an ID among a certain group of IDs.
+    pub async fn find_by_ids(&self, ids: &[i64]) -> Result<Vec<Teacher>> {
+        repo_find_by!(
+            self, teachers::table;
+
+            teachers::id.eq_any(ids)
+        )
     }
 }
 
