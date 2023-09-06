@@ -5,7 +5,7 @@ use crate::{
     lib::{
         db::Repository,
         error::{Error, Result},
-        model::{Availability, DiscordId, NewSession},
+        model::{Availability, DiscordId, NewSession, Session},
         util::{
             self,
             time::{datetime_as_utc, datetime_with_time},
@@ -84,7 +84,8 @@ pub async fn schedule(ctx: ApplicationContext<'_>) -> Result<()> {
         &datetime_with_time(start_at, time_start)
             .ok_or_else(|| Error::Other("failed to create session datetime object"))?,
     );
-    let end_at = start_at + chrono::Duration::hours(duration as i64);
+    // 40 minutes per time unit
+    let end_at = Session::generate_end_at_from_duration(start_at, duration as i64);
     let session = NewSession {
         teacher_id: selected_mentor.id,
         student_id: ctx.author().id.into(),

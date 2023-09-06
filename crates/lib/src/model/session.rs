@@ -51,6 +51,19 @@ pub struct PartialSession {
     pub end_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
+impl Session {
+    /// Given the session's start time and the amount of duration units, returns the appropriate
+    /// 'end_at' date. Currently, each duration unit corresponds to 40 minutes.
+    pub fn generate_end_at_from_duration(
+        start_at: chrono::DateTime<chrono::Utc>,
+        duration_units: i64,
+    ) -> chrono::DateTime<chrono::Utc> {
+        const MINUTES_PER_DURATION_UNIT: i64 = 40;
+
+        start_at + chrono::Duration::minutes(duration_units * MINUTES_PER_DURATION_UNIT)
+    }
+}
+
 impl From<Session> for PartialSession {
     /// Converts a [`Session`] into a [`PartialSession`]
     /// by wrapping each Session field into a 'Some'.

@@ -39,12 +39,12 @@ pub async fn sessionman(ctx: Context<'_>) -> Result<()> {
 async fn create(
     ctx: ApplicationContext<'_>,
 
-    #[name_localized("pt-BR", "horas")]
-    #[description_localized("pt-BR", "A duração estimada desta sessão, em horas")]
-    #[description = "The estimated duration of this session, in hours"]
+    #[name_localized("pt-BR", "duração")]
+    #[description_localized("pt-BR", "A duração estimada desta sessão, em unidades de 40 minutos")]
+    #[description = "The estimated duration of this session, in units of 40 minutes"]
     #[min = 0]
     #[max = 12]
-    hours: i64,
+    duration: i64,
 ) -> Result<()> {
     let modal = SessionCreateModals::execute_based_on_locale(ctx).await?;
 
@@ -86,7 +86,7 @@ async fn create(
     };
 
     let summary = modal.summary().clone();
-    let end_at = start_at.add(chrono::Duration::hours(hours));
+    let end_at = Session::generate_end_at_from_duration(start_at, duration);
 
     let author = ctx.author();
     let author_id = author.id.into();
