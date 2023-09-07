@@ -69,7 +69,7 @@ in
         Type = "simple"; # just runs to completion
 
         Restart = "always"; # restart on exit
-        RuntimeMaxSec = "12h"; # restart every 12 hours
+        RuntimeMaxSec = "6h"; # restart every 6 hours
 
         WorkingDirectory = workdir;
 
