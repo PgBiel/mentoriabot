@@ -44,6 +44,8 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
             .map(util::locale::get_defaulted_locale)
             .unwrap_or("pt-BR");
 
+        let mut restarting_ctx = None;
+
         let response = match &framework_error {
             FrameworkError::CommandCheckFailed { error: None, .. } => {
                 tr!("main_on_error.command_check.default", locale = locale)
@@ -186,7 +188,18 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                                     == Some(&serde_json::json!("UNAUTHENTICATED"))
                                 {
                                     error!("Google authentication failed - try restarting the bot. Full message: {error}");
-                                    tr!("main_on_error.google_error.bad_auth", locale = locale)
+
+                                    if let Some(ctx) = framework_error.ctx() {
+                                        error!("Attempting to restart the bot to fix Google auth failure.");
+                                        restarting_ctx = Some(ctx);
+
+                                        tr!(
+                                            "main_on_error.google_error.bad_auth_restarting",
+                                            locale = locale
+                                        )
+                                    } else {
+                                        tr!("main_on_error.google_error.bad_auth", locale = locale)
+                                    }
                                 } else {
                                     generic_google_error()
                                 }
@@ -222,6 +235,18 @@ fn on_error(framework_error: FrameworkError<'_>) -> poise::BoxFuture<'_, ()> {
                 .map(|err| warn!("Failed to reply with error message: {err}"))
                 .unwrap_or_default()
             }
+        }
+
+        // Error prompted a restart
+        if let Some(ctx) = restarting_ctx {
+            ctx.framework()
+                .shard_manager
+                .lock()
+                .await
+                .shutdown_all()
+                .await;
+
+            warn!("Bot is restarting!");
         }
     })
 }

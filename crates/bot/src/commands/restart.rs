@@ -23,5 +23,7 @@ pub async fn restart(ctx: ApplicationContext<'_>) -> Result<()> {
         .await
         .shutdown_all()
         .await;
+
+    tracing::warn!("Bot is restarting!");
     Ok(())
 }
