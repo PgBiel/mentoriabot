@@ -98,3 +98,6 @@ commands:
     updated_register_success: Your data has been successfully updated!
   restart:
     trying: Trying to restart the bot...
+  teacherman:
+    email_already_exists: The mentor with the email ``%{email}`` already exists!
+    success: Mentor '%{name}' (``%{email}``) created successfully!

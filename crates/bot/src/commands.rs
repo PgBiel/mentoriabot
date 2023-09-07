@@ -12,6 +12,7 @@ mod restart;
 mod schedule;
 mod sessionman;
 mod sessions;
+mod teacherman;
 mod testform;
 mod unschedule;
 mod userman;
@@ -25,6 +26,7 @@ pub use restart::restart;
 pub use schedule::schedule;
 pub use sessionman::sessionman;
 pub use sessions::sessions;
+pub use teacherman::teacherman;
 pub use testform::testform;
 pub use unschedule::unschedule;
 pub use userman::userman;
@@ -38,6 +40,7 @@ pub fn get_commands() -> Vec<poise::Command<Data, Error>> {
         restart(),
         userup(),
         modal(),
+        teacherman(),
         testform(),
         unschedule(),
         userman(),
