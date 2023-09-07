@@ -99,3 +99,43 @@ pub fn session_embed<'embed>(
         }
     }
 }
+
+/// Generates an embed displaying info for a teacher.
+pub fn teacher_embed<'embed>(
+    embed: &'embed mut serenity::CreateEmbed,
+    teacher: &Teacher,
+    locale: Option<&str>,
+) -> &'embed mut serenity::CreateEmbed {
+    let mut embed = embed.title(format!("Mentor #{}", teacher.id));
+
+    if locale == Some("pt-BR") {
+        embed = embed
+            .description(if let Some(bio) = &teacher.bio {
+                format!("Bio: \"{bio}\"")
+            } else {
+                "Sem bio".to_owned()
+            })
+            .field("Nome", &teacher.name, true)
+            .field("E-mail", &teacher.email, true)
+            .field("Especialidade", &teacher.specialty, true);
+    } else {
+        embed = embed
+            .description(if let Some(bio) = &teacher.bio {
+                format!("Bio: \"{bio}\"")
+            } else {
+                "No bio".to_owned()
+            })
+            .field("Name", &teacher.name, true)
+            .field("Email", &teacher.email, true)
+            .field("Specialty", &teacher.specialty, true);
+    }
+
+    if let Some(whatsapp) = &teacher.whatsapp {
+        embed = embed.field("WhatsApp", whatsapp, true);
+    }
+    if let Some(linkedin) = &teacher.linkedin {
+        embed = embed.field("Linkedin", linkedin, true);
+    }
+
+    embed
+}
