@@ -87,7 +87,6 @@ pub struct TeacherModal {
 
     /// The mentor's specialty.
     #[validate(length(min = 6, max = 512))]
-    #[validate(regex = "EMAIL_REGEX")]
     pub specialty: String,
 
     /// The mentor's bio.
