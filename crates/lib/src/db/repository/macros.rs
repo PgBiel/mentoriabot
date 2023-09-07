@@ -66,9 +66,9 @@ macro_rules! repo_remove {
 
 #[allow(unused_macros)]
 macro_rules! repo_find_by_first {
-    ($self:ident, $table:expr; $column:expr; $value:expr) => {
+    ($self:ident, $table:expr; $($filter_expr:expr) +) => {
         $table
-            .filter($column.eq($value))
+            $(.filter($filter_expr))+
             .first(&mut $self.lock_connection().await?)
             .await
             .optional()

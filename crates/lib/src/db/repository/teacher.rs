@@ -10,6 +10,7 @@ use super::{
     Repository, UpdatableRepository,
 };
 use crate::{
+    db::repository::repo_find_by_first,
     error::Result,
     model::{Availability, NewTeacher, PartialTeacher, Session, Teacher},
 };
@@ -27,6 +28,15 @@ impl TeacherRepository {
         Self {
             pool: Arc::clone(pool),
         }
+    }
+
+    /// Returns the teacher with the given email, if any.
+    pub async fn find_by_email(&self, email: &str) -> Result<Option<Teacher>> {
+        repo_find_by_first!(
+            self, teachers::table;
+
+            teachers::email.eq(email)
+        )
     }
 
     /// Attempts to insert a Teacher; does nothing if such a Teacher (with the same e-mail
